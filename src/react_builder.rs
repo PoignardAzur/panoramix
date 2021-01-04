@@ -1,13 +1,13 @@
-use crate::glue::{GlobalEventCx, DruidAppData};
+use crate::glue::{DruidAppData, GlobalEventCx};
 
+use crate::flex2;
 use crate::react_comp::{
     ButtonPressed, ButtonTarget, ElementListTarget, ElementTupleTarget, EmptyElementTarget,
     EventEnum, LabelTarget, VirtualDom,
 };
-use crate::flex2;
 
-use druid::{Widget, WidgetPod, widget, Point};
 use druid::widget::prelude::*;
+use druid::{widget, Point, Widget, WidgetPod};
 
 pub trait ElementTree<ExplicitState> {
     type Event;
@@ -360,7 +360,6 @@ impl<
     }
 }
 
-
 pub type WidgetSeqOf<RootCompState, ReturnedTree> =
    <<ReturnedTree as ElementTree<RootCompState>>::Target as VirtualDom<RootCompState>>::TargetWidget;
 
@@ -374,7 +373,8 @@ pub struct ReactApp<
     pub vdom: Option<ReturnedTree::Target>,
     pub vdom_state: Option<<ReturnedTree::Target as VirtualDom<RootCompState>>::DomState>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
-    pub widget: Option<WidgetPod<DruidAppData, flex2::Flex<WidgetSeqOf<RootCompState, ReturnedTree>>>>,
+    pub widget:
+        Option<WidgetPod<DruidAppData, flex2::Flex<WidgetSeqOf<RootCompState, ReturnedTree>>>>,
 }
 
 impl<
@@ -504,7 +504,8 @@ impl<
             widget.set_layout_rect(ctx, data, env, (Point::ZERO, size).into());
         } else {
             size = self.default_widget.layout(ctx, bc, data, env);
-            self.default_widget.set_layout_rect(ctx, data, env, (Point::ZERO, size).into());
+            self.default_widget
+                .set_layout_rect(ctx, data, env, (Point::ZERO, size).into());
         }
 
         size

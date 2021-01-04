@@ -16,7 +16,4 @@ pub trait VirtualDomBuilderExt<ExplicitState>: ElementTree<ExplicitState> + Size
     }
 }
 
-impl<ExplicitState, VDB: ElementTree<ExplicitState>> VirtualDomBuilderExt<ExplicitState>
-    for VDB
-{
-}
+impl<ExplicitState, VDB: ElementTree<ExplicitState>> VirtualDomBuilderExt<ExplicitState> for VDB {}

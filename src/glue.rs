@@ -6,16 +6,13 @@ use druid::Data;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-
 pub struct GlobalEventCx<'a> {
     pub app_data: &'a mut DruidAppData,
 }
 
 impl<'a> GlobalEventCx<'a> {
     pub fn new(app_data: &'a mut DruidAppData) -> Self {
-        Self {
-            app_data,
-        }
+        Self { app_data }
     }
 }
 
@@ -35,7 +32,6 @@ pub enum Action {
     FutureResolved,
 }
 
-
 impl DruidAppData {
     pub(crate) fn queue_action(&mut self, id: Id, action: Action) {
         Arc::make_mut(&mut self.0).insert(id, action);
@@ -54,7 +50,6 @@ impl DruidAppData {
         self.0.contains_key(&id)
     }
 }
-
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 

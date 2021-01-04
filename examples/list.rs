@@ -1,9 +1,9 @@
+use capitaine::glue::DruidAppData;
 use capitaine::react_builder::{
     Button, ComponentCaller, ElementList, ElementTree, ElementTuple, Label, ReactApp,
 };
 use capitaine::react_comp::{ButtonPressed, EventEnum};
 use capitaine::react_ext::VirtualDomBuilderExt;
-use capitaine::glue::DruidAppData;
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 

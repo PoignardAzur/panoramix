@@ -27,7 +27,7 @@ use druid::{
 };
 
 #[allow(unused)]
-use crate::react_widgets::{WidgetSequence, SingleWidget, WidgetTuple, WidgetList};
+use crate::react_widgets::{SingleWidget, WidgetList, WidgetSequence, WidgetTuple};
 
 /// A container with either horizontal or vertical layout.
 ///
@@ -307,7 +307,6 @@ impl Axis {
     }
 }
 
-
 use crate::glue::DruidAppData;
 impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
@@ -385,7 +384,10 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
         let total_major = self.direction.major(bc.max());
         let remaining = (total_major - major_non_flex).max(0.0);
         let mut remainder: f64 = 0.0;
-        let flex_sum: f64 = child_widgets.iter().map(|child| child.flex_params().flex).sum();
+        let flex_sum: f64 = child_widgets
+            .iter()
+            .map(|child| child.flex_params().flex)
+            .sum();
         let mut major_flex: f64 = 0.0;
 
         // Measure flex children.
@@ -425,7 +427,10 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
         for child in child_widgets {
             let rect = child.layout_rect();
             let extra_minor = minor - self.direction.minor(rect.size());
-            let alignment = child.flex_params().alignment.unwrap_or(self.cross_alignment);
+            let alignment = child
+                .flex_params()
+                .alignment
+                .unwrap_or(self.cross_alignment);
             let align_minor = alignment.align(extra_minor);
             let pos: Point = self.direction.pack(major, align_minor).into();
 

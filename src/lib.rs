@@ -5,10 +5,10 @@
 //! [React](https://github.com/facebook/react), and implemented on top of
 //! [druid](https://github.com/linebender/druid).
 
+pub mod flex2;
 pub mod react_builder;
 pub mod react_comp;
 pub mod react_ext;
 pub mod react_widgets;
-pub mod flex2;
 
 pub mod glue;

@@ -1,11 +1,11 @@
-use crate::glue::{GlobalEventCx, DruidAppData, Id};
+use crate::glue::{DruidAppData, GlobalEventCx, Id};
 
-use crate::react_widgets::{WidgetSequence, SingleWidget, WidgetTuple, WidgetList};
 use crate::react_widgets::make_button;
+use crate::react_widgets::{SingleWidget, WidgetList, WidgetSequence, WidgetTuple};
 
 // TODO - refactor away WidgetPod
-use druid::WidgetPod;
 use druid::widget as druid_w;
+use druid::WidgetPod;
 // TODO
 //
 // Rename VirtualDom
@@ -16,7 +16,7 @@ pub trait VirtualDom<ParentComponentState> {
     type DomState;
     type AggregateComponentState: Default;
 
-    type TargetWidget : WidgetSequence;
+    type TargetWidget: WidgetSequence;
 
     // update_value is intended to enable memoize-style HOC
     // where instead of returning a vdom node, it returns
@@ -31,7 +31,6 @@ pub trait VirtualDom<ParentComponentState> {
         other: &Self,
         prev_state: Self::DomState,
         widget: &mut Self::TargetWidget,
-
     ) -> Self::DomState;
 
     fn process_event(
@@ -44,7 +43,10 @@ pub trait VirtualDom<ParentComponentState> {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct LabelTarget<ParentComponentState>(pub String, pub std::marker::PhantomData<ParentComponentState>);
+pub struct LabelTarget<ParentComponentState>(
+    pub String,
+    pub std::marker::PhantomData<ParentComponentState>,
+);
 
 impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelTarget<ParentComponentState> {
     type Event = ();
@@ -82,13 +84,16 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelTarget<Pare
 }
 
 #[derive(Debug, PartialEq)]
-pub struct ButtonTarget<ParentComponentState>(pub String, pub std::marker::PhantomData<ParentComponentState>);
+pub struct ButtonTarget<ParentComponentState>(
+    pub String,
+    pub std::marker::PhantomData<ParentComponentState>,
+);
 
 pub struct ButtonPressed();
 
-use druid::widget::ControllerHost;
-use druid::widget::Click;
 use druid::widget::Button;
+use druid::widget::Click;
+use druid::widget::ControllerHost;
 
 impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonTarget<ParentComponentState> {
     type Event = ButtonPressed;
@@ -108,7 +113,12 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonTarget<Par
         (make_button(text.clone(), id), id)
     }
 
-    fn apply_diff(&self, _other: &Self, prev_state: Self::DomState, _widget: &mut Self::TargetWidget) -> Id {
+    fn apply_diff(
+        &self,
+        _other: &Self,
+        prev_state: Self::DomState,
+        _widget: &mut Self::TargetWidget,
+    ) -> Id {
         let _text = &self.0;
         //widget.set_text(text.clone());
         prev_state
@@ -157,13 +167,20 @@ impl<
         C2: VirtualDom<ParentComponentState>,
         C3: VirtualDom<ParentComponentState>,
         ParentComponentState,
-    > VirtualDom<ParentComponentState> for ElementTupleTarget<C0, C1, C2, C3, ParentComponentState>
+    > VirtualDom<ParentComponentState>
+    for ElementTupleTarget<C0, C1, C2, C3, ParentComponentState>
 {
     type Event = EventEnum<C0::Event, C1::Event, C2::Event, C3::Event>;
     type DomState = (C0::DomState, C1::DomState, C2::DomState, C3::DomState);
-    type AggregateComponentState = (C0::AggregateComponentState, C1::AggregateComponentState, C2::AggregateComponentState, C3::AggregateComponentState);
+    type AggregateComponentState = (
+        C0::AggregateComponentState,
+        C1::AggregateComponentState,
+        C2::AggregateComponentState,
+        C3::AggregateComponentState,
+    );
 
-    type TargetWidget = WidgetTuple<C0::TargetWidget, C1::TargetWidget, C2::TargetWidget, C3::TargetWidget>;
+    type TargetWidget =
+        WidgetTuple<C0::TargetWidget, C1::TargetWidget, C2::TargetWidget, C3::TargetWidget>;
 
     fn update_value(&mut self, other: Self) {
         *self = other;
@@ -183,7 +200,6 @@ impl<
         other: &Self,
         prev_state: Self::DomState,
         widget: &mut Self::TargetWidget,
-
     ) -> Self::DomState {
         (
             self.0.apply_diff(&other.0, prev_state.0, &mut widget.0),
@@ -226,9 +242,13 @@ impl<
 // Instead of doing multiple implementations of TupleComponent for different tuple sizes,
 // I'm being lazy and doing one implem for a huge tuple, and stuffing it with EmptyElement
 // when using it. It's *a lot* easier.
-pub struct EmptyElementTarget<ParentComponentState>(pub std::marker::PhantomData<ParentComponentState>);
+pub struct EmptyElementTarget<ParentComponentState>(
+    pub std::marker::PhantomData<ParentComponentState>,
+);
 
-impl<ParentComponentState> VirtualDom<ParentComponentState> for EmptyElementTarget<ParentComponentState> {
+impl<ParentComponentState> VirtualDom<ParentComponentState>
+    for EmptyElementTarget<ParentComponentState>
+{
     type Event = ();
     type DomState = ();
     type AggregateComponentState = ();
@@ -287,7 +307,8 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     // Sounds perfectly reasonable to me.
     // (seriously though, a serious implementation would try to do whatever crochet::List::run does)
     fn apply_diff(
-        &self, other: &Self,
+        &self,
+        other: &Self,
         prev_state: Self::DomState,
         widget: &mut Self::TargetWidget,
     ) -> Self::DomState {
@@ -299,9 +320,11 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
                 let (other_id, other_elem) = item.0;
                 let elem_prev_state = item.1;
 
-                if let Some(((_, elem), ref mut widget)) = self.elements.iter()
-                        .zip(widget.children.iter_mut())
-                        .find(|((id, _), _)| id == other_id)
+                if let Some(((_, elem), ref mut widget)) = self
+                    .elements
+                    .iter()
+                    .zip(widget.children.iter_mut())
+                    .find(|((id, _), _)| id == other_id)
                 {
                     let elem_state = elem.apply_diff(other_elem, elem_prev_state, widget);
 
@@ -313,7 +336,7 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
             .flatten()
             .collect();
 
-        let (mut new_widgets, mut new_state): (Vec<_>, Vec<_>)  = self
+        let (mut new_widgets, mut new_state): (Vec<_>, Vec<_>) = self
             .elements
             .iter()
             .map(|(id, elem)| {
@@ -344,11 +367,19 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         dom_state: &mut Self::DomState,
         _cx: &mut GlobalEventCx,
     ) -> Option<(usize, Comp::Event)> {
-        for (i, elem_data) in self.elements.iter().zip(children_state).zip(dom_state).enumerate() {
+        for (i, elem_data) in self
+            .elements
+            .iter()
+            .zip(children_state)
+            .zip(dom_state)
+            .enumerate()
+        {
             let (_key, element) = elem_data.0.0;
             let elem_comp_state = elem_data.0.1;
             let elem_dom_state = elem_data.1;
-            if let Some(event) = element.process_event(explicit_state, &mut elem_comp_state.1, elem_dom_state, _cx) {
+            if let Some(event) =
+                element.process_event(explicit_state, &mut elem_comp_state.1, elem_dom_state, _cx)
+            {
                 return Some((i, event));
             }
         }
