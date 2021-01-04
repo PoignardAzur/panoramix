@@ -26,8 +26,7 @@ use druid::{
     PaintCtx, UpdateCtx, Widget,
 };
 
-#[allow(unused)]
-use crate::react_widgets::{SingleWidget, WidgetList, WidgetSequence, WidgetTuple};
+use crate::widget_sequence::WidgetSequence;
 
 /// A container with either horizontal or vertical layout.
 ///

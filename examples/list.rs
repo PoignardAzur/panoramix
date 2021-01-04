@@ -1,9 +1,10 @@
-use capitaine::glue::DruidAppData;
-use capitaine::react_builder::{
-    Button, ComponentCaller, ElementList, ElementTree, ElementTuple, Label, ReactApp,
+use capitaine::element_tree::ElementTree;
+use capitaine::element_tree_ext::ElementTreeExt;
+use capitaine::elements::{
+    Button, ButtonPressed, ComponentCaller, ElementList, ElementTuple, EventEnum, Label,
 };
-use capitaine::react_comp::{ButtonPressed, EventEnum};
-use capitaine::react_ext::VirtualDomBuilderExt;
+use capitaine::glue::DruidAppData;
+use capitaine::root_handler::RootHandler;
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
@@ -104,7 +105,7 @@ fn ui_builder() -> impl Widget<DruidAppData> {
         next_id: 8,
     };
 
-    ReactApp::new(&some_component, state)
+    RootHandler::new(&some_component, state)
 }
 
 fn main() -> Result<(), PlatformError> {

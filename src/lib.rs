@@ -5,10 +5,11 @@
 //! [React](https://github.com/facebook/react), and implemented on top of
 //! [druid](https://github.com/linebender/druid).
 
+pub mod element_tree;
+pub mod element_tree_ext;
+pub mod elements;
 pub mod flex2;
-pub mod react_builder;
-pub mod react_comp;
-pub mod react_ext;
-pub mod react_widgets;
-
 pub mod glue;
+pub mod root_handler;
+pub mod widget_sequence;
+pub mod widgets;
