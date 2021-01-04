@@ -1,0 +1,17 @@
+[package]
+name = "capitaine"
+version = "0.1.0"
+license = "MIT"
+authors = ["Olivier FAURE <couteaubleu@gmail.com>"]
+description = "A prototype implementation of reactive UI in rust "
+repository = "https://github.com/PoignardAzur/capitaine"
+categories = ["gui"]
+readme = "README.md"
+edition = "2018"
+
+[dependencies.druid]
+git = "https://github.com/linebender/druid"
+rev = "6bb0f51adb7fe55d06fb53c2649f3ff0842aa6b2"
+
+[dependencies]
+log = "0.4.11"
