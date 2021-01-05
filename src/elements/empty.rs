@@ -5,7 +5,13 @@ use crate::element_tree::{ElementTree, VirtualDom};
 use druid::widget as druid_w;
 use druid::WidgetPod;
 
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct EmptyElement<ExplicitState = ()>(pub std::marker::PhantomData<ExplicitState>);
+
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct EmptyElementData<ParentComponentState>(
+    pub std::marker::PhantomData<ParentComponentState>,
+);
 
 impl<ExplicitState> EmptyElement<ExplicitState> {
     pub fn new() -> EmptyElement<ExplicitState> {
@@ -13,25 +19,18 @@ impl<ExplicitState> EmptyElement<ExplicitState> {
     }
 }
 
-// Instead of doing multiple implementations of TupleComponent for different tuple sizes,
-// I'm being lazy and doing one implem for a huge tuple, and stuffing it with EmptyElement
-// when using it. It's *a lot* easier.
-pub struct EmptyElementTarget<ParentComponentState>(
-    pub std::marker::PhantomData<ParentComponentState>,
-);
-
 impl<ExplicitState> ElementTree<ExplicitState> for EmptyElement<ExplicitState> {
     type Event = ();
     type AggregateComponentState = ();
-    type BuildOutput = EmptyElementTarget<ExplicitState>;
+    type BuildOutput = EmptyElementData<ExplicitState>;
 
-    fn build(self, _prev_state: ()) -> (EmptyElementTarget<ExplicitState>, ()) {
-        (EmptyElementTarget(Default::default()), ())
+    fn build(self, _prev_state: ()) -> (EmptyElementData<ExplicitState>, ()) {
+        (EmptyElementData(Default::default()), ())
     }
 }
 
 impl<ParentComponentState> VirtualDom<ParentComponentState>
-    for EmptyElementTarget<ParentComponentState>
+    for EmptyElementData<ParentComponentState>
 {
     type Event = ();
     type DomState = ();
@@ -62,4 +61,20 @@ impl<ParentComponentState> VirtualDom<ParentComponentState>
     ) -> Option<()> {
         return None;
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_empty() {
+        let empty = EmptyElement::<()>::new();
+        let (empty_data, _) = empty.clone().build(());
+        assert_eq!(empty, EmptyElement(Default::default()));
+        assert_eq!(empty_data, EmptyElementData(Default::default()));
+    }
+
+    // TODO
+    // - Widget test
 }

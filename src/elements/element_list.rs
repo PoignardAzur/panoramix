@@ -3,13 +3,15 @@ use crate::widgets::WidgetList;
 
 use crate::element_tree::{ElementTree, VirtualDom};
 
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ElementList<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
     pub elements: Vec<(String, Child)>,
     pub _state: std::marker::PhantomData<ExplicitState>,
 }
 
-pub struct ElementListTarget<Comp: VirtualDom<ParentComponentState>, ParentComponentState> {
-    pub elements: Vec<(String, Comp)>,
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct ElementListData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
+    pub elements: Vec<(String, Item)>,
     pub _expl_state: std::marker::PhantomData<ParentComponentState>,
 }
 
@@ -18,7 +20,7 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
 {
     type Event = (usize, Child::Event);
     type AggregateComponentState = Vec<(String, Child::AggregateComponentState)>;
-    type BuildOutput = ElementListTarget<Child::BuildOutput, ExplicitState>;
+    type BuildOutput = ElementListData<Child::BuildOutput, ExplicitState>;
 
     fn build(
         self,
@@ -28,7 +30,7 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
         let (elements, state): (Vec<_>, Vec<_>) = self
             .elements
             .into_iter()
-            .map(|(key, comp)| {
+            .map(|(key, item)| {
                 // FIXME, inefficient, and only works if items are only ever
                 // appended at the end and keys are unique
                 let existing = prev_state
@@ -36,15 +38,15 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
                     .find(|(other_key, _)| key == *other_key);
                 let (new_elem, new_state) = if let Some(comp_prev_state) = existing {
                     let (_, comp_prev_state) = std::mem::take(comp_prev_state);
-                    comp.build(comp_prev_state)
+                    item.build(comp_prev_state)
                 } else {
-                    comp.build(Default::default())
+                    item.build(Default::default())
                 };
                 ((key.clone(), new_elem), (key, new_state))
             })
             .unzip();
         (
-            ElementListTarget {
+            ElementListData {
                 elements,
                 _expl_state: Default::default(),
             },
@@ -53,14 +55,14 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
     }
 }
 
-impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for ElementListTarget<Comp, ParentComponentState>
+impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
+    for ElementListData<Item, ParentComponentState>
 {
-    type Event = (usize, Comp::Event);
-    type DomState = Vec<Comp::DomState>;
-    type AggregateComponentState = Vec<(String, Comp::AggregateComponentState)>;
+    type Event = (usize, Item::Event);
+    type DomState = Vec<Item::DomState>;
+    type AggregateComponentState = Vec<(String, Item::AggregateComponentState)>;
 
-    type TargetWidgetSeq = WidgetList<Comp::TargetWidgetSeq>;
+    type TargetWidgetSeq = WidgetList<Item::TargetWidgetSeq>;
 
     fn update_value(&mut self, other: Self) {
         *self = other;
@@ -140,7 +142,7 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         children_state: &mut Self::AggregateComponentState,
         dom_state: &mut Self::DomState,
         _cx: &mut GlobalEventCx,
-    ) -> Option<(usize, Comp::Event)> {
+    ) -> Option<(usize, Item::Event)> {
         for (i, elem_data) in self
             .elements
             .iter()
@@ -159,4 +161,41 @@ impl<Comp: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         }
         return None;
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::elements::label::{Label, LabelData};
+
+    #[test]
+    fn new_list() {
+        let list = ElementList::<_, ()> {
+            elements: vec![
+                (String::from("aaa"), Label::new("aaa")),
+                (String::from("bbb"), Label::new("bbb")),
+                (String::from("ccc"), Label::new("ccc")),
+            ],
+            _state: Default::default(),
+        };
+        let (list_data, _) = list.clone().build(Default::default());
+
+        assert_eq!(
+            list_data,
+            ElementListData {
+                elements: vec![
+                    (String::from("aaa"), LabelData::new("aaa")),
+                    (String::from("bbb"), LabelData::new("bbb")),
+                    (String::from("ccc"), LabelData::new("ccc")),
+                ],
+                _expl_state: Default::default()
+            },
+        );
+    }
+
+    // TODO
+    // - Add constructor
+    // - Widget test
+    // - Reconciliation
+    // - Event test
 }

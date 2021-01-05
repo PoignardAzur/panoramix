@@ -196,7 +196,7 @@ pub struct FlexParams {
 }
 
 #[derive(Clone, Copy)]
-pub(crate) enum Axis {
+pub enum Axis {
     Horizontal,
     Vertical,
 }

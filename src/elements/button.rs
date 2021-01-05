@@ -8,10 +8,10 @@ use druid::widget::Click;
 use druid::widget::ControllerHost;
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
-pub struct Button<ExplicitState>(pub ButtonTarget<ExplicitState>);
+pub struct Button<ExplicitState>(pub ButtonData<ExplicitState>);
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
-pub struct ButtonTarget<ParentComponentState>(
+pub struct ButtonData<ParentComponentState>(
     pub String,
     pub std::marker::PhantomData<ParentComponentState>,
 );
@@ -21,23 +21,23 @@ pub struct ButtonTarget<ParentComponentState>(
 
 impl<ExplicitState> Button<ExplicitState> {
     pub fn new(text: impl Into<String>) -> Button<ExplicitState> {
-        Button(ButtonTarget(text.into(), Default::default()))
+        Button(ButtonData(text.into(), Default::default()))
     }
 }
 
 impl<ExplicitState> ElementTree<ExplicitState> for Button<ExplicitState> {
     type Event = ButtonPressed;
     type AggregateComponentState = ();
-    type BuildOutput = ButtonTarget<ExplicitState>;
+    type BuildOutput = ButtonData<ExplicitState>;
 
-    fn build(self, _prev_state: ()) -> (ButtonTarget<ExplicitState>, ()) {
+    fn build(self, _prev_state: ()) -> (ButtonData<ExplicitState>, ()) {
         (self.0, ())
     }
 }
 
 pub struct ButtonPressed();
 
-impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonTarget<ParentComponentState> {
+impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonData<ParentComponentState> {
     type Event = ButtonPressed;
     type DomState = Id;
     type AggregateComponentState = ();
@@ -81,4 +81,28 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonTarget<Par
             None
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_button() {
+        let button = Button::<()>::new("Hello");
+        let (button_data, _) = button.clone().build(());
+        assert_eq!(
+            button,
+            Button(ButtonData(String::from("Hello"), Default::default()))
+        );
+        assert_eq!(
+            button_data,
+            ButtonData(String::from("Hello"), Default::default())
+        );
+    }
+
+    // TODO
+    // - Id test (??)
+    // - Event test
+    // - Widget test
 }

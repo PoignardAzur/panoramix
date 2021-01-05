@@ -4,34 +4,41 @@ use crate::widgets::SingleWidget;
 
 use druid::widget as druid_w;
 
-pub struct Label<ExplicitState>(pub LabelTarget<ExplicitState>);
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct Label<ExplicitState>(pub LabelData<ExplicitState>);
 
-impl<ExplicitState> Label<ExplicitState> {
-    pub fn new(text: impl Into<String>) -> Label<ExplicitState> {
-        Label(LabelTarget(text.into(), Default::default()))
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct LabelTarget<ParentComponentState>(
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct LabelData<ParentComponentState>(
     pub String,
     pub std::marker::PhantomData<ParentComponentState>,
 );
 
 //
-// --- TRAIT IMPLS
+// --- IMPLS
+
+impl<ExplicitState> Label<ExplicitState> {
+    pub fn new(text: impl Into<String>) -> Label<ExplicitState> {
+        Label(LabelData(text.into(), Default::default()))
+    }
+}
+
+impl<ParentComponentState> LabelData<ParentComponentState> {
+    pub fn new(text: impl Into<String>) -> LabelData<ParentComponentState> {
+        LabelData(text.into(), Default::default())
+    }
+}
 
 impl<ExplicitState> ElementTree<ExplicitState> for Label<ExplicitState> {
     type Event = ();
     type AggregateComponentState = ();
-    type BuildOutput = LabelTarget<ExplicitState>;
+    type BuildOutput = LabelData<ExplicitState>;
 
-    fn build(self, _prev_state: ()) -> (LabelTarget<ExplicitState>, ()) {
+    fn build(self, _prev_state: ()) -> (LabelData<ExplicitState>, ()) {
         (self.0, ())
     }
 }
 
-impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelTarget<ParentComponentState> {
+impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<ParentComponentState> {
     type Event = ();
     type DomState = Id;
     type AggregateComponentState = ();
@@ -64,4 +71,35 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelTarget<Pare
     ) -> Option<()> {
         None
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_label() {
+        let label = Label::<()>::new("Hello");
+        let (label_data, _) = label.clone().build(());
+        assert_eq!(
+            label,
+            Label(LabelData(String::from("Hello"), Default::default()))
+        );
+        assert_eq!(
+            label_data,
+            LabelData(String::from("Hello"), Default::default())
+        );
+    }
+
+    #[test]
+    fn new_label_data() {
+        let label_data = LabelData::<()>::new("Hello");
+        assert_eq!(
+            label_data,
+            LabelData(String::from("Hello"), Default::default())
+        );
+    }
+
+    // TODO
+    // - Widget test
 }

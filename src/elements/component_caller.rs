@@ -16,7 +16,8 @@ pub struct ComponentCaller<
     pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-pub struct ComponentCallerTarget<
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct ComponentCallerData<
     ParentComponentState,
     ChildComponentState: Default,
     Child: VirtualDom<ChildComponentState>,
@@ -27,11 +28,60 @@ pub struct ComponentCallerTarget<
 );
 
 impl<
+        ExplicitState,
+        CompExplicitState,
+        Props,
+        ReturnedTree: ElementTree<CompExplicitState>,
+        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
+    > ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+{
+    pub fn prepare(
+        component: Comp,
+        props: Props,
+    ) -> ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState> {
+        ComponentCaller {
+            component,
+            props,
+            _state: Default::default(),
+            _tree: Default::default(),
+            _expl_state: Default::default(),
+        }
+    }
+}
+
+impl<
+        ExplicitState,
+        CompExplicitState: Default,
+        Props,
+        ReturnedTree: ElementTree<CompExplicitState>,
+        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
+    > ElementTree<ExplicitState>
+    for ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+{
+    type Event = ReturnedTree::Event;
+    type AggregateComponentState = (CompExplicitState, ReturnedTree::AggregateComponentState);
+    type BuildOutput =
+        ComponentCallerData<ExplicitState, CompExplicitState, ReturnedTree::BuildOutput>;
+
+    fn build(
+        self,
+        prev_state: Self::AggregateComponentState,
+    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        let element_tree = (self.component)(&prev_state.0, self.props);
+        let (element, component_state) = element_tree.build(prev_state.1);
+        (
+            ComponentCallerData(element, Default::default(), Default::default()),
+            (prev_state.0, component_state),
+        )
+    }
+}
+
+impl<
         ParentComponentState,
         ChildComponentState: Default,
         Child: VirtualDom<ChildComponentState>,
     > VirtualDom<ParentComponentState>
-    for ComponentCallerTarget<ParentComponentState, ChildComponentState, Child>
+    for ComponentCallerData<ParentComponentState, ChildComponentState, Child>
 {
     type Event = Child::Event;
     type DomState = Child::DomState;
@@ -68,51 +118,19 @@ impl<
     }
 }
 
-impl<
-        ExplicitState,
-        CompExplicitState,
-        Props,
-        ReturnedTree: ElementTree<CompExplicitState>,
-        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
-    > ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
-{
-    pub fn prepare(
-        component: Comp,
-        props: Props,
-    ) -> ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState> {
-        ComponentCaller {
-            component,
-            props,
-            _state: Default::default(),
-            _tree: Default::default(),
-            _expl_state: Default::default(),
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /*
+        #[test]
+        fn new_label() {
+            let label = Label::<()>::new("Hello");
+            let (label_dom, _) = label.clone().build(());
+            assert_eq!(label, Label(LabelData(String::from("Hello"), Default::default())));
+            assert_eq!(label_dom, LabelData(String::from("Hello"), Default::default()));
         }
-    }
-}
-
-impl<
-        ExplicitState,
-        CompExplicitState: Default,
-        Props,
-        ReturnedTree: ElementTree<CompExplicitState>,
-        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
-    > ElementTree<ExplicitState>
-    for ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
-{
-    type Event = ReturnedTree::Event;
-    type AggregateComponentState = (CompExplicitState, ReturnedTree::AggregateComponentState);
-    type BuildOutput =
-        ComponentCallerTarget<ExplicitState, CompExplicitState, ReturnedTree::BuildOutput>;
-
-    fn build(
-        self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
-        let element_tree = (self.component)(&prev_state.0, self.props);
-        let (element, component_state) = element_tree.build(prev_state.1);
-        (
-            ComponentCallerTarget(element, Default::default(), Default::default()),
-            (prev_state.0, component_state),
-        )
-    }
+    */
+    // TODO
+    // - Add tests
 }

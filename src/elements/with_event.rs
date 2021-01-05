@@ -93,3 +93,20 @@ impl<
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /*
+        #[test]
+        fn new_label() {
+            let label = Label::<()>::new("Hello");
+            let (label_dom, _) = label.clone().build(());
+            assert_eq!(label, Label(LabelData(String::from("Hello"), Default::default())));
+            assert_eq!(label_dom, LabelData(String::from("Hello"), Default::default()));
+        }
+    */
+    // TODO
+    // - Add tests
+}

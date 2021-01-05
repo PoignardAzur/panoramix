@@ -4,7 +4,6 @@ use crate::flex2::FlexParams;
 use crate::glue::DruidAppData;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    Widget,
 };
 
 pub trait WidgetSequence {
@@ -13,8 +12,6 @@ pub trait WidgetSequence {
 
 // Essentially a boilerplate trait for SingleWidget
 pub trait FlexWidget {
-    // TODO remove
-    fn widget(&mut self) -> &mut dyn Widget<DruidAppData>;
     fn flex_params(&self) -> FlexParams;
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env);

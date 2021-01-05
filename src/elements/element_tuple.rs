@@ -3,6 +3,7 @@ use crate::widgets::WidgetTuple;
 
 use crate::element_tree::{ElementTree, VirtualDom};
 
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ElementTuple<
     E0: ElementTree<ExplicitState>,
     E1: ElementTree<ExplicitState>,
@@ -17,7 +18,8 @@ pub struct ElementTuple<
     pub std::marker::PhantomData<ExplicitState>,
 );
 
-pub struct ElementTupleTarget<
+#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+pub struct ElementTupleData<
     C0: VirtualDom<ParentComponentState>,
     C1: VirtualDom<ParentComponentState>,
     C2: VirtualDom<ParentComponentState>,
@@ -46,7 +48,7 @@ impl<
         E2::AggregateComponentState,
         E3::AggregateComponentState,
     );
-    type BuildOutput = ElementTupleTarget<
+    type BuildOutput = ElementTupleData<
         E0::BuildOutput,
         E1::BuildOutput,
         E2::BuildOutput,
@@ -64,7 +66,7 @@ impl<
         let (t3, s3) = self.3.build(prev_state.3);
 
         (
-            ElementTupleTarget(t0, t1, t2, t3, Default::default()),
+            ElementTupleData(t0, t1, t2, t3, Default::default()),
             (s0, s1, s2, s3),
         )
     }
@@ -83,8 +85,7 @@ impl<
         C2: VirtualDom<ParentComponentState>,
         C3: VirtualDom<ParentComponentState>,
         ParentComponentState,
-    > VirtualDom<ParentComponentState>
-    for ElementTupleTarget<C0, C1, C2, C3, ParentComponentState>
+    > VirtualDom<ParentComponentState> for ElementTupleData<C0, C1, C2, C3, ParentComponentState>
 {
     type Event = EventEnum<C0::Event, C1::Event, C2::Event, C3::Event>;
     type DomState = (C0::DomState, C1::DomState, C2::DomState, C3::DomState);
@@ -157,4 +158,37 @@ impl<
         // process_event should return an iterator or an observable instead.
         event0.or(event1).or(event2).or(event3)
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::elements::label::{Label, LabelData};
+
+    #[test]
+    fn new_tuple() {
+        let tuple: ElementTuple<_, _, _, _, ()> = ElementTuple(
+            Label::new("aaa"),
+            Label::new("bbb"),
+            Label::new("ccc"),
+            Label::new("ddd"),
+            Default::default(),
+        );
+        let (tuple_data, _) = tuple.clone().build(Default::default());
+        assert_eq!(
+            tuple_data,
+            ElementTupleData(
+                LabelData::new("aaa"),
+                LabelData::new("bbb"),
+                LabelData::new("ccc"),
+                LabelData::new("ddd"),
+                Default::default(),
+            ),
+        );
+    }
+
+    // TODO
+    // - Add constructor
+    // - Widget test
+    // - Event test
 }

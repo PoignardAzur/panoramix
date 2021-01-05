@@ -17,10 +17,6 @@ impl<W: Widget<DruidAppData>> SingleWidget<W> {
 }
 
 impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
-    fn widget(&mut self) -> &mut dyn Widget<DruidAppData> {
-        self.0.widget_mut()
-    }
-
     fn flex_params(&self) -> FlexParams {
         FlexParams {
             flex: 1.0,
