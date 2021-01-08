@@ -14,4 +14,5 @@ git = "https://github.com/linebender/druid"
 rev = "6bb0f51adb7fe55d06fb53c2649f3ff0842aa6b2"
 
 [dependencies]
+either= "1.6.1"
 log = "0.4.11"

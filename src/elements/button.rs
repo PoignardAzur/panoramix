@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn new_button() {
         let button = Button::<()>::new("Hello");
-        let (button_data, _) = button.clone().build(());
+        let (button_data, ()) = button.clone().build(());
         assert_eq!(
             button,
             Button(ButtonData(String::from("Hello"), Default::default()))

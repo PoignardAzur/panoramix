@@ -1,19 +1,26 @@
+use either::{Left, Right};
+use std::collections::VecDeque;
+
+use crate::element_tree::{ElementTree, VirtualDom};
+use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
 
-use crate::element_tree::{ElementTree, VirtualDom};
+// TODO - Add arbitrary index types
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ElementList<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
-    pub elements: Vec<(String, Child)>,
-    pub _state: std::marker::PhantomData<ExplicitState>,
+    pub children: Vec<(String, Child)>,
+    pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ElementListData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
-    pub elements: Vec<(String, Item)>,
+    pub children: Vec<(String, Item)>,
     pub _expl_state: std::marker::PhantomData<ParentComponentState>,
 }
+
+// ----
 
 impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState>
     for ElementList<Child, ExplicitState>
@@ -26,31 +33,52 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
         self,
         prev_state: Self::AggregateComponentState,
     ) -> (Self::BuildOutput, Self::AggregateComponentState) {
-        let mut prev_state = prev_state;
-        let (elements, state): (Vec<_>, Vec<_>) = self
-            .elements
+        // FIXE - Handle duplicate keys
+        // TODO - Add special case when Child::AggregateComponentState.sizeof() == 0
+
+        let mutation = compute_diff(&prev_state, &self.children);
+        let mut prev_state_or_default = prev_state;
+
+        // TODO - reserve
+        // TODO - O(N * M) for N the list size and M the mutation count
+        // Use better algo
+        let mut index_diff = 0_isize;
+        for mutation_item in &mutation.items {
+            let index = (mutation_item.index as isize + index_diff) as usize;
+            let range = index..(index + mutation_item.removed_count);
+
+            // Calling .last() runs the entire iterator, which performs the splice
+            let _ = prev_state_or_default
+                .splice(
+                    range,
+                    mutation_item
+                        .inserted_keys
+                        .iter()
+                        .cloned()
+                        .map(|key| (key, Default::default())),
+                )
+                .last();
+
+            index_diff += mutation_item.inserted_keys.len() as isize;
+            index_diff -= mutation_item.removed_count as isize;
+        }
+
+        let (children, new_state): (Vec<_>, Vec<_>) = self
+            .children
             .into_iter()
-            .map(|(key, item)| {
-                // FIXME, inefficient, and only works if items are only ever
-                // appended at the end and keys are unique
-                let existing = prev_state
-                    .iter_mut()
-                    .find(|(other_key, _)| key == *other_key);
-                let (new_elem, new_state) = if let Some(comp_prev_state) = existing {
-                    let (_, comp_prev_state) = std::mem::take(comp_prev_state);
-                    item.build(comp_prev_state)
-                } else {
-                    item.build(Default::default())
-                };
-                ((key.clone(), new_elem), (key, new_state))
+            .zip(prev_state_or_default)
+            .map(|((key, item), (_key, item_prev_state))| {
+                let (new_item, new_state) = item.build(item_prev_state);
+                ((key.clone(), new_item), (key, new_state))
             })
             .unzip();
+
         (
             ElementListData {
-                elements,
+                children,
                 _expl_state: Default::default(),
             },
-            state,
+            new_state,
         )
     }
 }
@@ -70,7 +98,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
         let (widgets, dom_state): (Vec<_>, Vec<_>) = self
-            .elements
+            .children
             .iter()
             .map(|(_, elem)| elem.init_tree())
             .unzip();
@@ -88,50 +116,81 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         prev_state: Self::DomState,
         widget: &mut Self::TargetWidgetSeq,
     ) -> Self::DomState {
-        let mut updated_state: Vec<_> = other
-            .elements
+        let mutation = compute_diff(&other.children, &self.children);
+
+        let mut prev_data: Vec<_> = other
+            .children
             .iter()
             .zip(prev_state)
-            .map(|item| {
-                let (other_id, other_elem) = item.0;
-                let elem_prev_state = item.1;
-
-                if let Some(((_, elem), ref mut widget)) = self
-                    .elements
-                    .iter()
-                    .zip(widget.children.iter_mut())
-                    .find(|((id, _), _)| id == other_id)
-                {
-                    let elem_state = elem.apply_diff(other_elem, elem_prev_state, widget);
-
-                    Some(elem_state)
-                } else {
-                    None
-                }
-            })
-            .flatten()
+            .zip(widget.children.iter_mut())
+            .map(Left)
             .collect();
 
-        let (mut new_widgets, mut new_state): (Vec<_>, Vec<_>) = self
-            .elements
+        // TODO - reserve
+        // TODO - O(N * M) for N the list size and M the mutation count
+        // Use better algo
+        // TODO - simplify
+        let mut index_diff = 0_isize;
+        for mutation_item in &mutation.items {
+            let index = (mutation_item.index as isize + index_diff) as usize;
+            let spliced_range = index..(index + mutation_item.removed_count);
+
+            let new_range = index..(index + mutation_item.inserted_keys.len());
+
+            // Calling .last() runs the entire iterator, which performs the splice
+            let _ = prev_data
+                .splice(spliced_range, self.children[new_range].iter().map(Right))
+                .last();
+
+            index_diff += mutation_item.inserted_keys.len() as isize;
+            index_diff -= mutation_item.removed_count as isize;
+        }
+
+        let mut widgets_to_insert = VecDeque::new();
+        let mut updated_state: Vec<_> = self
+            .children
             .iter()
-            .map(|(id, elem)| {
-                if other
-                    .elements
-                    .iter()
-                    .find(|(other_id, _)| id == other_id)
-                    .is_none()
-                {
-                    Some(elem.init_tree())
-                } else {
-                    None
+            .zip(prev_data)
+            .map(|item| {
+                let (key, child_data) = item.0;
+                let child_prev_data = item.1;
+                match child_prev_data {
+                    Left(prev_data) => {
+                        let (((_key, child_prev_data), child_prev_state), child_widget) = prev_data;
+                        child_data.apply_diff(child_prev_data, child_prev_state, child_widget)
+                    }
+                    Right(new_data) => {
+                        let (_key, child_data) = new_data;
+                        let (new_widget_seq, new_state) = child_data.init_tree();
+                        widgets_to_insert.push_back(new_widget_seq);
+                        new_state
+                    }
                 }
             })
-            .flatten()
-            .unzip();
+            .collect();
 
-        updated_state.append(&mut new_state);
-        widget.children.append(&mut new_widgets);
+        // TODO - reserve
+        // TODO - O(N * M) for N the list size and M the mutation count
+        // Use better algo
+        // TODO - simplify
+        let mut index_diff = 0_isize;
+        for mutation_item in &mutation.items {
+            let index = (mutation_item.index as isize + index_diff) as usize;
+            let spliced_range = index..(index + mutation_item.removed_count);
+
+            // Calling .last() runs the entire iterator, which performs the splice
+            //.insert(index, new_widget_seq);
+            let _ = widget
+                .children
+                .splice(
+                    spliced_range,
+                    widgets_to_insert.drain(0..mutation_item.inserted_keys.len()),
+                )
+                .last();
+
+            index_diff += mutation_item.inserted_keys.len() as isize;
+            index_diff -= mutation_item.removed_count as isize;
+        }
 
         updated_state
     }
@@ -144,7 +203,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         _cx: &mut GlobalEventCx,
     ) -> Option<(usize, Item::Event)> {
         for (i, elem_data) in self
-            .elements
+            .children
             .iter()
             .zip(children_state)
             .zip(dom_state)
@@ -167,23 +226,39 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 mod tests {
     use super::*;
     use crate::elements::label::{Label, LabelData};
+    use crate::elements::{MockState, WithMockState};
+
+    fn new_label_list<State>(names: &[&str]) -> ElementList<Label<State>, State> {
+        let children: Vec<_> = names
+            .into_iter()
+            .map(|name| (String::from(*name), Label::new(*name)))
+            .collect();
+        ElementList {
+            children,
+            _expl_state: Default::default(),
+        }
+    }
 
     #[test]
     fn new_list() {
-        let list = ElementList::<_, ()> {
-            elements: vec![
-                (String::from("aaa"), Label::new("aaa")),
-                (String::from("bbb"), Label::new("bbb")),
-                (String::from("ccc"), Label::new("ccc")),
-            ],
-            _state: Default::default(),
-        };
+        let list = new_label_list::<()>(&["aaa", "bbb", "ccc"]);
         let (list_data, _) = list.clone().build(Default::default());
 
         assert_eq!(
+            list,
+            ElementList::<_, ()> {
+                children: vec![
+                    (String::from("aaa"), Label::new("aaa")),
+                    (String::from("bbb"), Label::new("bbb")),
+                    (String::from("ccc"), Label::new("ccc")),
+                ],
+                _expl_state: Default::default(),
+            },
+        );
+        assert_eq!(
             list_data,
             ElementListData {
-                elements: vec![
+                children: vec![
                     (String::from("aaa"), LabelData::new("aaa")),
                     (String::from("bbb"), LabelData::new("bbb")),
                     (String::from("ccc"), LabelData::new("ccc")),
@@ -193,9 +268,43 @@ mod tests {
         );
     }
 
+    fn new_label_list_with_state<State>(
+        names: &[&str],
+    ) -> ElementList<WithMockState<Label<State>, State>, State> {
+        let children: Vec<_> = names
+            .iter()
+            .map(|name| (String::from(*name), Label::new(*name).with_mock_state()))
+            .collect();
+        ElementList {
+            children,
+            _expl_state: Default::default(),
+        }
+    }
+
+    #[test]
+    fn new_list_with_existing_state() {
+        let list = new_label_list_with_state::<MockState>(&["aaa", "bbb", "ccc"]);
+        let list_state = vec![
+            (String::from("bbb"), (MockState::new("Foobar"), ())),
+            (
+                String::from("notfound"),
+                (MockState::new("ThisShouldBeDropped"), ()),
+            ),
+        ];
+        let (_, new_list_state) = list.clone().build(list_state);
+
+        assert_eq!(
+            new_list_state,
+            vec![
+                (String::from("aaa"), (MockState::new("HelloWorld"), ())),
+                (String::from("bbb"), (MockState::new("Foobar"), ())),
+                (String::from("ccc"), (MockState::new("HelloWorld"), ())),
+            ],
+        );
+    }
+
     // TODO
     // - Add constructor
     // - Widget test
-    // - Reconciliation
     // - Event test
 }

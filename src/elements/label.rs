@@ -20,11 +20,19 @@ impl<ExplicitState> Label<ExplicitState> {
     pub fn new(text: impl Into<String>) -> Label<ExplicitState> {
         Label(LabelData(text.into(), Default::default()))
     }
+
+    pub fn with_mock_state(self) -> super::WithMockState<Self, ExplicitState> {
+        super::WithMockState::new(self)
+    }
 }
 
 impl<ParentComponentState> LabelData<ParentComponentState> {
     pub fn new(text: impl Into<String>) -> LabelData<ParentComponentState> {
         LabelData(text.into(), Default::default())
+    }
+
+    pub fn with_mock_state(self) -> super::WithMockStateData<Self, ParentComponentState> {
+        super::WithMockStateData::new(self)
     }
 }
 
@@ -56,9 +64,12 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<Parent
         (SingleWidget::new(label), id)
     }
 
-    fn apply_diff(&self, _other: &Self, prev_state: Id, widget: &mut Self::TargetWidgetSeq) -> Id {
+    fn apply_diff(&self, other: &Self, prev_state: Id, widget: &mut Self::TargetWidgetSeq) -> Id {
         let text = &self.0;
-        widget.0.widget_mut().set_text(text.clone());
+        let prev_text = &other.0;
+        if text != prev_text {
+            widget.0.widget_mut().set_text(text.clone());
+        }
         prev_state
     }
 
@@ -80,7 +91,7 @@ mod tests {
     #[test]
     fn new_label() {
         let label = Label::<()>::new("Hello");
-        let (label_data, _) = label.clone().build(());
+        let (label_data, ()) = label.clone().build(());
         assert_eq!(
             label,
             Label(LabelData(String::from("Hello"), Default::default()))

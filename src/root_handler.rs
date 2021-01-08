@@ -117,7 +117,6 @@ impl<
         data: &DruidAppData,
         env: &Env,
     ) {
-        println!("PingPong");
         if let Some(widget) = &mut self.widget {
             widget.lifecycle(ctx, event, data, env);
         } else {

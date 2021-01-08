@@ -77,8 +77,8 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         })
         .collect();
     let list_view = ElementList {
-        elements: list_view_data,
-        _state: Default::default(),
+        children: list_view_data,
+        _expl_state: Default::default(),
     };
 
     ElementTuple(
