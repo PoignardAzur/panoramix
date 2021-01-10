@@ -1,10 +1,9 @@
 use capitaine::element_tree::ElementTree;
 use capitaine::element_tree_ext::ElementTreeExt;
-use capitaine::elements::{
-    Button, ButtonPressed, ComponentCaller, ElementList, ElementTuple, EventEnum, Label,
-};
+use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, EventEnum, Label};
 use capitaine::glue::DruidAppData;
 use capitaine::root_handler::RootHandler;
+use capitaine::Group;
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
@@ -28,18 +27,18 @@ struct RowProps {
 
 fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, Event = RowEvent> {
     let age = *state;
-    ElementTuple(
+    Group!(
         Button::new("Select").with_event(|state: &mut u16, _| {
             *state += 1;
         }),
         Label::new(if props.is_selected { " [*]" } else { " [ ]" }),
         Label::new(format!("{} - age={}", &props.list_item.text, age)),
         Label::new(format!("id={}", props.list_item.id)),
-        Default::default(),
     )
 }
 
-type AppEvent = EventEnum<ButtonPressed, ButtonPressed, ButtonPressed, (usize, RowEvent)>;
+type AppEvent =
+    EventEnum<ButtonPressed, ButtonPressed, ButtonPressed, ButtonPressed, (usize, RowEvent)>;
 
 fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Event = AppEvent> {
     let button_create = Button::new("Create").with_event(|state: &mut AppState, _| {
@@ -47,6 +46,16 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
             text: "new item".to_string(),
             id: state.next_id,
         });
+        state.next_id += 1;
+    });
+    let button_insert = Button::new("Insert").with_event(|state: &mut AppState, _| {
+        state.data.insert(
+            0,
+            ListItem {
+                text: "inserted item".to_string(),
+                id: state.next_id,
+            },
+        );
         state.next_id += 1;
     });
     let button_delete = Button::new("Delete").with_event(|state: &mut AppState, _| {
@@ -81,15 +90,15 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         _expl_state: Default::default(),
     };
 
-    ElementTuple(
+    Group!(
         button_create,
+        button_insert,
         button_delete,
         button_update,
         list_view.with_event(|state: &mut AppState, event| {
             let i = event.0;
             state.selected_row = Some(i);
         }),
-        Default::default(),
     )
 }
 

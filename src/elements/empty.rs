@@ -1,14 +1,12 @@
-use crate::glue::{DruidAppData, GlobalEventCx};
-use crate::widgets::SingleWidget;
+use crate::glue::GlobalEventCx;
+use crate::widgets::EmptySequence;
 
 use crate::element_tree::{ElementTree, VirtualDom};
-use druid::widget as druid_w;
-use druid::WidgetPod;
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Default, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct EmptyElement<ExplicitState = ()>(pub std::marker::PhantomData<ExplicitState>);
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Default, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct EmptyElementData<ParentComponentState>(
     pub std::marker::PhantomData<ParentComponentState>,
 );
@@ -36,12 +34,12 @@ impl<ParentComponentState> VirtualDom<ParentComponentState>
     type DomState = ();
     type AggregateComponentState = ();
 
-    type TargetWidgetSeq = SingleWidget<druid_w::Flex<DruidAppData>>;
+    type TargetWidgetSeq = EmptySequence;
 
     fn update_value(&mut self, _other: Self) {}
 
     fn init_tree(&self) -> (Self::TargetWidgetSeq, ()) {
-        (SingleWidget(WidgetPod::new(druid_w::Flex::row())), ())
+        (EmptySequence, ())
     }
 
     fn apply_diff(

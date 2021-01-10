@@ -147,12 +147,12 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         }
 
         let mut widgets_to_insert = VecDeque::new();
-        let mut updated_state: Vec<_> = self
+        let updated_state: Vec<_> = self
             .children
             .iter()
             .zip(prev_data)
             .map(|item| {
-                let (key, child_data) = item.0;
+                let (_key, child_data) = item.0;
                 let child_prev_data = item.1;
                 match child_prev_data {
                     Left(prev_data) => {
