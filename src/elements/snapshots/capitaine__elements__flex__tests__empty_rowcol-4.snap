@@ -1,0 +1,13 @@
+---
+source: src/elements/flex.rs
+expression: column_data
+---
+(
+    ColumnData {
+        child: EmptyElementData(
+            PhantomData,
+        ),
+        _expl_state: PhantomData,
+    },
+    (),
+)

@@ -1,0 +1,14 @@
+---
+source: src/elements/flex.rs
+expression: column
+---
+Column {
+    child: MyElementTuple_1(
+        Label(
+            "Greetings",
+            PhantomData,
+        ),
+        PhantomData,
+    ),
+    _expl_state: PhantomData,
+}

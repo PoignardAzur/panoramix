@@ -1,0 +1,63 @@
+---
+source: src/elements/flex.rs
+expression: column_data
+---
+(
+    ColumnData {
+        child: ElementTupleData(
+            LabelData(
+                "Greetings",
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            PhantomData,
+        ),
+        _expl_state: PhantomData,
+    },
+    (
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+        (),
+    ),
+)

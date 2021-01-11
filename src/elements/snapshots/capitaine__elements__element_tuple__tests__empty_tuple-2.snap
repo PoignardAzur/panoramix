@@ -1,0 +1,10 @@
+---
+source: src/elements/element_tuple.rs
+expression: tuple_data
+---
+(
+    EmptyElementData(
+        PhantomData,
+    ),
+    (),
+)

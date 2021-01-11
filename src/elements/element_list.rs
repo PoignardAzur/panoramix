@@ -5,16 +5,19 @@ use crate::element_tree::{ElementTree, VirtualDom};
 use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
+use derivative::Derivative;
 
 // TODO - Add arbitrary index types
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct ElementList<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
     pub children: Vec<(String, Child)>,
     pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct ElementListData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
     pub children: Vec<(String, Item)>,
     pub _expl_state: std::marker::PhantomData<ParentComponentState>,
@@ -225,8 +228,10 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::element_tree::assign_empty_state_type;
     use crate::elements::label::{Label, LabelData};
     use crate::elements::{MockState, WithMockState};
+    use insta::assert_debug_snapshot;
 
     fn new_label_list<State>(names: &[&str]) -> ElementList<Label<State>, State> {
         let children: Vec<_> = names
@@ -237,35 +242,6 @@ mod tests {
             children,
             _expl_state: Default::default(),
         }
-    }
-
-    #[test]
-    fn new_list() {
-        let list = new_label_list::<()>(&["aaa", "bbb", "ccc"]);
-        let (list_data, _) = list.clone().build(Default::default());
-
-        assert_eq!(
-            list,
-            ElementList::<_, ()> {
-                children: vec![
-                    (String::from("aaa"), Label::new("aaa")),
-                    (String::from("bbb"), Label::new("bbb")),
-                    (String::from("ccc"), Label::new("ccc")),
-                ],
-                _expl_state: Default::default(),
-            },
-        );
-        assert_eq!(
-            list_data,
-            ElementListData {
-                children: vec![
-                    (String::from("aaa"), LabelData::new("aaa")),
-                    (String::from("bbb"), LabelData::new("bbb")),
-                    (String::from("ccc"), LabelData::new("ccc")),
-                ],
-                _expl_state: Default::default()
-            },
-        );
     }
 
     fn new_label_list_with_state<State>(
@@ -282,14 +258,45 @@ mod tests {
     }
 
     #[test]
+    fn empty_list() {
+        let list = new_label_list(&[]);
+        let (list_data, _) = list.clone().build(Default::default());
+
+        assert_debug_snapshot!(list);
+        assert_debug_snapshot!(list_data);
+
+        assign_empty_state_type(&list);
+    }
+
+    #[test]
+    fn new_list() {
+        let list = new_label_list(&["aaa", "bbb", "ccc"]);
+        let (list_data, _) = list.clone().build(Default::default());
+
+        assert_debug_snapshot!(list);
+        assert_debug_snapshot!(list_data);
+
+        assert_eq!(
+            list_data,
+            ElementListData {
+                children: vec![
+                    (String::from("aaa"), LabelData::new("aaa")),
+                    (String::from("bbb"), LabelData::new("bbb")),
+                    (String::from("ccc"), LabelData::new("ccc")),
+                ],
+                _expl_state: Default::default()
+            },
+        );
+
+        assign_empty_state_type(&list);
+    }
+
+    #[test]
     fn new_list_with_existing_state() {
         let list = new_label_list_with_state::<MockState>(&["aaa", "bbb", "ccc"]);
         let list_state = vec![
             (String::from("bbb"), (MockState::new("Foobar"), ())),
-            (
-                String::from("notfound"),
-                (MockState::new("ThisShouldBeDropped"), ()),
-            ),
+            (String::from("notfound"), (MockState::new("IAmError"), ())),
         ];
         let (_, new_list_state) = list.clone().build(list_state);
 

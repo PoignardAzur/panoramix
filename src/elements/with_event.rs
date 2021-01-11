@@ -22,6 +22,68 @@ pub struct WithEventTarget<
     _state: std::marker::PhantomData<ExplicitState>,
 }
 
+// ---
+
+impl<
+        Child: ElementTree<ExplicitState>,
+        ExplicitState,
+        Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
+    > std::fmt::Debug for WithEvent<Child, Cb, ExplicitState>
+where
+    Child: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WithEvent")
+            .field("element", &self.element)
+            .field("callback", &std::any::type_name::<Cb>())
+            .field("_state", &self._state)
+            .finish()
+    }
+}
+
+impl<
+        Child: VirtualDom<ParentComponentState>,
+        Cb: Fn(&mut ParentComponentState, &Child::Event),
+        ParentComponentState,
+    > std::fmt::Debug for WithEventTarget<Child, Cb, ParentComponentState>
+where
+    Child: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WithEvent")
+            .field("element", &self.element)
+            .field("callback", &std::any::type_name::<Cb>())
+            .field("_state", &self._state)
+            .finish()
+    }
+}
+
+impl<
+        Child: ElementTree<ExplicitState>,
+        ExplicitState,
+        Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
+    > ElementTree<ExplicitState> for WithEvent<Child, Cb, ExplicitState>
+{
+    type Event = Child::Event;
+    type AggregateComponentState = Child::AggregateComponentState;
+    type BuildOutput = WithEventTarget<Child::BuildOutput, Cb, ExplicitState>;
+
+    fn build(
+        self,
+        prev_state: Self::AggregateComponentState,
+    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        let (element, state) = self.element.build(prev_state);
+        (
+            WithEventTarget {
+                element,
+                callback: self.callback,
+                _state: Default::default(),
+            },
+            state,
+        )
+    }
+}
+
 impl<
         Child: VirtualDom<ParentComponentState>,
         Cb: Fn(&mut ParentComponentState, &Child::Event),
@@ -68,45 +130,4 @@ impl<
     }
 }
 
-impl<
-        Child: ElementTree<ExplicitState>,
-        ExplicitState,
-        Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
-    > ElementTree<ExplicitState> for WithEvent<Child, Cb, ExplicitState>
-{
-    type Event = Child::Event;
-    type AggregateComponentState = Child::AggregateComponentState;
-    type BuildOutput = WithEventTarget<Child::BuildOutput, Cb, ExplicitState>;
-
-    fn build(
-        self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
-        let (element, state) = self.element.build(prev_state);
-        (
-            WithEventTarget {
-                element,
-                callback: self.callback,
-                _state: Default::default(),
-            },
-            state,
-        )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /*
-        #[test]
-        fn new_label() {
-            let label = Label::<()>::new("Hello");
-            let (label_dom, _) = label.clone().build(());
-            assert_eq!(label, Label(LabelData(String::from("Hello"), Default::default())));
-            assert_eq!(label_dom, LabelData(String::from("Hello"), Default::default()));
-        }
-    */
-    // TODO
-    // - Add tests
-}
+// Note - Tests related to with_event will be in component_caller.rs for now

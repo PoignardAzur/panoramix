@@ -2,6 +2,8 @@
 #![allow(non_camel_case_types)]
 #![rustfmt::skip]
 
+use derivative::Derivative;
+
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
 
@@ -9,7 +11,8 @@ use crate::element_tree::{ElementTree, VirtualDom};
 
 use crate::elements::EmptyElementData;
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound=""))]
 pub struct ElementTupleData<
     C0: VirtualDom<ParentComponentState>,
     C1: VirtualDom<ParentComponentState>,
@@ -51,7 +54,8 @@ macro_rules! replace_expr {
 macro_rules! declare_stuff {
     ( $TupleName:ident ; $( $Type:ident ),* ; $( $Remainder:ident ),* ; $( $index:tt ),* ) => {
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound=""))]
 pub struct $TupleName<
     $(
         $Type: ElementTree<ExplicitState>,
@@ -199,6 +203,10 @@ declare_stuff!{
 #[macro_export]
 macro_rules! make_group {
 
+    ( $(,)? ) => {
+        $crate::elements::EmptyElement::new()
+    };
+
     ( $e0:expr $(,)? ) => {
         $crate::elements::MyElementTuple_1(
             $e0,
@@ -275,8 +283,7 @@ macro_rules! make_group {
 }
 
 
-
-
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum EventEnum<
 T0 = (),
 T1 = (),
@@ -540,80 +547,54 @@ impl<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::elements::label::{Label, LabelData};
+    use crate::elements::label::Label;
     use crate::element_tree::assign_empty_state_type;
+    use insta::assert_debug_snapshot;
 
     #[test]
-    fn new_tuple() {
-        let tuple = make_group!(
-            Label::new("aaa"),
-            Label::new("bbb"),
-            Label::new("ccc"),
-            Label::new("ddd")
-        );
-        let (tuple_data, _) = tuple.clone().build(Default::default());
+    fn empty_tuple() {
+        let tuple = make_group!();
+        let tuple_data = tuple.clone().build(Default::default());
+
+        assert_debug_snapshot!(tuple);
+        assert_debug_snapshot!(tuple_data);
+
         assign_empty_state_type(&tuple);
-
-        assert_eq!(
-            tuple,
-            MyElementTuple_4(
-                Label::new("aaa"),
-                Label::new("bbb"),
-                Label::new("ccc"),
-                Label::new("ddd"),
-                Default::default(),
-            ),
-        );
-        assert_eq!(
-            tuple_data,
-            ElementTupleData(
-                LabelData::new("aaa"),
-                LabelData::new("bbb"),
-                LabelData::new("ccc"),
-                LabelData::new("ddd"),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-
-                Default::default(),
-            ),
-        );
     }
 
     #[test]
-    fn new_tuple_2() {
-        let tuple = make_group!(
-            Label::new("aaa"),
-            Label::new("bbb"),
-        );
-        let (tuple_data, _) = tuple.clone().build(Default::default());
+    fn new_tuple_single_item() {
+        let tuple = make_group!(Label::new("Hello"));
+        let tuple_data = tuple.clone().build(Default::default());
+
+        assert_debug_snapshot!(tuple);
+        assert_debug_snapshot!(tuple_data);
+
         assign_empty_state_type(&tuple);
-
-        assert_eq!(
-            tuple_data,
-            ElementTupleData(
-                LabelData::new("aaa"),
-                LabelData::new("bbb"),
-                EmptyElementData(Default::default()),
-                EmptyElementData(Default::default()),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-                Default::default(),
-
-                Default::default(),
-            ),
-        );
     }
+
+    #[test]
+    fn new_tuple_multi_items() {
+        let tuple = make_group!(
+            Label::new("Hello"),
+            Label::new("Hello2"),
+            Label::new("Hello3")
+        );
+        let tuple_trailing_comma = make_group!(
+            Label::new("Hello"),
+            Label::new("Hello2"),
+            Label::new("Hello3"),
+        );
+        let tuple_data = tuple.clone().build(Default::default());
+
+        assert_debug_snapshot!(tuple);
+        assert_debug_snapshot!(tuple_data);
+
+        assert_eq!(tuple, tuple_trailing_comma);
+
+        assign_empty_state_type(&tuple);
+    }
+
 
     // TODO
     // - Add constructor

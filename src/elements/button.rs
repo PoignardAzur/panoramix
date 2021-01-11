@@ -3,14 +3,17 @@ use crate::glue::{DruidAppData, GlobalEventCx, Id};
 use crate::element_tree::{ElementTree, VirtualDom};
 use crate::widgets::{make_button, SingleWidget};
 
+use derivative::Derivative;
 use druid::widget as druid_w;
 use druid::widget::Click;
 use druid::widget::ControllerHost;
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
-pub struct Button<ExplicitState>(pub ButtonData<ExplicitState>);
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
+pub struct Button<ExplicitState>(pub String, pub std::marker::PhantomData<ExplicitState>);
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct ButtonData<ParentComponentState>(
     pub String,
     pub std::marker::PhantomData<ParentComponentState>,
@@ -21,7 +24,7 @@ pub struct ButtonData<ParentComponentState>(
 
 impl<ExplicitState> Button<ExplicitState> {
     pub fn new(text: impl Into<String>) -> Button<ExplicitState> {
-        Button(ButtonData(text.into(), Default::default()))
+        Button(text.into(), Default::default())
     }
 }
 
@@ -31,7 +34,7 @@ impl<ExplicitState> ElementTree<ExplicitState> for Button<ExplicitState> {
     type BuildOutput = ButtonData<ExplicitState>;
 
     fn build(self, _prev_state: ()) -> (ButtonData<ExplicitState>, ()) {
-        (self.0, ())
+        (ButtonData(self.0, Default::default()), ())
     }
 }
 
@@ -86,19 +89,23 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonData<Paren
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::element_tree::assign_empty_state_type;
+    use insta::assert_debug_snapshot;
 
     #[test]
     fn new_button() {
-        let button = Button::<()>::new("Hello");
+        let button = Button::new("Hello");
         let (button_data, ()) = button.clone().build(());
-        assert_eq!(
-            button,
-            Button(ButtonData(String::from("Hello"), Default::default()))
-        );
+
+        assert_debug_snapshot!(button);
+        assert_debug_snapshot!(button_data);
+
         assert_eq!(
             button_data,
             ButtonData(String::from("Hello"), Default::default())
         );
+
+        assign_empty_state_type(&button);
     }
 
     // TODO

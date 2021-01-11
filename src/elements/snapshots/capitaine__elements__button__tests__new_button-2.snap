@@ -1,0 +1,8 @@
+---
+source: src/elements/button.rs
+expression: button_data
+---
+ButtonData(
+    "Hello",
+    PhantomData,
+)

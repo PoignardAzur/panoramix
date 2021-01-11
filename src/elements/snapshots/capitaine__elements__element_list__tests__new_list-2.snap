@@ -1,0 +1,30 @@
+---
+source: src/elements/element_list.rs
+expression: list_data
+---
+ElementListData {
+    children: [
+        (
+            "aaa",
+            LabelData(
+                "aaa",
+                PhantomData,
+            ),
+        ),
+        (
+            "bbb",
+            LabelData(
+                "bbb",
+                PhantomData,
+            ),
+        ),
+        (
+            "ccc",
+            LabelData(
+                "ccc",
+                PhantomData,
+            ),
+        ),
+    ],
+    _expl_state: PhantomData,
+}

@@ -1,7 +1,8 @@
 use crate::glue::GlobalEventCx;
 use crate::widget_sequence::WidgetSequence;
+use std::fmt::Debug;
 
-pub trait ElementTree<ExplicitState> {
+pub trait ElementTree<ExplicitState>: Debug {
     type Event;
     type AggregateComponentState: Default;
     type BuildOutput: VirtualDom<
@@ -17,7 +18,7 @@ pub trait ElementTree<ExplicitState> {
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
-pub trait VirtualDom<ParentComponentState> {
+pub trait VirtualDom<ParentComponentState>: Debug {
     type Event;
     type AggregateComponentState: Default;
 
@@ -50,6 +51,7 @@ pub trait VirtualDom<ParentComponentState> {
     ) -> Option<Self::Event>;
 }
 
+// Useed in unit tests
 #[allow(dead_code)]
 pub(crate) fn assign_state_type<ExplicitState, Elem: ElementTree<ExplicitState>>(_elem: &Elem) {}
 

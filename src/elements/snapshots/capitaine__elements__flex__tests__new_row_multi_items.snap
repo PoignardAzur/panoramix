@@ -1,0 +1,22 @@
+---
+source: src/elements/flex.rs
+expression: row
+---
+Row {
+    child: MyElementTuple_3(
+        Label(
+            "Hello",
+            PhantomData,
+        ),
+        Label(
+            "Hello2",
+            PhantomData,
+        ),
+        Label(
+            "Hello3",
+            PhantomData,
+        ),
+        PhantomData,
+    ),
+    _expl_state: PhantomData,
+}

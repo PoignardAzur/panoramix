@@ -7,28 +7,33 @@ use crate::widgets::flex::Axis;
 use crate::widgets::flex::CrossAxisAlignment;
 use crate::widgets::flex::Flex;
 use crate::widgets::flex::MainAxisAlignment;
+use derivative::Derivative;
 
 // TODO - merge row and column
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct Row<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
     pub child: Child,
     pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct RowData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
     pub child: Item,
     pub _expl_state: std::marker::PhantomData<ParentComponentState>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct Column<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
     pub child: Child,
     pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct ColumnData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
     pub child: Item,
     pub _expl_state: std::marker::PhantomData<ParentComponentState>,
@@ -232,12 +237,62 @@ macro_rules! make_column {
     };
 }
 
-// TODO - Add actual tests
-
-#[allow(dead_code)]
-fn quick_test() {
+#[cfg(test)]
+mod tests {
+    use super::*;
     use crate::element_tree::assign_empty_state_type;
     use crate::elements::Label;
-    let _row = make_row!(Label::new("Hello"));
-    assign_empty_state_type(&_row);
+    use insta::assert_debug_snapshot;
+
+    #[test]
+    fn empty_rowcol() {
+        let row = make_row!();
+        let column = make_column!();
+        let row_data = row.clone().build(Default::default());
+        let column_data = column.clone().build(Default::default());
+
+        assert_debug_snapshot!(row);
+        assert_debug_snapshot!(column);
+        assert_debug_snapshot!(row_data);
+        assert_debug_snapshot!(column_data);
+
+        assign_empty_state_type(&row);
+        assign_empty_state_type(&column);
+    }
+
+    #[test]
+    fn new_rowcol_single_item() {
+        let row = make_row!(Label::new("Hello"));
+        let column = make_column!(Label::new("Greetings"));
+        let row_data = row.clone().build(Default::default());
+        let column_data = column.clone().build(Default::default());
+
+        assert_debug_snapshot!(row);
+        assert_debug_snapshot!(column);
+        assert_debug_snapshot!(row_data);
+        assert_debug_snapshot!(column_data);
+
+        assign_empty_state_type(&row);
+        assign_empty_state_type(&column);
+    }
+
+    #[test]
+    fn new_row_multi_items() {
+        let row = make_row!(
+            Label::new("Hello"),
+            Label::new("Hello2"),
+            Label::new("Hello3"),
+        );
+        let row_data = row.clone().build(Default::default());
+
+        assert_debug_snapshot!(row);
+        assert_debug_snapshot!(row_data);
+
+        assign_empty_state_type(&row);
+    }
+
+    // TODO
+    // - Id test (??)
+    // - Event test
+    // - Widget test
 }

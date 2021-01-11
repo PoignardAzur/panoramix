@@ -1,21 +1,26 @@
 use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use ::derivative::Derivative;
+
 // Used for testing
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct WithMockState<Child: ElementTree<ExplicitState>, ExplicitState>(
     pub Child,
     pub std::marker::PhantomData<ExplicitState>,
 );
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct WithMockStateData<Child: VirtualDom<ParentComponentState>, ParentComponentState>(
     pub Child,
     pub std::marker::PhantomData<ParentComponentState>,
 );
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct MockState(String);
 
 //

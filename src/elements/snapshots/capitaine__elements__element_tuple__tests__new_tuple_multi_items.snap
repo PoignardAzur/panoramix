@@ -1,0 +1,19 @@
+---
+source: src/elements/element_tuple.rs
+expression: tuple
+---
+MyElementTuple_3(
+    Label(
+        "Hello",
+        PhantomData,
+    ),
+    Label(
+        "Hello2",
+        PhantomData,
+    ),
+    Label(
+        "Hello3",
+        PhantomData,
+    ),
+    PhantomData,
+)

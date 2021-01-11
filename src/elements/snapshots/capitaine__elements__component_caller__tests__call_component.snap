@@ -1,0 +1,56 @@
+---
+source: src/elements/component_caller.rs
+expression: component_result
+---
+ComponentCallerData(
+    RowData {
+        child: ElementTupleData(
+            WithEvent {
+                element: ButtonData(
+                    "Press me",
+                    PhantomData,
+                ),
+                callback: "capitaine::elements::component_caller::tests::my_component::{{closure}}",
+                _state: PhantomData,
+            },
+            LabelData(
+                "Values: 999 16",
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+            ),
+            PhantomData,
+        ),
+        _expl_state: PhantomData,
+    },
+    PhantomData,
+    PhantomData,
+)

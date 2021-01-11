@@ -3,10 +3,14 @@ use crate::widgets::EmptySequence;
 
 use crate::element_tree::{ElementTree, VirtualDom};
 
-#[derive(Default, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+use derivative::Derivative;
+
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct EmptyElement<ExplicitState = ()>(pub std::marker::PhantomData<ExplicitState>);
 
-#[derive(Default, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct EmptyElementData<ParentComponentState>(
     pub std::marker::PhantomData<ParentComponentState>,
 );

@@ -2,12 +2,15 @@ use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::{DruidAppData, GlobalEventCx, Id};
 use crate::widgets::SingleWidget;
 
+use derivative::Derivative;
 use druid::widget as druid_w;
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
-pub struct Label<ExplicitState>(pub LabelData<ExplicitState>);
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
+pub struct Label<ExplicitState>(pub String, pub std::marker::PhantomData<ExplicitState>);
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct LabelData<ParentComponentState>(
     pub String,
     pub std::marker::PhantomData<ParentComponentState>,
@@ -18,7 +21,7 @@ pub struct LabelData<ParentComponentState>(
 
 impl<ExplicitState> Label<ExplicitState> {
     pub fn new(text: impl Into<String>) -> Label<ExplicitState> {
-        Label(LabelData(text.into(), Default::default()))
+        Label(text.into(), Default::default())
     }
 
     pub fn with_mock_state(self) -> super::WithMockState<Self, ExplicitState> {
@@ -42,7 +45,7 @@ impl<ExplicitState> ElementTree<ExplicitState> for Label<ExplicitState> {
     type BuildOutput = LabelData<ExplicitState>;
 
     fn build(self, _prev_state: ()) -> (LabelData<ExplicitState>, ()) {
-        (self.0, ())
+        (LabelData(self.0, Default::default()), ())
     }
 }
 
@@ -87,28 +90,20 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<Parent
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::element_tree::assign_empty_state_type;
+    use insta::assert_debug_snapshot;
 
     #[test]
     fn new_label() {
-        let label = Label::<()>::new("Hello");
+        let label = Label::new("Hello");
         let (label_data, ()) = label.clone().build(());
-        assert_eq!(
-            label,
-            Label(LabelData(String::from("Hello"), Default::default()))
-        );
-        assert_eq!(
-            label_data,
-            LabelData(String::from("Hello"), Default::default())
-        );
-    }
 
-    #[test]
-    fn new_label_data() {
-        let label_data = LabelData::<()>::new("Hello");
-        assert_eq!(
-            label_data,
-            LabelData(String::from("Hello"), Default::default())
-        );
+        assert_debug_snapshot!(label);
+        assert_debug_snapshot!(label_data);
+
+        assert_eq!(label_data, LabelData::new("Hello"));
+
+        assign_empty_state_type(&label);
     }
 
     // TODO

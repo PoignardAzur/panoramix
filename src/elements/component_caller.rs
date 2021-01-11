@@ -2,6 +2,8 @@ use crate::glue::GlobalEventCx;
 
 use crate::element_tree::{ElementTree, VirtualDom};
 
+use derivative::Derivative;
+
 pub struct ComponentCaller<
     CompExplicitState,
     Props,
@@ -16,7 +18,8 @@ pub struct ComponentCaller<
     pub _expl_state: std::marker::PhantomData<ExplicitState>,
 }
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
 pub struct ComponentCallerData<
     ParentComponentState,
     ChildComponentState: Default,
@@ -46,6 +49,26 @@ impl<
             _tree: Default::default(),
             _expl_state: Default::default(),
         }
+    }
+}
+
+impl<
+        ExplicitState,
+        CompExplicitState,
+        Props,
+        ReturnedTree: ElementTree<CompExplicitState>,
+        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
+    > std::fmt::Debug
+    for ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ComponentCaller")
+            .field("component", &std::any::type_name::<Comp>())
+            .field("props", &"<props>")
+            .field("_state", &self._state)
+            .field("_tree", &self._tree)
+            .field("_expl_state", &self._expl_state)
+            .finish()
     }
 }
 
@@ -121,16 +144,42 @@ impl<
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::element_tree::assign_empty_state_type;
+    use crate::element_tree_ext::ElementTreeExt;
+    use crate::elements::Button;
+    use crate::elements::ButtonPressed;
+    use crate::elements::EventEnum;
+    use crate::elements::Label;
+    use crate::make_row;
+    use insta::assert_debug_snapshot;
 
-    /*
-        #[test]
-        fn new_label() {
-            let label = Label::<()>::new("Hello");
-            let (label_dom, _) = label.clone().build(());
-            assert_eq!(label, Label(LabelData(String::from("Hello"), Default::default())));
-            assert_eq!(label_dom, LabelData(String::from("Hello"), Default::default()));
-        }
-    */
+    type MyEvent = EventEnum<ButtonPressed, ()>;
+
+    // TODO - add tracing, and detect when this function is called by tests
+    fn my_component(state: &u16, props: i64) -> impl ElementTree<u16, Event = MyEvent> {
+        make_row!(
+            Button::new("Press me").with_event(|state: &mut u16, _| {
+                *state += 1;
+            }),
+            Label::new(format!("Values: {} {}", state, props)),
+        )
+    }
+
+    #[test]
+    fn call_component() {
+        let comp_caller = ComponentCaller::prepare(my_component, 16);
+        assign_empty_state_type(&comp_caller);
+
+        let prev_state = (999, Default::default());
+        let (component_result, component_state) = comp_caller.build(prev_state);
+
+        assert_eq!(component_state.0, 999);
+        assert_debug_snapshot!(component_result);
+
+        // TODO - process_event
+    }
+
     // TODO
-    // - Add tests
+    // - Widget test
+    // - Events
 }
