@@ -3,7 +3,7 @@ use capitaine::element_tree_ext::ElementTreeExt;
 use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, EventEnum, Label};
 use capitaine::glue::DruidAppData;
 use capitaine::root_handler::RootHandler;
-use capitaine::Group;
+use capitaine::{make_group, make_row};
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
@@ -27,7 +27,7 @@ struct RowProps {
 
 fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, Event = RowEvent> {
     let age = *state;
-    Group!(
+    make_row!(
         Button::new("Select").with_event(|state: &mut u16, _| {
             *state += 1;
         }),
@@ -90,7 +90,7 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         _expl_state: Default::default(),
     };
 
-    Group!(
+    make_group!(
         button_create,
         button_insert,
         button_delete,

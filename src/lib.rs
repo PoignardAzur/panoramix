@@ -8,7 +8,6 @@
 pub mod element_tree;
 pub mod element_tree_ext;
 pub mod elements;
-pub mod flex2;
 pub mod glue;
 pub mod root_handler;
 pub mod widget_sequence;

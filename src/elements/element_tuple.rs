@@ -197,7 +197,7 @@ declare_stuff!{
 }
 
 #[macro_export]
-macro_rules! Group {
+macro_rules! make_group {
 
     ( $e0:expr $(,)? ) => {
         $crate::elements::MyElementTuple_1(
@@ -541,16 +541,19 @@ impl<
 mod tests {
     use super::*;
     use crate::elements::label::{Label, LabelData};
+    use crate::element_tree::assign_empty_state_type;
 
     #[test]
     fn new_tuple() {
-        let tuple: MyElementTuple_4<_, _, _, _, ()> = Group!(
+        let tuple = make_group!(
             Label::new("aaa"),
             Label::new("bbb"),
             Label::new("ccc"),
             Label::new("ddd")
         );
         let (tuple_data, _) = tuple.clone().build(Default::default());
+        assign_empty_state_type(&tuple);
+
         assert_eq!(
             tuple,
             MyElementTuple_4(
@@ -582,15 +585,15 @@ mod tests {
         );
     }
 
-
     #[test]
     fn new_tuple_2() {
-        let tuple: MyElementTuple_2<_, _, ()> = MyElementTuple_2(
+        let tuple = make_group!(
             Label::new("aaa"),
             Label::new("bbb"),
-            Default::default(),
         );
         let (tuple_data, _) = tuple.clone().build(Default::default());
+        assign_empty_state_type(&tuple);
+
         assert_eq!(
             tuple_data,
             ElementTupleData(

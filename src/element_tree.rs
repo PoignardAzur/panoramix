@@ -50,24 +50,8 @@ pub trait VirtualDom<ParentComponentState> {
     ) -> Option<Self::Event>;
 }
 
-/*
-use crate::glue::{DruidAppData, GlobalEventCx, Id};
+#[allow(dead_code)]
+pub(crate) fn assign_state_type<ExplicitState, Elem: ElementTree<ExplicitState>>(_elem: &Elem) {}
 
-use crate::react_widgets::make_button;
-use crate::react_widgets::{SingleWidget, WidgetList, WidgetSequence, WidgetTuple};
-
-// TODO - refactor away WidgetPod
-use druid::widget as druid_w;
-use druid::WidgetPod;
-
-
-use druid::kurbo::{Rect, Size};
-
-use crate::flex2::FlexParams;
-use crate::glue::DruidAppData;
-use druid::widget::Button;
-use druid::{
-    BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    Widget, WidgetPod,
-};
-*/
+#[allow(dead_code)]
+pub(crate) fn assign_empty_state_type(_elem: &impl ElementTree<()>) {}

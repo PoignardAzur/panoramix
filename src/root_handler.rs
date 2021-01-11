@@ -1,7 +1,7 @@
 use crate::glue::{DruidAppData, GlobalEventCx};
 
 use crate::element_tree::{ElementTree, VirtualDom};
-use crate::flex2;
+use crate::widgets::flex;
 
 // TODO
 use crate::elements::component_caller::ComponentCaller;
@@ -23,7 +23,7 @@ pub struct RootHandler<
     pub vdom_state: Option<<ReturnedTree::BuildOutput as VirtualDom<RootCompState>>::DomState>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
     pub widget:
-        Option<WidgetPod<DruidAppData, flex2::Flex<WidgetSeqOf<RootCompState, ReturnedTree>>>>,
+        Option<WidgetPod<DruidAppData, flex::Flex<WidgetSeqOf<RootCompState, ReturnedTree>>>>,
 }
 
 impl<
@@ -76,10 +76,10 @@ impl<
             }
         } else {
             let (widget_seq, vdom_data) = vdom.init_tree();
-            let flex_widget = WidgetPod::new(flex2::Flex {
-                direction: flex2::Axis::Vertical,
-                cross_alignment: flex2::CrossAxisAlignment::Center,
-                main_alignment: flex2::MainAxisAlignment::Start,
+            let flex_widget = WidgetPod::new(flex::Flex {
+                direction: flex::Axis::Vertical,
+                cross_alignment: flex::CrossAxisAlignment::Center,
+                main_alignment: flex::MainAxisAlignment::Start,
                 fill_major_axis: false,
                 children_seq: widget_seq,
             });
