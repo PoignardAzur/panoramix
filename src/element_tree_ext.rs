@@ -1,19 +1,28 @@
 use crate::element_tree::{ElementTree, VirtualDom};
 use crate::elements::with_event::WithEvent;
 
-pub trait ElementTreeExt<ExplicitState>: ElementTree<ExplicitState> + Sized {
+pub trait ElementTreeExt<ComponentState, ComponentEvent>:
+    ElementTree<ComponentState, ComponentEvent> + Sized
+{
     fn with_event<
-        Cb: Fn(&mut ExplicitState, &<Self::BuildOutput as VirtualDom<ExplicitState>>::Event),
+        Cb: Fn(
+            &mut ComponentState,
+            &<Self::BuildOutput as VirtualDom<ComponentState, ComponentEvent>>::Event,
+        ),
     >(
         self,
         callback: Cb,
-    ) -> WithEvent<Self, Cb, ExplicitState> {
+    ) -> WithEvent<ComponentState, ComponentEvent, Self, Cb> {
         WithEvent {
             element: self,
             callback,
-            _state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 }
 
-impl<ExplicitState, ET: ElementTree<ExplicitState>> ElementTreeExt<ExplicitState> for ET {}
+impl<ComponentState, ComponentEvent, ET: ElementTree<ComponentState, ComponentEvent>>
+    ElementTreeExt<ComponentState, ComponentEvent> for ET
+{
+}

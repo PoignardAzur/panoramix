@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
@@ -10,36 +10,47 @@ use tracing::instrument;
 
 // TODO - Add arbitrary index types
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
-pub struct ElementList<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
+#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
+pub struct ElementList<
+    Child: ElementTree<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
     pub children: Vec<(String, Child)>,
-    pub _expl_state: std::marker::PhantomData<ExplicitState>,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
-pub struct ElementListData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
-    pub children: Vec<(String, Item)>,
-    pub _expl_state: std::marker::PhantomData<ParentComponentState>,
+#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
+pub struct ElementListData<
+    Child: VirtualDom<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
+    pub children: Vec<(String, Child)>,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 // ----
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState>
-    for ElementList<Child, ExplicitState>
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    ElementTree<ComponentState, ComponentEvent>
+    for ElementList<Child, ComponentState, ComponentEvent>
 {
     type Event = (usize, Child::Event);
-    type AggregateComponentState = Vec<(String, Child::AggregateComponentState)>;
-    type BuildOutput = ElementListData<Child::BuildOutput, ExplicitState>;
+    type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
+    type BuildOutput = ElementListData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
     #[instrument(name = "List", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         // FIXE - Handle duplicate keys
-        // TODO - Add special case when Child::AggregateComponentState.sizeof() == 0
+        // TODO - Add special case when Child::AggregateChildrenState.sizeof() == 0
 
         let mutation = compute_diff(&prev_state, &self.children);
         let mut prev_state_or_default = prev_state;
@@ -81,21 +92,20 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
         (
             ElementListData {
                 children,
-                _expl_state: Default::default(),
+                ..Default::default()
             },
             new_state,
         )
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for ElementListData<Item, ParentComponentState>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    VirtualDom<ComponentState, ComponentEvent>
+    for ElementListData<Child, ComponentState, ComponentEvent>
 {
-    type Event = (usize, Item::Event);
-    type DomState = Vec<Item::DomState>;
-    type AggregateComponentState = Vec<(String, Item::AggregateComponentState)>;
-
-    type TargetWidgetSeq = WidgetList<Item::TargetWidgetSeq>;
+    type Event = (usize, Child::Event);
+    type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
+    type TargetWidgetSeq = WidgetList<Child::TargetWidgetSeq>;
 
     #[instrument(name = "List", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -103,34 +113,28 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     }
 
     #[instrument(name = "List", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
-        let (widgets, dom_state): (Vec<_>, Vec<_>) = self
-            .children
-            .iter()
-            .map(|(_, elem)| elem.init_tree())
-            .unzip();
-
-        (WidgetList { children: widgets }, dom_state)
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
+        WidgetList {
+            children: self
+                .children
+                .iter()
+                .map(|(_key, elem)| elem.init_tree())
+                .collect(),
+        }
     }
 
     // FIXME
     // This only works if we assume that items are ever only added at the end of the list.
     // Sounds perfectly reasonable to me.
     // (seriously though, a serious implementation would try to do whatever crochet::List::run does)
-    #[instrument(name = "List", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Self::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Self::DomState {
+    #[instrument(name = "List", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
         let mutation = compute_diff(&other.children, &self.children);
 
         let mut prev_data: Vec<_> = other
             .children
             .iter()
-            .zip(prev_state)
-            .zip(widget.children.iter_mut())
+            .zip(widget_seq.children.iter_mut())
             .map(Left)
             .collect();
 
@@ -155,27 +159,21 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         }
 
         let mut widgets_to_insert = VecDeque::new();
-        let updated_state: Vec<_> = self
-            .children
-            .iter()
-            .zip(prev_data)
-            .map(|item| {
-                let (_key, child_data) = item.0;
-                let child_prev_data = item.1;
-                match child_prev_data {
-                    Left(prev_data) => {
-                        let (((_key, child_prev_data), child_prev_state), child_widget) = prev_data;
-                        child_data.apply_diff(child_prev_data, child_prev_state, child_widget)
-                    }
-                    Right(new_data) => {
-                        let (_key, child_data) = new_data;
-                        let (new_widget_seq, new_state) = child_data.init_tree();
-                        widgets_to_insert.push_back(new_widget_seq);
-                        new_state
-                    }
+        for item in self.children.iter().zip(prev_data) {
+            let (_key, child_data) = item.0;
+            let child_prev_data = item.1;
+            match child_prev_data {
+                Left(prev_data) => {
+                    let ((_key, child_prev_data), child_widget_seq) = prev_data;
+                    child_data.reconcile(child_prev_data, child_widget_seq);
                 }
-            })
-            .collect();
+                Right(new_data) => {
+                    let (_key, child_data) = new_data;
+                    let new_widget_seq = child_data.init_tree();
+                    widgets_to_insert.push_back(new_widget_seq);
+                }
+            }
+        }
 
         // TODO - reserve
         // TODO - O(N * M) for N the list size and M the mutation count
@@ -188,7 +186,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 
             // Calling .last() runs the entire iterator, which performs the splice
             //.insert(index, new_widget_seq);
-            let _ = widget
+            let _ = widget_seq
                 .children
                 .splice(
                     spliced_range,
@@ -199,34 +197,35 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
             index_diff += mutation_item.inserted_keys.len() as isize;
             index_diff -= mutation_item.removed_count as isize;
         }
-
-        updated_state
     }
 
     #[instrument(
         name = "List",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<(usize, Item::Event)> {
-        for (i, elem_data) in self
+    ) -> Option<(usize, Child::Event)> {
+        for (i, child_data) in self
             .children
             .iter()
             .zip(children_state)
-            .zip(dom_state)
+            .zip(widget_seq.children.iter_mut())
             .enumerate()
         {
-            let (_key, element) = elem_data.0 .0;
-            let elem_comp_state = elem_data.0 .1;
-            let elem_dom_state = elem_data.1;
-            if let Some(event) =
-                element.process_event(explicit_state, &mut elem_comp_state.1, elem_dom_state, cx)
-            {
+            let (_key, child) = child_data.0 .0;
+            let child_comp_state = child_data.0 .1;
+            let child_widget_seq = child_data.1;
+            if let Some(event) = child.process_event(
+                component_state,
+                &mut child_comp_state.1,
+                child_widget_seq,
+                cx,
+            ) {
                 return Some((i, event));
             }
         }
@@ -250,7 +249,8 @@ mod tests {
             .collect();
         ElementList {
             children,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 
@@ -263,7 +263,8 @@ mod tests {
             .collect();
         ElementList {
             children,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 
@@ -294,7 +295,8 @@ mod tests {
                     (String::from("bbb"), LabelData::new("bbb")),
                     (String::from("ccc"), LabelData::new("ccc")),
                 ],
-                _expl_state: Default::default()
+                _comp_state: Default::default(),
+                _comp_event: Default::default(),
             },
         );
 

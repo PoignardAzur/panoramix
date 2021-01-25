@@ -5,18 +5,18 @@ use either::{Either, Left, Right};
 use tracing::instrument;
 use tracing_unwrap::OptionExt;
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState>
-    for Option<Child>
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    ElementTree<ComponentState, ComponentEvent> for Option<Child>
 {
     type Event = Child::Event;
-    type AggregateComponentState = Option<Child::AggregateComponentState>;
+    type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type BuildOutput = Option<Child::BuildOutput>;
 
     #[instrument(name = "Option", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         if let Some(child) = self {
             let (output, state) = child.build(prev_state.unwrap_or_default());
             (Some(output), Some(state))
@@ -26,14 +26,12 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for Option<Item>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    VirtualDom<ComponentState, ComponentEvent> for Option<Child>
 {
-    type Event = Item::Event;
-    type AggregateComponentState = Option<Item::AggregateComponentState>;
-
-    type DomState = Option<Item::DomState>;
-    type TargetWidgetSeq = Option<Item::TargetWidgetSeq>;
+    type Event = Child::Event;
+    type AggregateChildrenState = Option<Child::AggregateChildrenState>;
+    type TargetWidgetSeq = Option<Child::TargetWidgetSeq>;
 
     #[instrument(name = "Option", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -41,53 +39,41 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     }
 
     #[instrument(name = "Option", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
         if let Some(child) = self {
-            let (widget_seq, state) = child.init_tree();
-            (Some(widget_seq), Some(state))
+            Some(child.init_tree())
         } else {
-            (None, None)
+            None
         }
     }
 
-    #[instrument(name = "Option", skip(self, other, prev_state, widget_seq))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Self::DomState,
-        widget_seq: &mut Self::TargetWidgetSeq,
-    ) -> Self::DomState {
-        let child = self.as_ref()?;
-
-        if let Some(other_child) = other {
-            Some(child.apply_diff(
-                other_child,
-                prev_state.unwrap_or_log(),
-                &mut widget_seq.as_mut().unwrap_or_log(),
-            ))
-        } else {
-            let (child_widget_seq, child_state) = child.init_tree();
-            *widget_seq = Some(child_widget_seq);
-            Some(child_state)
+    #[instrument(name = "Option", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+        if let Some(child) = self.as_ref() {
+            if let Some(other_child) = other {
+                child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log());
+            } else {
+                *widget_seq = Some(child.init_tree());
+            }
         }
     }
 
     #[instrument(
         name = "Option",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         let child = self.as_ref()?;
         child.process_event(
-            explicit_state,
+            component_state,
             children_state.as_mut().unwrap_or_log(),
-            dom_state.as_mut().unwrap_or_log(),
+            widget_seq.as_mut().unwrap_or_log(),
             cx,
         )
     }
@@ -96,21 +82,22 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 // ----
 
 impl<
-        ExplicitState,
-        ChildLeft: ElementTree<ExplicitState>,
-        ChildRight: ElementTree<ExplicitState>,
-    > ElementTree<ExplicitState> for Either<ChildLeft, ChildRight>
+        ComponentState,
+        ComponentEvent,
+        ChildLeft: ElementTree<ComponentState, ComponentEvent>,
+        ChildRight: ElementTree<ComponentState, ComponentEvent>,
+    > ElementTree<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
 {
     type Event = Either<ChildLeft::Event, ChildRight::Event>;
-    type AggregateComponentState =
-        Option<Either<ChildLeft::AggregateComponentState, ChildRight::AggregateComponentState>>;
+    type AggregateChildrenState =
+        Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type BuildOutput = Either<ChildLeft::BuildOutput, ChildRight::BuildOutput>;
 
     #[instrument(name = "Either", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         match self {
             Left(child) => {
                 let prev_state = prev_state.map_or(None, |ps| ps.left()).unwrap_or_default();
@@ -127,17 +114,16 @@ impl<
 }
 
 impl<
-        ItemLeft: VirtualDom<ParentComponentState>,
-        ItemRight: VirtualDom<ParentComponentState>,
-        ParentComponentState,
-    > VirtualDom<ParentComponentState> for Either<ItemLeft, ItemRight>
+        ComponentState,
+        ComponentEvent,
+        ChildLeft: VirtualDom<ComponentState, ComponentEvent>,
+        ChildRight: VirtualDom<ComponentState, ComponentEvent>,
+    > VirtualDom<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
 {
-    type Event = Either<ItemLeft::Event, ItemRight::Event>;
-    type AggregateComponentState =
-        Option<Either<ItemLeft::AggregateComponentState, ItemRight::AggregateComponentState>>;
-
-    type DomState = Either<ItemLeft::DomState, ItemRight::DomState>;
-    type TargetWidgetSeq = Either<ItemLeft::TargetWidgetSeq, ItemRight::TargetWidgetSeq>;
+    type Event = Either<ChildLeft::Event, ChildRight::Event>;
+    type AggregateChildrenState =
+        Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
+    type TargetWidgetSeq = Either<ChildLeft::TargetWidgetSeq, ChildRight::TargetWidgetSeq>;
 
     #[instrument(name = "Either", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -145,89 +131,72 @@ impl<
     }
 
     #[instrument(name = "Either", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
         match self {
-            Left(child) => {
-                let (output, state) = child.init_tree();
-                (Left(output), Left(state))
-            }
-            Right(child) => {
-                let (output, state) = child.init_tree();
-                (Right(output), Right(state))
-            }
+            Left(child) => Left(child.init_tree()),
+            Right(child) => Right(child.init_tree()),
         }
     }
 
-    #[instrument(name = "Either", skip(self, other, prev_state, widget_seq))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Self::DomState,
-        widget_seq: &mut Self::TargetWidgetSeq,
-    ) -> Self::DomState {
+    #[instrument(name = "Either", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
         match self {
             Left(child) => {
                 if let Right(_) = &other {
-                    let (child_widget_seq, child_state) = child.init_tree();
-                    *widget_seq = Left(child_widget_seq);
-                    return Left(child_state);
+                    *widget_seq = Left(child.init_tree());
                 }
-                Left(child.apply_diff(
+                child.reconcile(
                     other.as_ref().left().unwrap_or_log(),
-                    prev_state.left().unwrap_or_log(),
                     &mut widget_seq.as_mut().left().unwrap_or_log(),
-                ))
+                );
             }
             Right(child) => {
                 if let Left(_) = &other {
-                    let (child_widget_seq, child_state) = child.init_tree();
-                    *widget_seq = Right(child_widget_seq);
-                    return Right(child_state);
+                    *widget_seq = Right(child.init_tree());
                 }
-                Right(child.apply_diff(
+                child.reconcile(
                     other.as_ref().right().unwrap_or_log(),
-                    prev_state.right().unwrap_or_log(),
                     &mut widget_seq.as_mut().right().unwrap_or_log(),
-                ))
+                );
             }
         }
     }
 
     #[instrument(
         name = "Either",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         match self {
             Left(child) => child
                 .process_event(
-                    explicit_state,
+                    component_state,
                     &mut children_state
                         .as_mut()
                         .unwrap_or_log()
                         .as_mut()
                         .left()
                         .unwrap_or_log(),
-                    dom_state.as_mut().left().unwrap_or_log(),
+                    widget_seq.as_mut().left().unwrap_or_log(),
                     cx,
                 )
                 .map(Left),
             Right(child) => child
                 .process_event(
-                    explicit_state,
+                    component_state,
                     &mut children_state
                         .as_mut()
                         .unwrap_or_log()
                         .as_mut()
                         .right()
                         .unwrap_or_log(),
-                    dom_state.as_mut().right().unwrap_or_log(),
+                    widget_seq.as_mut().right().unwrap_or_log(),
                     cx,
                 )
                 .map(Right),

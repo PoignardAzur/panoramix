@@ -5,6 +5,7 @@ expression: tuple_data
 (
     EmptyElementData(
         PhantomData,
+        PhantomData,
     ),
     (),
 )

@@ -9,48 +9,63 @@ ComponentCallerData(
                 element: ButtonData(
                     "Press me",
                     PhantomData,
+                    PhantomData,
                 ),
                 callback: "capitaine::elements::component_caller::tests::my_component::{{closure}}",
-                _state: PhantomData,
             },
             LabelData(
                 "Values: 999 16",
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
                 PhantomData,
             ),
             PhantomData,
+            PhantomData,
         ),
-        _expl_state: PhantomData,
+        _comp_state: PhantomData,
+        _comp_event: PhantomData,
     },
+    PhantomData,
+    PhantomData,
     PhantomData,
     PhantomData,
 )

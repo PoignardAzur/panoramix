@@ -1,4 +1,4 @@
-use capitaine::element_tree::ElementTree;
+use capitaine::element_tree::{ElementTree, NoEvent};
 use capitaine::element_tree_ext::ElementTreeExt;
 use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, EventEnum, Label};
 use capitaine::glue::DruidAppData;
@@ -7,19 +7,20 @@ use capitaine::{make_group, make_row};
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 struct ListItem {
     text: String,
     id: i32,
 }
 
+#[derive(Debug, Default, Clone)]
 struct AppState {
     data: Vec<ListItem>,
     selected_row: Option<usize>,
     next_id: i32,
 }
 
-type RowEvent = EventEnum<ButtonPressed, (), (), ()>;
+type RowEvent = EventEnum<ButtonPressed, NoEvent, NoEvent, NoEvent>;
 struct RowProps {
     list_item: ListItem,
     is_selected: bool,
@@ -87,7 +88,8 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         .collect();
     let list_view = ElementList {
         children: list_view_data,
-        _expl_state: Default::default(),
+        _comp_state: Default::default(),
+        _comp_event: Default::default(),
     };
 
     make_group!(

@@ -9,12 +9,14 @@ ElementList {
             Label(
                 "aaa",
                 PhantomData,
+                PhantomData,
             ),
         ),
         (
             "bbb",
             Label(
                 "bbb",
+                PhantomData,
                 PhantomData,
             ),
         ),
@@ -23,8 +25,10 @@ ElementList {
             Label(
                 "ccc",
                 PhantomData,
+                PhantomData,
             ),
         ),
     ],
-    _expl_state: PhantomData,
+    _comp_state: PhantomData,
+    _comp_event: PhantomData,
 }

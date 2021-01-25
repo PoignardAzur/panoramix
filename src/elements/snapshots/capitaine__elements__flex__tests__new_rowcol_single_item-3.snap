@@ -8,43 +8,57 @@ expression: row_data
             LabelData(
                 "Hello",
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
-            ),
-            EmptyElementData(
                 PhantomData,
             ),
             EmptyElementData(
                 PhantomData,
+                PhantomData,
             ),
             EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
+                PhantomData,
+            ),
+            EmptyElementData(
+                PhantomData,
                 PhantomData,
             ),
             PhantomData,
+            PhantomData,
         ),
-        _expl_state: PhantomData,
+        _comp_state: PhantomData,
+        _comp_event: PhantomData,
     },
     (
         (),

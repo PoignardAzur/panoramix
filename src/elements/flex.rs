@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::flex::{Axis, CrossAxisAlignment, Flex, MainAxisAlignment};
 use crate::widgets::SingleWidget;
@@ -10,99 +10,126 @@ use tracing::instrument;
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
-pub struct Row<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
+pub struct Row<
+    Child: ElementTree<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
     pub child: Child,
-    pub _expl_state: std::marker::PhantomData<ExplicitState>,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
-pub struct RowData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
-    pub child: Item,
-    pub _expl_state: std::marker::PhantomData<ParentComponentState>,
-}
-
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
-pub struct Column<Child: ElementTree<ExplicitState>, ExplicitState = ()> {
+pub struct RowData<
+    Child: VirtualDom<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
     pub child: Child,
-    pub _expl_state: std::marker::PhantomData<ExplicitState>,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
-pub struct ColumnData<Item: VirtualDom<ParentComponentState>, ParentComponentState> {
-    pub child: Item,
-    pub _expl_state: std::marker::PhantomData<ParentComponentState>,
+pub struct Column<
+    Child: ElementTree<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
+    pub child: Child,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+}
+
+#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""))]
+pub struct ColumnData<
+    Child: VirtualDom<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+> {
+    pub child: Child,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 // ----
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> Row<Child, ExplicitState> {
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    Row<Child, ComponentState, ComponentEvent>
+{
     pub fn new(child: Child) -> Self {
         Row {
             child,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState>
-    RowData<Item, ParentComponentState>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    RowData<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Item) -> Self {
+    pub fn new(child: Child) -> Self {
         RowData {
             child,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 }
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> Column<Child, ExplicitState> {
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    Column<Child, ComponentState, ComponentEvent>
+{
     pub fn new(child: Child) -> Self {
         Column {
             child,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState>
-    ColumnData<Item, ParentComponentState>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    ColumnData<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Item) -> Self {
+    pub fn new(child: Child) -> Self {
         ColumnData {
             child,
-            _expl_state: Default::default(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
         }
     }
 }
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState>
-    for Row<Child, ExplicitState>
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    ElementTree<ComponentState, ComponentEvent> for Row<Child, ComponentState, ComponentEvent>
 {
     type Event = Child::Event;
-    type AggregateComponentState = Child::AggregateComponentState;
-    type BuildOutput = RowData<Child::BuildOutput, ExplicitState>;
+    type AggregateChildrenState = Child::AggregateChildrenState;
+    type BuildOutput = RowData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, component_state) = self.child.build(prev_state);
         (RowData::new(element), component_state)
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for RowData<Item, ParentComponentState>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    VirtualDom<ComponentState, ComponentEvent> for RowData<Child, ComponentState, ComponentEvent>
 {
-    type Event = Item::Event;
-    type DomState = Item::DomState;
-    type AggregateComponentState = Item::AggregateComponentState;
+    type Event = Child::Event;
+    type AggregateChildrenState = Child::AggregateChildrenState;
 
-    type TargetWidgetSeq = SingleWidget<Flex<Item::TargetWidgetSeq>>;
+    type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
 
     #[instrument(name = "Flex", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -110,77 +137,70 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     }
 
     #[instrument(name = "Flex", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Item::DomState) {
-        let (widget_seq, dom_state) = self.child.init_tree();
-
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
         // FIXME - Pull params from constructor
         let flex = Flex {
             direction: Axis::Horizontal,
             cross_alignment: CrossAxisAlignment::Center,
             main_alignment: MainAxisAlignment::Start,
             fill_major_axis: false,
-            children_seq: widget_seq,
+            children_seq: self.child.init_tree(),
         };
-        (SingleWidget::new(flex), dom_state)
+        SingleWidget::new(flex)
     }
 
-    #[instrument(name = "Flex", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Item::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Item::DomState {
-        self.child.apply_diff(
-            &other.child,
-            prev_state,
-            &mut widget.0.widget_mut().children_seq,
-        )
+    #[instrument(name = "Flex", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+        self.child
+            .reconcile(&other.child, &mut widget_seq.0.widget_mut().children_seq);
     }
 
     #[instrument(
         name = "Flex",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Item::AggregateComponentState,
-        dom_state: &mut Item::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Child::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Item::Event> {
-        self.child
-            .process_event(explicit_state, children_state, dom_state, cx)
+    ) -> Option<Child::Event> {
+        self.child.process_event(
+            component_state,
+            children_state,
+            &mut widget_seq.0.widget_mut().children_seq,
+            cx,
+        )
     }
 }
 
 // ----
 
-impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState>
-    for Column<Child, ExplicitState>
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    ElementTree<ComponentState, ComponentEvent> for Column<Child, ComponentState, ComponentEvent>
 {
     type Event = Child::Event;
-    type AggregateComponentState = Child::AggregateComponentState;
-    type BuildOutput = ColumnData<Child::BuildOutput, ExplicitState>;
+    type AggregateChildrenState = Child::AggregateChildrenState;
+    type BuildOutput = ColumnData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, component_state) = self.child.build(prev_state);
         (ColumnData::new(element), component_state)
     }
 }
 
-impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for ColumnData<Item, ParentComponentState>
+impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
+    VirtualDom<ComponentState, ComponentEvent>
+    for ColumnData<Child, ComponentState, ComponentEvent>
 {
-    type Event = Item::Event;
-    type DomState = Item::DomState;
-    type AggregateComponentState = Item::AggregateComponentState;
-
-    type TargetWidgetSeq = SingleWidget<Flex<Item::TargetWidgetSeq>>;
+    type Event = Child::Event;
+    type AggregateChildrenState = Child::AggregateChildrenState;
+    type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
 
     #[instrument(name = "Flex", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -188,47 +208,41 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     }
 
     #[instrument(name = "Flex", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Item::DomState) {
-        let (widget_seq, dom_state) = self.child.init_tree();
-
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
         // FIXME - Pull params from constructor
         let flex = Flex {
             direction: Axis::Vertical,
             cross_alignment: CrossAxisAlignment::Center,
             main_alignment: MainAxisAlignment::Start,
             fill_major_axis: false,
-            children_seq: widget_seq,
+            children_seq: self.child.init_tree(),
         };
-        (SingleWidget::new(flex), dom_state)
+        SingleWidget::new(flex)
     }
 
-    #[instrument(name = "Flex", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Item::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Item::DomState {
-        self.child.apply_diff(
-            &other.child,
-            prev_state,
-            &mut widget.0.widget_mut().children_seq,
-        )
+    #[instrument(name = "Flex", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+        self.child
+            .reconcile(&other.child, &mut widget_seq.0.widget_mut().children_seq)
     }
 
     #[instrument(
         name = "Flex",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Item::AggregateComponentState,
-        dom_state: &mut Item::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Child::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Item::Event> {
-        self.child
-            .process_event(explicit_state, children_state, dom_state, cx)
+    ) -> Option<Child::Event> {
+        self.child.process_event(
+            component_state,
+            children_state,
+            &mut widget_seq.0.widget_mut().children_seq,
+            cx,
+        )
     }
 }
 

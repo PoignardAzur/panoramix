@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![rustfmt::skip]
 
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, VirtualDom, NoEvent};
 use crate::elements::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
@@ -13,19 +13,20 @@ use tracing::instrument;
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound=""))]
 pub struct ElementTupleData<
-    C0: VirtualDom<ParentComponentState>,
-    C1: VirtualDom<ParentComponentState>,
-    C2: VirtualDom<ParentComponentState>,
-    C3: VirtualDom<ParentComponentState>,
-    C4: VirtualDom<ParentComponentState>,
-    C5: VirtualDom<ParentComponentState>,
-    C6: VirtualDom<ParentComponentState>,
-    C7: VirtualDom<ParentComponentState>,
-    C8: VirtualDom<ParentComponentState>,
-    C9: VirtualDom<ParentComponentState>,
-    C10: VirtualDom<ParentComponentState>,
-    C11: VirtualDom<ParentComponentState>,
-    ParentComponentState,
+    C0: VirtualDom<ComponentState, ComponentEvent>,
+    C1: VirtualDom<ComponentState, ComponentEvent>,
+    C2: VirtualDom<ComponentState, ComponentEvent>,
+    C3: VirtualDom<ComponentState, ComponentEvent>,
+    C4: VirtualDom<ComponentState, ComponentEvent>,
+    C5: VirtualDom<ComponentState, ComponentEvent>,
+    C6: VirtualDom<ComponentState, ComponentEvent>,
+    C7: VirtualDom<ComponentState, ComponentEvent>,
+    C8: VirtualDom<ComponentState, ComponentEvent>,
+    C9: VirtualDom<ComponentState, ComponentEvent>,
+    C10: VirtualDom<ComponentState, ComponentEvent>,
+    C11: VirtualDom<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
 >(
     pub C0,
     pub C1,
@@ -39,7 +40,8 @@ pub struct ElementTupleData<
     pub C9,
     pub C10,
     pub C11,
-    pub std::marker::PhantomData<ParentComponentState>,
+    pub std::marker::PhantomData<ComponentState>,
+    pub std::marker::PhantomData<ComponentEvent>,
 );
 
 macro_rules! replace_ty {
@@ -57,34 +59,37 @@ macro_rules! declare_stuff {
 #[derivative(Debug(bound=""))]
 pub struct $TupleName<
     $(
-        $Type: ElementTree<ExplicitState>,
+        $Type: ElementTree<ComponentState, ComponentEvent>,
     )*
-    ExplicitState = (),
+    ComponentState = (),
+    ComponentEvent = NoEvent,
 >(
     $(
         pub $Type,
     )*
-    pub std::marker::PhantomData<ExplicitState>,
+    pub std::marker::PhantomData<ComponentState>,
+    pub std::marker::PhantomData<ComponentEvent>,
 );
 
 impl<
-        ExplicitState,
+        ComponentState,
+        ComponentEvent,
         $(
-            $Type: ElementTree<ExplicitState>,
+            $Type: ElementTree<ComponentState, ComponentEvent>,
         )*
-    > ElementTree<ExplicitState> for $TupleName<$($Type,)* ExplicitState>
+    > ElementTree<ComponentState, ComponentEvent> for $TupleName<$($Type,)* ComponentState, ComponentEvent>
 {
     type Event = EventEnum<
         $(
             $Type::Event,
         )*
         $(replace_ty!(($Remainder) >>>
-            ()
+            NoEvent
         ),)*
     >;
-    type AggregateComponentState = (
+    type AggregateChildrenState = (
         $(
-            $Type::AggregateComponentState,
+            $Type::AggregateChildrenState,
         )*
         $(replace_ty!(($Remainder) >>>
             ()
@@ -95,17 +100,18 @@ impl<
             $Type::BuildOutput,
         )*
         $(replace_ty!(($Remainder) >>>
-            EmptyElementData<ExplicitState>
+            EmptyElementData<ComponentState, ComponentEvent>
         ),)*
-        ExplicitState,
+        ComponentState,
+        ComponentEvent,
     >;
 
     #[instrument(name = "Tuple", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
-        let mut state : Self::AggregateComponentState = Default::default();
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
+        let mut state : Self::AggregateChildrenState = Default::default();
 
         let node = ElementTupleData(
             $(
@@ -116,9 +122,10 @@ impl<
                 },
             )*
             $(replace_expr!(($Remainder) >>>
-                EmptyElementData(Default::default())
+                Default::default()
             ),)*
-            Default::default()
+            Default::default(),
+            Default::default(),
         );
 
         (node, state)
@@ -129,73 +136,73 @@ impl<
 }
 
 declare_stuff!{
-    MyElementTuple_1;
+    ElementTuple_1;
     T0; __, __, __, __, __, __, __, __, __, __, __ ;
     0
 }
 
 declare_stuff!{
-    MyElementTuple_2;
+    ElementTuple_2;
     T0, T1; __, __, __, __, __, __, __, __, __, __ ;
     0, 1
 }
 
 declare_stuff!{
-    MyElementTuple_3;
+    ElementTuple_3;
     T0, T1, T2; __, __, __, __, __, __, __, __, __ ;
     0, 1, 2
 }
 
 declare_stuff!{
-    MyElementTuple_4;
+    ElementTuple_4;
     T0, T1, T2, T3; __, __, __, __, __, __, __, __ ;
     0, 1, 2, 3
 }
 
 declare_stuff!{
-    MyElementTuple_5;
+    ElementTuple_5;
     T0, T1, T2, T3, T4; __, __, __, __, __, __, __ ;
     0, 1, 2, 3, 4
 }
 
 declare_stuff!{
-    MyElementTuple_6;
+    ElementTuple_6;
     T0, T1, T2, T3, T4, T5; __, __, __, __, __, __ ;
     0, 1, 2, 3, 4, 5
 }
 
 declare_stuff!{
-    MyElementTuple_7;
+    ElementTuple_7;
     T0, T1, T2, T3, T4, T5, T6; __, __, __, __, __ ;
     0, 1, 2, 3, 4, 5, 6
 }
 
 declare_stuff!{
-    MyElementTuple_8;
+    ElementTuple_8;
     T0, T1, T2, T3, T4, T5, T6, T7; __, __, __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7
 }
 
 declare_stuff!{
-    MyElementTuple_9;
+    ElementTuple_9;
     T0, T1, T2, T3, T4, T5, T6, T7, T8; __, __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8
 }
 
 declare_stuff!{
-    MyElementTuple_10;
+    ElementTuple_10;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9; __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 }
 
 declare_stuff!{
-    MyElementTuple_11;
+    ElementTuple_11;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10; __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 }
 
 declare_stuff!{
-    MyElementTuple_12;
+    ElementTuple_12;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ;;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 }
@@ -208,75 +215,75 @@ macro_rules! make_group {
     };
 
     ( $e0:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_1(
+        $crate::elements::ElementTuple_1(
             $e0,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_2(
+        $crate::elements::ElementTuple_2(
             $e0, $e1,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_3(
+        $crate::elements::ElementTuple_3(
             $e0, $e1, $e2,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_4(
+        $crate::elements::ElementTuple_4(
             $e0, $e1, $e2, $e3,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_5(
+        $crate::elements::ElementTuple_5(
             $e0, $e1, $e2, $e3, $e4,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_6(
+        $crate::elements::ElementTuple_6(
             $e0, $e1, $e2, $e3, $e4, $e5,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_7(
+        $crate::elements::ElementTuple_7(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_8(
+        $crate::elements::ElementTuple_8(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_9(
+        $crate::elements::ElementTuple_9(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_10(
+        $crate::elements::ElementTuple_10(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9,
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_11(
+        $crate::elements::ElementTuple_11(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr, $e11:expr $(,)? ) => {
-        $crate::elements::MyElementTuple_12(
+        $crate::elements::ElementTuple_12(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10, $e11
-            Default::default()
+            Default::default(), Default::default(),
         )
     };
 
@@ -285,18 +292,18 @@ macro_rules! make_group {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum EventEnum<
-T0 = (),
-T1 = (),
-T2 = (),
-T3 = (),
-T4 = (),
-T5 = (),
-T6 = (),
-T7 = (),
-T8 = (),
-T9 = (),
-T10 = (),
-T11 = (),
+T0 = NoEvent,
+T1 = NoEvent,
+T2 = NoEvent,
+T3 = NoEvent,
+T4 = NoEvent,
+T5 = NoEvent,
+T6 = NoEvent,
+T7 = NoEvent,
+T8 = NoEvent,
+T9 = NoEvent,
+T10 = NoEvent,
+T11 = NoEvent,
 > {
     E0(T0),
     E1(T1),
@@ -313,77 +320,65 @@ T11 = (),
 }
 
 impl<
-        C0: VirtualDom<ParentComponentState>,
-        C1: VirtualDom<ParentComponentState>,
-        C2: VirtualDom<ParentComponentState>,
-        C3: VirtualDom<ParentComponentState>,
-        C4: VirtualDom<ParentComponentState>,
-        C5: VirtualDom<ParentComponentState>,
-        C6: VirtualDom<ParentComponentState>,
-        C7: VirtualDom<ParentComponentState>,
-        C8: VirtualDom<ParentComponentState>,
-        C9: VirtualDom<ParentComponentState>,
-        C10: VirtualDom<ParentComponentState>,
-        C11: VirtualDom<ParentComponentState>,
-        ParentComponentState,
-    > VirtualDom<ParentComponentState> for ElementTupleData<
-    C0,
-    C1,
-    C2,
-    C3,
-    C4,
-    C5,
-    C6,
-    C7,
-    C8,
-    C9,
-    C10,
-    C11,
-    ParentComponentState>
+        ComponentState,
+        ComponentEvent,
+        C0: VirtualDom<ComponentState, ComponentEvent>,
+        C1: VirtualDom<ComponentState, ComponentEvent>,
+        C2: VirtualDom<ComponentState, ComponentEvent>,
+        C3: VirtualDom<ComponentState, ComponentEvent>,
+        C4: VirtualDom<ComponentState, ComponentEvent>,
+        C5: VirtualDom<ComponentState, ComponentEvent>,
+        C6: VirtualDom<ComponentState, ComponentEvent>,
+        C7: VirtualDom<ComponentState, ComponentEvent>,
+        C8: VirtualDom<ComponentState, ComponentEvent>,
+        C9: VirtualDom<ComponentState, ComponentEvent>,
+        C10: VirtualDom<ComponentState, ComponentEvent>,
+        C11: VirtualDom<ComponentState, ComponentEvent>,
+    > VirtualDom<ComponentState, ComponentEvent> for ElementTupleData<
+        C0,
+        C1,
+        C2,
+        C3,
+        C4,
+        C5,
+        C6,
+        C7,
+        C8,
+        C9,
+        C10,
+        C11,
+        ComponentState,
+        ComponentEvent,
+    >
 {
     type Event = EventEnum<
-    C0::Event,
-    C1::Event,
-    C2::Event,
-    C3::Event,
-    C4::Event,
-    C5::Event,
-    C6::Event,
-    C7::Event,
-    C8::Event,
-    C9::Event,
-    C10::Event,
-    C11::Event,
+        C0::Event,
+        C1::Event,
+        C2::Event,
+        C3::Event,
+        C4::Event,
+        C5::Event,
+        C6::Event,
+        C7::Event,
+        C8::Event,
+        C9::Event,
+        C10::Event,
+        C11::Event,
     >;
-    type DomState = (
-        C0::DomState,
-        C1::DomState,
-        C2::DomState,
-        C3::DomState,
-        C4::DomState,
-        C5::DomState,
-        C6::DomState,
-        C7::DomState,
-        C8::DomState,
-        C9::DomState,
-        C10::DomState,
-        C11::DomState,
+    type AggregateChildrenState = (
+        C0::AggregateChildrenState,
+        C1::AggregateChildrenState,
+        C2::AggregateChildrenState,
+        C3::AggregateChildrenState,
+        C4::AggregateChildrenState,
+        C5::AggregateChildrenState,
+        C6::AggregateChildrenState,
+        C7::AggregateChildrenState,
+        C8::AggregateChildrenState,
+        C9::AggregateChildrenState,
+        C10::AggregateChildrenState,
+        C11::AggregateChildrenState,
     );
-    type AggregateComponentState = (
-        C0::AggregateComponentState,
-        C1::AggregateComponentState,
-        C2::AggregateComponentState,
-        C3::AggregateComponentState,
-        C4::AggregateComponentState,
-        C5::AggregateComponentState,
-        C6::AggregateComponentState,
-        C7::AggregateComponentState,
-        C8::AggregateComponentState,
-        C9::AggregateComponentState,
-        C10::AggregateComponentState,
-        C11::AggregateComponentState,
-    );
-
     type TargetWidgetSeq = WidgetTuple<
         C0::TargetWidgetSeq,
         C1::TargetWidgetSeq,
@@ -405,129 +400,97 @@ impl<
     }
 
     #[instrument(name = "Tuple", skip(self))]
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
-        let (w0, s0) = self.0.init_tree();
-        let (w1, s1) = self.1.init_tree();
-        let (w2, s2) = self.2.init_tree();
-        let (w3, s3) = self.3.init_tree();
-        let (w4, s4) = self.4.init_tree();
-        let (w5, s5) = self.5.init_tree();
-        let (w6, s6) = self.6.init_tree();
-        let (w7, s7) = self.7.init_tree();
-        let (w8, s8) = self.8.init_tree();
-        let (w9, s9) = self.9.init_tree();
-        let (w10, s10) = self.10.init_tree();
-        let (w11, s11) = self.11.init_tree();
-
-        let widget = WidgetTuple(
-            w0,
-            w1,
-            w2,
-            w3,
-            w4,
-            w5,
-            w6,
-            w7,
-            w8,
-            w9,
-            w10,
-            w11,
-        );
-        let state = (
-            s0,
-            s1,
-            s2,
-            s3,
-            s4,
-            s5,
-            s6,
-            s7,
-            s8,
-            s9,
-            s10,
-            s11,
-        );
-
-        (widget, state)
-    }
-
-    #[instrument(name = "Tuple", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Self::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Self::DomState {
-        (
-            self.0.apply_diff(&other.0, prev_state.0, &mut widget.0),
-            self.1.apply_diff(&other.1, prev_state.1, &mut widget.1),
-            self.2.apply_diff(&other.2, prev_state.2, &mut widget.2),
-            self.3.apply_diff(&other.3, prev_state.3, &mut widget.3),
-            self.4.apply_diff(&other.4, prev_state.4, &mut widget.4),
-            self.5.apply_diff(&other.5, prev_state.5, &mut widget.5),
-            self.6.apply_diff(&other.6, prev_state.6, &mut widget.6),
-            self.7.apply_diff(&other.7, prev_state.7, &mut widget.7),
-            self.8.apply_diff(&other.8, prev_state.8, &mut widget.8),
-            self.9.apply_diff(&other.9, prev_state.9, &mut widget.9),
-            self.10.apply_diff(&other.10, prev_state.10, &mut widget.10),
-            self.11.apply_diff(&other.11, prev_state.11, &mut widget.11),
+    fn init_tree(&self) -> Self::TargetWidgetSeq {
+        WidgetTuple(
+            self.0.init_tree(),
+            self.1.init_tree(),
+            self.2.init_tree(),
+            self.3.init_tree(),
+            self.4.init_tree(),
+            self.5.init_tree(),
+            self.6.init_tree(),
+            self.7.init_tree(),
+            self.8.init_tree(),
+            self.9.init_tree(),
+            self.10.init_tree(),
+            self.11.init_tree(),
         )
     }
 
-    #[instrument(name = "Tuple", skip(self, explicit_state, children_state, dom_state, cx))]
+    #[instrument(name = "Tuple", skip(self, other, widget_seq))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+    ) {
+            self.0.reconcile(&other.0, &mut widget_seq.0);
+            self.1.reconcile(&other.1, &mut widget_seq.1);
+            self.2.reconcile(&other.2, &mut widget_seq.2);
+            self.3.reconcile(&other.3, &mut widget_seq.3);
+            self.4.reconcile(&other.4, &mut widget_seq.4);
+            self.5.reconcile(&other.5, &mut widget_seq.5);
+            self.6.reconcile(&other.6, &mut widget_seq.6);
+            self.7.reconcile(&other.7, &mut widget_seq.7);
+            self.8.reconcile(&other.8, &mut widget_seq.8);
+            self.9.reconcile(&other.9, &mut widget_seq.9);
+            self.10.reconcile(&other.10, &mut widget_seq.10);
+            self.11.reconcile(&other.11, &mut widget_seq.11);
+    }
+
+    #[instrument(name = "Tuple", skip(self, component_state, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         let event0 = self
             .0
-            .process_event(explicit_state, &mut children_state.0, &mut dom_state.0, cx)
+            .process_event(component_state, &mut children_state.0, &mut widget_seq.0, cx)
             .map(|event| EventEnum::E0(event));
         let event1 = self
             .1
-            .process_event(explicit_state, &mut children_state.1, &mut dom_state.1, cx)
+            .process_event(component_state, &mut children_state.1, &mut widget_seq.1, cx)
             .map(|event| EventEnum::E1(event));
         let event2 = self
             .2
-            .process_event(explicit_state, &mut children_state.2, &mut dom_state.2, cx)
+            .process_event(component_state, &mut children_state.2, &mut widget_seq.2, cx)
             .map(|event| EventEnum::E2(event));
         let event3 = self
             .3
-            .process_event(explicit_state, &mut children_state.3, &mut dom_state.3, cx)
+            .process_event(component_state, &mut children_state.3, &mut widget_seq.3, cx)
             .map(|event| EventEnum::E3(event));
         let event4 = self
             .4
-            .process_event(explicit_state, &mut children_state.4, &mut dom_state.4, cx)
+            .process_event(component_state, &mut children_state.4, &mut widget_seq.4, cx)
             .map(|event| EventEnum::E4(event));
         let event5 = self
             .5
-            .process_event(explicit_state, &mut children_state.5, &mut dom_state.5, cx)
+            .process_event(component_state, &mut children_state.5, &mut widget_seq.5, cx)
             .map(|event| EventEnum::E5(event));
         let event6 = self
             .6
-            .process_event(explicit_state, &mut children_state.6, &mut dom_state.6, cx)
+            .process_event(component_state, &mut children_state.6, &mut widget_seq.6, cx)
             .map(|event| EventEnum::E6(event));
         let event7 = self
             .7
-            .process_event(explicit_state, &mut children_state.7, &mut dom_state.7, cx)
+            .process_event(component_state, &mut children_state.7, &mut widget_seq.7, cx)
             .map(|event| EventEnum::E7(event));
         let event8 = self
             .8
-            .process_event(explicit_state, &mut children_state.8, &mut dom_state.8, cx)
+            .process_event(component_state, &mut children_state.8, &mut widget_seq.8, cx)
             .map(|event| EventEnum::E8(event));
         let event9 = self
             .9
-            .process_event(explicit_state, &mut children_state.9, &mut dom_state.9, cx)
+            .process_event(component_state, &mut children_state.9, &mut widget_seq.9, cx)
             .map(|event| EventEnum::E9(event));
         let event10 = self
             .10
-            .process_event(explicit_state, &mut children_state.10, &mut dom_state.10, cx)
+            .process_event(component_state, &mut children_state.10, &mut widget_seq.10, cx)
             .map(|event| EventEnum::E10(event));
         let event11 = self
-            .11.process_event(explicit_state, &mut children_state.11, &mut dom_state.11, cx)
+            .11.process_event(component_state, &mut children_state.11, &mut widget_seq.11, cx)
             .map(|event| EventEnum::E11(event));
 
         // FIXME - If several events happen simultaneously, this will swallow all but one

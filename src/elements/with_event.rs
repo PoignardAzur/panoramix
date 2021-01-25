@@ -4,82 +4,91 @@ use crate::glue::GlobalEventCx;
 use tracing::instrument;
 
 pub struct WithEvent<
-    Child: ElementTree<ExplicitState>,
-    Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
-    ExplicitState = (),
+    ComponentState,
+    ComponentEvent,
+    Child: ElementTree<ComponentState, ComponentEvent>,
+    Cb: Fn(&mut ComponentState, &Child::Event),
 > {
     pub element: Child,
     pub callback: Cb,
-    pub _state: std::marker::PhantomData<ExplicitState>,
+    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 pub struct WithEventTarget<
-    Child: VirtualDom<ExplicitState>,
-    Cb: Fn(&mut ExplicitState, &Child::Event),
-    ExplicitState,
+    ComponentState,
+    ComponentEvent,
+    Child: VirtualDom<ComponentState, ComponentEvent>,
+    Cb: Fn(&mut ComponentState, &Child::Event),
 > {
     element: Child,
     callback: Cb,
-    _state: std::marker::PhantomData<ExplicitState>,
+    _comp_state: std::marker::PhantomData<ComponentState>,
+    _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
 // ---
 
 impl<
-        Child: ElementTree<ExplicitState>,
-        ExplicitState,
-        Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
-    > std::fmt::Debug for WithEvent<Child, Cb, ExplicitState>
-where
-    Child: std::fmt::Debug,
+        ComponentState,
+        ComponentEvent,
+        Child: ElementTree<ComponentState, ComponentEvent>,
+        Cb: Fn(
+            &mut ComponentState,
+            &Child::Event,
+        ),
+    > std::fmt::Debug for WithEvent<ComponentState, ComponentEvent, Child, Cb>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("WithEvent")
             .field("element", &self.element)
             .field("callback", &std::any::type_name::<Cb>())
-            .field("_state", &self._state)
             .finish()
     }
 }
 
 impl<
-        Child: VirtualDom<ParentComponentState>,
-        Cb: Fn(&mut ParentComponentState, &Child::Event),
-        ParentComponentState,
-    > std::fmt::Debug for WithEventTarget<Child, Cb, ParentComponentState>
-where
-    Child: std::fmt::Debug,
+        ComponentState,
+        ComponentEvent,
+        Child: VirtualDom<ComponentState, ComponentEvent>,
+        Cb: Fn(&mut ComponentState, &Child::Event),
+    > std::fmt::Debug for WithEventTarget<ComponentState, ComponentEvent, Child, Cb>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("WithEvent")
             .field("element", &self.element)
             .field("callback", &std::any::type_name::<Cb>())
-            .field("_state", &self._state)
             .finish()
     }
 }
 
 impl<
-        Child: ElementTree<ExplicitState>,
-        ExplicitState,
-        Cb: Fn(&mut ExplicitState, &<Child::BuildOutput as VirtualDom<ExplicitState>>::Event),
-    > ElementTree<ExplicitState> for WithEvent<Child, Cb, ExplicitState>
+        ComponentState,
+        ComponentEvent,
+        Child: ElementTree<ComponentState, ComponentEvent>,
+        Cb: Fn(
+            &mut ComponentState,
+            &<Child::BuildOutput as VirtualDom<ComponentState, ComponentEvent>>::Event,
+        ),
+    > ElementTree<ComponentState, ComponentEvent>
+    for WithEvent<ComponentState, ComponentEvent, Child, Cb>
 {
     type Event = Child::Event;
-    type AggregateComponentState = Child::AggregateComponentState;
-    type BuildOutput = WithEventTarget<Child::BuildOutput, Cb, ExplicitState>;
+    type AggregateChildrenState = Child::AggregateChildrenState;
+    type BuildOutput = WithEventTarget<ComponentState, ComponentEvent, Child::BuildOutput, Cb>;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, state) = self.element.build(prev_state);
         (
             WithEventTarget {
                 element,
                 callback: self.callback,
-                _state: Default::default(),
+                _comp_state: Default::default(),
+                _comp_event: Default::default(),
             },
             state,
         )
@@ -87,15 +96,15 @@ impl<
 }
 
 impl<
-        Child: VirtualDom<ParentComponentState>,
-        Cb: Fn(&mut ParentComponentState, &Child::Event),
-        ParentComponentState,
-    > VirtualDom<ParentComponentState> for WithEventTarget<Child, Cb, ParentComponentState>
+        ComponentState,
+        ComponentEvent,
+        Child: VirtualDom<ComponentState, ComponentEvent>,
+        Cb: Fn(&mut ComponentState, &Child::Event),
+    > VirtualDom<ComponentState, ComponentEvent>
+    for WithEventTarget<ComponentState, ComponentEvent, Child, Cb>
 {
     type Event = Child::Event;
-    type DomState = Child::DomState;
-    type AggregateComponentState = Child::AggregateComponentState;
-
+    type AggregateChildrenState = Child::AggregateChildrenState;
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     #[instrument(name = "WithEvent", skip(self, other))]
@@ -104,36 +113,31 @@ impl<
     }
 
     #[instrument(name = "WithEvent", skip(self))]
-    fn init_tree(&self) -> (Child::TargetWidgetSeq, Child::DomState) {
+    fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.element.init_tree()
     }
 
-    #[instrument(name = "WithEvent", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Child::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Child::DomState {
-        self.element.apply_diff(&other.element, prev_state, widget)
+    #[instrument(name = "WithEvent", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+        self.element.reconcile(&other.element, widget_seq)
     }
 
     #[instrument(
         name = "WithEvent",
-        skip(self, explicit_state, children_state, dom_state, cx)
+        skip(self, component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Child::AggregateComponentState,
-        dom_state: &mut Child::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Child::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Child::Event> {
         let event = self
             .element
-            .process_event(explicit_state, children_state, dom_state, cx);
+            .process_event(component_state, children_state, widget_seq, cx);
         if let Some(event) = event.as_ref() {
-            (self.callback)(explicit_state, event);
+            (self.callback)(component_state, event);
         }
         event
     }

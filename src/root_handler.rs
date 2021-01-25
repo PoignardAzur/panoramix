@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex;
 
@@ -9,45 +9,59 @@ use druid::widget::prelude::*;
 use druid::{widget, Point, Widget, WidgetPod};
 use tracing::instrument;
 
-pub type WidgetSeqOf<RootCompState, ReturnedTree> =
-   <<ReturnedTree as ElementTree<RootCompState>>::BuildOutput as VirtualDom<RootCompState>>::TargetWidgetSeq;
+pub type WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree> =
+   <<ReturnedTree as ElementTree<RootComponentState, RootComponentEvent>>::BuildOutput as VirtualDom<RootComponentState, RootComponentEvent>>::TargetWidgetSeq;
 
 pub struct RootHandler<
-    RootCompState,
-    ReturnedTree: ElementTree<RootCompState>,
-    Comp: Fn(&RootCompState, ()) -> ReturnedTree,
+    RootComponentState: Default + std::fmt::Debug,
+    RootComponentEvent,
+    ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
+    Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
 > {
-    pub root_component: ComponentCaller<RootCompState, (), ReturnedTree, Comp, ()>,
-    pub component_state: (RootCompState, ReturnedTree::AggregateComponentState),
+    pub root_component: ComponentCaller<
+        RootComponentState,
+        RootComponentEvent,
+        (),
+        ReturnedTree,
+        Comp,
+        (),
+        NoEvent,
+    >,
+    pub component_state: (RootComponentState, ReturnedTree::AggregateChildrenState),
     pub vdom: Option<ReturnedTree::BuildOutput>,
-    pub vdom_state: Option<<ReturnedTree::BuildOutput as VirtualDom<RootCompState>>::DomState>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
-    pub widget:
-        Option<WidgetPod<DruidAppData, flex::Flex<WidgetSeqOf<RootCompState, ReturnedTree>>>>,
+    pub widget: Option<
+        WidgetPod<
+            DruidAppData,
+            flex::Flex<WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree>>,
+        >,
+    >,
 }
 
 impl<
-        RootCompState,
-        ReturnedTree: ElementTree<RootCompState>,
-        Comp: Fn(&RootCompState, ()) -> ReturnedTree,
-    > RootHandler<RootCompState, ReturnedTree, Comp>
+        RootComponentState: Default + std::fmt::Debug,
+        RootComponentEvent,
+        ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
+        Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
+    > RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
 {
     pub fn new(
         root_component: Comp,
-        root_state: RootCompState,
-    ) -> RootHandler<RootCompState, ReturnedTree, Comp> {
+        root_state: RootComponentState,
+    ) -> RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp> {
         let default_widget = WidgetPod::new(widget::Flex::row());
         RootHandler {
             root_component: ComponentCaller {
                 component: root_component,
                 props: (),
-                _state: Default::default(),
-                _tree: Default::default(),
-                _expl_state: Default::default(),
+                _parent_state: Default::default(),
+                _parent_event: Default::default(),
+                _child_state: Default::default(),
+                _child_event: Default::default(),
+                _returned_tree: Default::default(),
             },
             component_state: (root_state, Default::default()),
             vdom: None,
-            vdom_state: None,
             default_widget,
             widget: None,
         }
@@ -63,14 +77,11 @@ impl<
         });
         self.component_state.1 = state;
 
-        let mut vdom_state;
-
         if let Some(prev_vdom) = self.vdom.as_mut() {
-            let prev_vdom_state = self.vdom_state.take().unwrap();
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
 
-            vdom_state = debug_span!("apply_diff").in_scope(|| {
-                new_vdom.apply_diff(prev_vdom, prev_vdom_state, &mut flex_widget.children_seq)
+            debug_span!("reconcile").in_scope(|| {
+                new_vdom.reconcile(prev_vdom, &mut flex_widget.children_seq);
             });
             debug_span!("update_value").in_scope(|| {
                 prev_vdom.update_value(new_vdom);
@@ -82,13 +93,12 @@ impl<
             let _ = prev_vdom.process_event(
                 &mut self.component_state.0,
                 &mut self.component_state.1,
-                &mut vdom_state,
+                &mut flex_widget.children_seq,
                 cx,
             );
             std::mem::drop(_span_process_event);
         } else {
-            let (widget_seq, vdom_data) =
-                debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
+            let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
             let flex_widget = WidgetPod::new(flex::Flex {
                 direction: flex::Axis::Vertical,
                 cross_alignment: flex::CrossAxisAlignment::Center,
@@ -98,19 +108,18 @@ impl<
             });
             ctx.children_changed();
             self.widget = Some(flex_widget);
-            vdom_state = vdom_data;
             self.vdom = Some(new_vdom);
         }
-
-        self.vdom_state = Some(vdom_state);
     }
 }
 
 impl<
-        RootCompState,
-        ReturnedTree: ElementTree<RootCompState>,
-        Comp: Fn(&RootCompState, ()) -> ReturnedTree,
-    > Widget<DruidAppData> for RootHandler<RootCompState, ReturnedTree, Comp>
+        RootComponentState: Default + std::fmt::Debug,
+        RootComponentEvent,
+        ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
+        Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
+    > Widget<DruidAppData>
+    for RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Some(widget) = &mut self.widget {

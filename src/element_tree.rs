@@ -1,31 +1,33 @@
 use crate::glue::GlobalEventCx;
 use crate::widget_sequence::WidgetSequence;
+
 use std::fmt::Debug;
 
-pub trait ElementTree<ExplicitState>: Debug {
+// TODO - must-use
+// TODO - Default + Debug bounds
+pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
     type Event;
-    type AggregateComponentState: Default + Debug;
+
+    type AggregateChildrenState: Default + Debug;
     type BuildOutput: VirtualDom<
-        ExplicitState,
+        ComponentState,
+        ComponentEvent,
         Event = Self::Event,
-        AggregateComponentState = Self::AggregateComponentState,
+        AggregateChildrenState = Self::AggregateChildrenState,
     >;
 
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState);
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState);
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
-pub trait VirtualDom<ParentComponentState>: Debug {
-    type Event;
-    type AggregateComponentState: Default + Debug;
-
-    // TODO - Might be superfluous
-    type DomState;
-
+pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
+    type AggregateChildrenState: Default + Debug;
     type TargetWidgetSeq: WidgetSequence;
+
+    type Event;
 
     // update_value is intended to enable memoize-style HOC
     // where instead of returning a vdom node, it returns
@@ -33,27 +35,32 @@ pub trait VirtualDom<ParentComponentState>: Debug {
     // Ugh. I'm not explaining this well.
     fn update_value(&mut self, other: Self);
 
-    fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState);
+    fn init_tree(&self) -> Self::TargetWidgetSeq;
 
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Self::DomState,
-        widget_seq: &mut Self::TargetWidgetSeq,
-    ) -> Self::DomState;
+    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq);
 
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
-        _cx: &mut GlobalEventCx,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        cx: &mut GlobalEventCx,
     ) -> Option<Self::Event>;
 }
 
-// Useed in unit tests
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum NoEvent {}
+
+// Used in unit tests
 #[allow(dead_code)]
-pub(crate) fn assign_state_type<ExplicitState, Elem: ElementTree<ExplicitState>>(_elem: &Elem) {}
+pub(crate) fn assign_empty_state_type(_elem: &impl ElementTree<(), NoEvent>) {}
 
 #[allow(dead_code)]
-pub(crate) fn assign_empty_state_type(_elem: &impl ElementTree<()>) {}
+pub(crate) fn assign_state_type<
+    ComponentState,
+    ComponentEvent,
+    Elem: ElementTree<ComponentState, ComponentEvent>,
+>(
+    _elem: &Elem,
+) {
+}

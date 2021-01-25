@@ -7,42 +7,55 @@ expression: tuple_data
         LabelData(
             "Hello",
             PhantomData,
+            PhantomData,
         ),
         LabelData(
             "Hello2",
+            PhantomData,
             PhantomData,
         ),
         LabelData(
             "Hello3",
             PhantomData,
-        ),
-        EmptyElementData(
             PhantomData,
         ),
         EmptyElementData(
             PhantomData,
-        ),
-        EmptyElementData(
             PhantomData,
         ),
         EmptyElementData(
             PhantomData,
-        ),
-        EmptyElementData(
             PhantomData,
         ),
         EmptyElementData(
             PhantomData,
-        ),
-        EmptyElementData(
             PhantomData,
         ),
         EmptyElementData(
             PhantomData,
+            PhantomData,
         ),
         EmptyElementData(
             PhantomData,
+            PhantomData,
         ),
+        EmptyElementData(
+            PhantomData,
+            PhantomData,
+        ),
+        EmptyElementData(
+            PhantomData,
+            PhantomData,
+        ),
+        EmptyElementData(
+            PhantomData,
+            PhantomData,
+        ),
+        EmptyElementData(
+            PhantomData,
+            PhantomData,
+        ),
+        PhantomData,
         PhantomData,
     ),
     (

@@ -3,12 +3,15 @@ source: src/elements/flex.rs
 expression: column
 ---
 Column {
-    child: MyElementTuple_1(
+    child: ElementTuple_1(
         Label(
             "Greetings",
             PhantomData,
+            PhantomData,
         ),
         PhantomData,
+        PhantomData,
     ),
-    _expl_state: PhantomData,
+    _comp_state: PhantomData,
+    _comp_event: PhantomData,
 }

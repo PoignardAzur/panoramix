@@ -2,10 +2,12 @@
 source: src/elements/element_tuple.rs
 expression: tuple
 ---
-MyElementTuple_1(
+ElementTuple_1(
     Label(
         "Hello",
         PhantomData,
+        PhantomData,
     ),
+    PhantomData,
     PhantomData,
 )

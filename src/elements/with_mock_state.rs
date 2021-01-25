@@ -1,42 +1,61 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use ::derivative::Derivative;
 
 // Used for testing
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
-pub struct WithMockState<Child: ElementTree<ExplicitState>, ExplicitState>(
+#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derivative(
+    Debug(bound = ""),
+    Default(bound = "Child: Default"),
+    Clone(bound = "Child: Clone")
+)]
+pub struct WithMockState<
+    Child: ElementTree<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+>(
     pub Child,
-    pub std::marker::PhantomData<ExplicitState>,
+    pub std::marker::PhantomData<ComponentState>,
+    pub std::marker::PhantomData<ComponentEvent>,
 );
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
-pub struct WithMockStateData<Child: VirtualDom<ParentComponentState>, ParentComponentState>(
+#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derivative(
+    Debug(bound = ""),
+    Default(bound = "Child: Default"),
+    Clone(bound = "Child: Clone")
+)]
+pub struct WithMockStateData<
+    Child: VirtualDom<ComponentState, ComponentEvent>,
+    ComponentState = (),
+    ComponentEvent = NoEvent,
+>(
     pub Child,
-    pub std::marker::PhantomData<ParentComponentState>,
+    pub std::marker::PhantomData<ComponentState>,
+    pub std::marker::PhantomData<ComponentEvent>,
 );
 
-#[derive(Derivative, Clone, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct MockState(String);
 
 //
 // --- IMPLS
 
-impl<Child: ElementTree<ExplicitState>, ExplicitState> WithMockState<Child, ExplicitState> {
+impl<Child: ElementTree<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
+    WithMockState<Child, ComponentState, ComponentEvent>
+{
     pub fn new(child: Child) -> Self {
-        WithMockState(child, Default::default())
+        WithMockState(child, Default::default(), Default::default())
     }
 }
 
-impl<Child: VirtualDom<ParentComponentState>, ParentComponentState>
-    WithMockStateData<Child, ParentComponentState>
+impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
+    WithMockStateData<Child, ComponentState, ComponentEvent>
 {
     pub fn new(child: Child) -> Self {
-        WithMockStateData(child, Default::default())
+        WithMockStateData(child, Default::default(), Default::default())
     }
 }
 
@@ -52,57 +71,52 @@ impl Default for MockState {
     }
 }
 
-impl<Child: ElementTree<ExplicitState>, ExplicitState> ElementTree<ExplicitState>
-    for WithMockState<Child, ExplicitState>
+impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
+    ElementTree<ComponentState, ComponentEvent>
+    for WithMockState<Child, ComponentState, ComponentEvent>
 {
     type Event = Child::Event;
-    type AggregateComponentState = (MockState, Child::AggregateComponentState);
-    type BuildOutput = WithMockStateData<Child::BuildOutput, ExplicitState>;
+    type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
+    type BuildOutput = WithMockStateData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (mock_state, child_state) = prev_state;
         let (child, child_state) = self.0.build(child_state);
         (WithMockStateData::new(child), (mock_state, child_state))
     }
 }
 
-impl<Child: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<ParentComponentState>
-    for WithMockStateData<Child, ParentComponentState>
+impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
+    VirtualDom<ComponentState, ComponentEvent>
+    for WithMockStateData<Child, ComponentState, ComponentEvent>
 {
     type Event = Child::Event;
-    type DomState = Child::DomState;
-    type AggregateComponentState = (MockState, Child::AggregateComponentState);
-
+    type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     fn update_value(&mut self, other: Self) {
         self.0.update_value(other.0);
     }
 
-    fn init_tree(&self) -> (Child::TargetWidgetSeq, Child::DomState) {
+    fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.0.init_tree()
     }
 
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Child::DomState,
-        widget: &mut Self::TargetWidgetSeq,
-    ) -> Child::DomState {
-        self.0.apply_diff(&other.0, prev_state, widget)
+    fn reconcile(&self, other: &Self, widget_seq: &mut Child::TargetWidgetSeq) {
+        self.0.reconcile(&other.0, widget_seq);
     }
 
     fn process_event(
         &self,
-        explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Child::DomState,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Child::Event> {
         self.0
-            .process_event(explicit_state, &mut children_state.1, dom_state, cx)
+            .process_event(component_state, &mut children_state.1, widget_seq, cx)
     }
 }

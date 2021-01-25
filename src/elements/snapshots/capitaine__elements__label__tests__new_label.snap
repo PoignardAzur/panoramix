@@ -5,4 +5,5 @@ expression: label
 Label(
     "Hello",
     PhantomData,
+    PhantomData,
 )

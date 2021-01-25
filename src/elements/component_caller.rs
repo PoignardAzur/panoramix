@@ -1,100 +1,148 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use derivative::Derivative;
+use std::fmt::Debug;
 use tracing::instrument;
 
 pub struct ComponentCaller<
-    CompExplicitState,
+    ChildComponentState: Default + Debug,
+    ChildComponentEvent,
     Props,
-    ReturnedTree: ElementTree<CompExplicitState>,
-    Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
-    ExplicitState = (),
+    ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
+    Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
+    ParentComponentState = (),
+    ParentComponentEvent = NoEvent,
 > {
     pub component: Comp,
     pub props: Props,
-    pub _state: std::marker::PhantomData<CompExplicitState>,
-    pub _tree: std::marker::PhantomData<ReturnedTree>,
-    pub _expl_state: std::marker::PhantomData<ExplicitState>,
+    pub _parent_state: std::marker::PhantomData<ParentComponentState>,
+    pub _parent_event: std::marker::PhantomData<ParentComponentEvent>,
+    pub _child_state: std::marker::PhantomData<ChildComponentState>,
+    pub _child_event: std::marker::PhantomData<ChildComponentEvent>,
+    pub _returned_tree: std::marker::PhantomData<ReturnedTree>,
 }
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
+#[derive(Derivative, Clone, PartialEq, Eq, Hash)]
+#[derivative(Debug(bound = ""), Default(bound = "Child: Default"))]
 pub struct ComponentCallerData<
+    ChildComponentState: Default + Debug,
+    ChildComponentEvent,
+    Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
     ParentComponentState,
-    ChildComponentState: Default,
-    Child: VirtualDom<ChildComponentState>,
+    ParentComponentEvent,
 >(
     Child,
     std::marker::PhantomData<ParentComponentState>,
+    std::marker::PhantomData<ParentComponentEvent>,
     std::marker::PhantomData<ChildComponentState>,
+    std::marker::PhantomData<ChildComponentEvent>,
 );
 
 impl<
-        ExplicitState,
-        CompExplicitState,
+        ParentComponentState,
+        ParentComponentEvent,
+        ChildComponentState: Default + Debug,
+        ChildComponentEvent,
         Props,
-        ReturnedTree: ElementTree<CompExplicitState>,
-        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
-    > ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
+        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
+    >
+    ComponentCaller<
+        ChildComponentState,
+        ChildComponentEvent,
+        Props,
+        ReturnedTree,
+        Comp,
+        ParentComponentState,
+        ParentComponentEvent,
+    >
 {
-    pub fn prepare(
-        component: Comp,
-        props: Props,
-    ) -> ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState> {
+    pub fn prepare(component: Comp, props: Props) -> Self {
         ComponentCaller {
             component,
             props,
-            _state: Default::default(),
-            _tree: Default::default(),
-            _expl_state: Default::default(),
+            _parent_state: Default::default(),
+            _parent_event: Default::default(),
+            _child_state: Default::default(),
+            _child_event: Default::default(),
+            _returned_tree: Default::default(),
         }
     }
 }
 
 impl<
-        ExplicitState,
-        CompExplicitState,
+        ParentComponentState,
+        ParentComponentEvent,
+        ChildComponentState: Default + Debug,
+        ChildComponentEvent,
         Props,
-        ReturnedTree: ElementTree<CompExplicitState>,
-        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
+        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
+        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
     > std::fmt::Debug
-    for ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+    for ComponentCaller<
+        ChildComponentState,
+        ChildComponentEvent,
+        Props,
+        ReturnedTree,
+        Comp,
+        ParentComponentState,
+        ParentComponentEvent,
+    >
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ComponentCaller")
             .field("component", &std::any::type_name::<Comp>())
             .field("props", &"<props>")
-            .field("_state", &self._state)
-            .field("_tree", &self._tree)
-            .field("_expl_state", &self._expl_state)
             .finish()
     }
 }
 
 impl<
-        ExplicitState,
-        CompExplicitState: Default + std::fmt::Debug,
+        ParentComponentState,
+        ParentComponentEvent,
+        // TODO - remove?
+        ChildComponentState: Default + Debug,
+        ChildComponentEvent,
         Props,
-        ReturnedTree: ElementTree<CompExplicitState>,
-        Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
-    > ElementTree<ExplicitState>
-    for ComponentCaller<CompExplicitState, Props, ReturnedTree, Comp, ExplicitState>
+        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
+        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
+    > ElementTree<ParentComponentState, ParentComponentEvent>
+    for ComponentCaller<
+        ChildComponentState,
+        ChildComponentEvent,
+        Props,
+        ReturnedTree,
+        Comp,
+        ParentComponentState,
+        ParentComponentEvent,
+    >
 {
     type Event = ReturnedTree::Event;
-    type AggregateComponentState = (CompExplicitState, ReturnedTree::AggregateComponentState);
-    type BuildOutput =
-        ComponentCallerData<ExplicitState, CompExplicitState, ReturnedTree::BuildOutput>;
+    type AggregateChildrenState = (ChildComponentState, ReturnedTree::AggregateChildrenState);
+    type BuildOutput = ComponentCallerData<
+        ChildComponentState,
+        ChildComponentEvent,
+        ReturnedTree::BuildOutput,
+        ParentComponentState,
+        ParentComponentEvent,
+    >;
 
     #[instrument(name = "Component", skip(self, prev_state))]
     fn build(
         self,
-        prev_state: Self::AggregateComponentState,
-    ) -> (Self::BuildOutput, Self::AggregateComponentState) {
+        prev_state: Self::AggregateChildrenState,
+    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let element_tree = (self.component)(&prev_state.0, self.props);
         let (element, component_state) = element_tree.build(prev_state.1);
         (
-            ComponentCallerData(element, Default::default(), Default::default()),
+            ComponentCallerData(
+                element,
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ),
             (prev_state.0, component_state),
         )
     }
@@ -102,15 +150,21 @@ impl<
 
 impl<
         ParentComponentState,
-        ChildComponentState: Default + std::fmt::Debug,
-        Child: VirtualDom<ChildComponentState>,
-    > VirtualDom<ParentComponentState>
-    for ComponentCallerData<ParentComponentState, ChildComponentState, Child>
+        ParentComponentEvent,
+        ChildComponentState: Default + Debug,
+        ChildComponentEvent,
+        Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
+    > VirtualDom<ParentComponentState, ParentComponentEvent>
+    for ComponentCallerData<
+        ChildComponentState,
+        ChildComponentEvent,
+        Child,
+        ParentComponentState,
+        ParentComponentEvent,
+    >
 {
     type Event = Child::Event;
-    type DomState = Child::DomState;
-    type AggregateComponentState = (ChildComponentState, Child::AggregateComponentState);
-
+    type AggregateChildrenState = (ChildComponentState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     #[instrument(name = "Component", skip(self, other))]
@@ -119,33 +173,28 @@ impl<
     }
 
     #[instrument(name = "Component", skip(self))]
-    fn init_tree(&self) -> (Child::TargetWidgetSeq, Child::DomState) {
+    fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.0.init_tree()
     }
 
-    #[instrument(name = "Component", skip(self, other, prev_state, widget))]
-    fn apply_diff(
-        &self,
-        other: &Self,
-        prev_state: Child::DomState,
-        widget: &mut Child::TargetWidgetSeq,
-    ) -> Self::DomState {
-        self.0.apply_diff(&other.0, prev_state, widget)
+    #[instrument(name = "Component", skip(self, other, widget_seq))]
+    fn reconcile(&self, other: &Self, widget_seq: &mut Child::TargetWidgetSeq) {
+        self.0.reconcile(&other.0, widget_seq);
     }
 
     #[instrument(
         name = "Component",
-        skip(self, _explicit_state, children_state, dom_state, cx)
+        skip(self, _component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        _explicit_state: &mut ParentComponentState,
-        children_state: &mut Self::AggregateComponentState,
-        dom_state: &mut Self::DomState,
+        _component_state: &mut ParentComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         self.0
-            .process_event(&mut children_state.0, &mut children_state.1, dom_state, cx)
+            .process_event(&mut children_state.0, &mut children_state.1, widget_seq, cx)
     }
 }
 
@@ -153,6 +202,7 @@ impl<
 mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
+    use crate::element_tree::NoEvent;
     use crate::element_tree_ext::ElementTreeExt;
     use crate::elements::{Button, ButtonPressed, EventEnum, Label};
     use crate::make_row;
@@ -160,7 +210,7 @@ mod tests {
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
-    type MyEvent = EventEnum<ButtonPressed, ()>;
+    type MyEvent = EventEnum<ButtonPressed, NoEvent>;
 
     // TODO - add tracing, and detect when this function is called by tests
     fn my_component(state: &u16, props: i64) -> impl ElementTree<u16, Event = MyEvent> {
