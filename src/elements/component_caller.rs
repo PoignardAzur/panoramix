@@ -1,8 +1,8 @@
+use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::GlobalEventCx;
 
-use crate::element_tree::{ElementTree, VirtualDom};
-
 use derivative::Derivative;
+use tracing::instrument;
 
 pub struct ComponentCaller<
     CompExplicitState,
@@ -74,7 +74,7 @@ impl<
 
 impl<
         ExplicitState,
-        CompExplicitState: Default,
+        CompExplicitState: Default + std::fmt::Debug,
         Props,
         ReturnedTree: ElementTree<CompExplicitState>,
         Comp: Fn(&CompExplicitState, Props) -> ReturnedTree,
@@ -86,6 +86,7 @@ impl<
     type BuildOutput =
         ComponentCallerData<ExplicitState, CompExplicitState, ReturnedTree::BuildOutput>;
 
+    #[instrument(name = "Component", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -101,7 +102,7 @@ impl<
 
 impl<
         ParentComponentState,
-        ChildComponentState: Default,
+        ChildComponentState: Default + std::fmt::Debug,
         Child: VirtualDom<ChildComponentState>,
     > VirtualDom<ParentComponentState>
     for ComponentCallerData<ParentComponentState, ChildComponentState, Child>
@@ -112,14 +113,17 @@ impl<
 
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
+    #[instrument(name = "Component", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         self.0.update_value(other.0);
     }
 
+    #[instrument(name = "Component", skip(self))]
     fn init_tree(&self) -> (Child::TargetWidgetSeq, Child::DomState) {
         self.0.init_tree()
     }
 
+    #[instrument(name = "Component", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -129,6 +133,10 @@ impl<
         self.0.apply_diff(&other.0, prev_state, widget)
     }
 
+    #[instrument(
+        name = "Component",
+        skip(self, _explicit_state, children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         _explicit_state: &mut ParentComponentState,
@@ -146,12 +154,11 @@ mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
     use crate::element_tree_ext::ElementTreeExt;
-    use crate::elements::Button;
-    use crate::elements::ButtonPressed;
-    use crate::elements::EventEnum;
-    use crate::elements::Label;
+    use crate::elements::{Button, ButtonPressed, EventEnum, Label};
     use crate::make_row;
+
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     type MyEvent = EventEnum<ButtonPressed, ()>;
 

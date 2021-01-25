@@ -51,6 +51,8 @@ impl DruidAppData {
     }
 }
 
+// ---
+
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -67,4 +69,22 @@ impl Id {
     pub fn new() -> Id {
         Id(ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
+}
+
+// ---
+
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::{fmt, EnvFilter};
+use tracing_unwrap::ResultExt;
+
+pub fn init_tracing() {
+    let fmt_layer = fmt::layer().with_target(true);
+    let filter_layer = EnvFilter::try_from_default_env()
+        .or_else(|_| EnvFilter::try_new("warn"))
+        .unwrap_or_log();
+
+    tracing_subscriber::registry()
+        .with(filter_layer)
+        .with(fmt_layer)
+        .init();
 }

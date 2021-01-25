@@ -4,6 +4,7 @@ use crate::widgets::SingleWidget;
 
 use derivative::Derivative;
 use druid::widget as druid_w;
+use tracing::instrument;
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
@@ -44,6 +45,7 @@ impl<ExplicitState> ElementTree<ExplicitState> for Label<ExplicitState> {
     type AggregateComponentState = ();
     type BuildOutput = LabelData<ExplicitState>;
 
+    #[instrument(name = "Label", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (LabelData<ExplicitState>, ()) {
         (LabelData(self.0, Default::default()), ())
     }
@@ -56,10 +58,12 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<Parent
 
     type TargetWidgetSeq = SingleWidget<druid_w::Label<DruidAppData>>;
 
+    #[instrument(name = "Label", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "Label", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Id) {
         let text = &self.0;
         let id = Id::new();
@@ -67,6 +71,7 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<Parent
         (SingleWidget::new(label), id)
     }
 
+    #[instrument(name = "Label", skip(self, other, prev_state, widget))]
     fn apply_diff(&self, other: &Self, prev_state: Id, widget: &mut Self::TargetWidgetSeq) -> Id {
         let text = &self.0;
         let prev_text = &other.0;
@@ -76,6 +81,10 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for LabelData<Parent
         prev_state
     }
 
+    #[instrument(
+        name = "Label",
+        skip(self, _explicit_state, _children_state, _dom_state, _cx)
+    )]
     fn process_event(
         &self,
         _explicit_state: &mut ParentComponentState,
@@ -92,6 +101,7 @@ mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     #[test]
     fn new_label() {

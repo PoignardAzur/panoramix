@@ -1,6 +1,5 @@
-use crate::glue::{DruidAppData, GlobalEventCx};
-
 use crate::element_tree::{ElementTree, VirtualDom};
+use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex;
 
 // TODO
@@ -8,6 +7,7 @@ use crate::elements::component_caller::ComponentCaller;
 
 use druid::widget::prelude::*;
 use druid::{widget, Point, Widget, WidgetPod};
+use tracing::instrument;
 
 pub type WidgetSeqOf<RootCompState, ReturnedTree> =
    <<ReturnedTree as ElementTree<RootCompState>>::BuildOutput as VirtualDom<RootCompState>>::TargetWidgetSeq;
@@ -53,29 +53,42 @@ impl<
         }
     }
 
+    #[instrument(level = "debug", skip(self, ctx, cx))]
     pub fn run(&mut self, ctx: &mut EventCtx, cx: &mut GlobalEventCx) {
-        let (vdom, component_state) = (self.root_component.component)(&self.component_state.0, ())
-            .build(std::mem::take(&mut self.component_state.1));
-        self.component_state.1 = component_state;
+        use tracing::debug_span;
+
+        let (new_vdom, state) = debug_span!("build").in_scope(|| {
+            (self.root_component.component)(&self.component_state.0, ())
+                .build(std::mem::take(&mut self.component_state.1))
+        });
+        self.component_state.1 = state;
 
         let mut vdom_state;
 
         if let Some(prev_vdom) = self.vdom.as_mut() {
             let prev_vdom_state = self.vdom_state.take().unwrap();
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
-            vdom_state = vdom.apply_diff(prev_vdom, prev_vdom_state, &mut flex_widget.children_seq);
-            prev_vdom.update_value(vdom);
 
-            if let Some(_event) = prev_vdom.process_event(
+            vdom_state = debug_span!("apply_diff").in_scope(|| {
+                new_vdom.apply_diff(prev_vdom, prev_vdom_state, &mut flex_widget.children_seq)
+            });
+            debug_span!("update_value").in_scope(|| {
+                prev_vdom.update_value(new_vdom);
+            });
+
+            let _span_process_event = debug_span!("process_event");
+            let _span_process_event = _span_process_event.enter();
+            // TODO - use process_event's return?
+            let _ = prev_vdom.process_event(
                 &mut self.component_state.0,
                 &mut self.component_state.1,
                 &mut vdom_state,
                 cx,
-            ) {
-                // callback(&event, &mut self.state);
-            }
+            );
+            std::mem::drop(_span_process_event);
         } else {
-            let (widget_seq, vdom_data) = vdom.init_tree();
+            let (widget_seq, vdom_data) =
+                debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
             let flex_widget = WidgetPod::new(flex::Flex {
                 direction: flex::Axis::Vertical,
                 cross_alignment: flex::CrossAxisAlignment::Center,
@@ -86,7 +99,7 @@ impl<
             ctx.children_changed();
             self.widget = Some(flex_widget);
             vdom_state = vdom_data;
-            self.vdom = Some(vdom);
+            self.vdom = Some(new_vdom);
         }
 
         self.vdom_state = Some(vdom_state);

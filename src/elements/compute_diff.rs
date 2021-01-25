@@ -1,3 +1,6 @@
+use std::fmt::Debug;
+use tracing::{instrument, trace};
+
 // TODO - Reduce allocations here
 #[derive(Default, Clone, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
 pub struct ListMutationItem<Key> {
@@ -18,7 +21,8 @@ impl<Key> ListMutation<Key> {
     }
 }
 
-fn find_next_common_item<Key: Eq, T1, T2>(
+#[instrument(skip(old_list, new_list))]
+fn find_next_common_item<Key: Eq + Debug, T1, T2>(
     old_list: &[(Key, T1)],
     new_list: &[(Key, T2)],
     cursor_old: usize,
@@ -34,7 +38,8 @@ fn find_next_common_item<Key: Eq, T1, T2>(
     None
 }
 
-pub fn compute_diff<Key: Eq + Clone, T1, T2>(
+#[instrument(skip(old_list, new_list))]
+pub fn compute_diff<Key: Eq + Debug + Clone, T1, T2>(
     old_list: &[(Key, T1)],
     new_list: &[(Key, T2)],
 ) -> ListMutation<Key> {
@@ -42,6 +47,9 @@ pub fn compute_diff<Key: Eq + Clone, T1, T2>(
     let mut cursor_old = 0usize;
     let mut cursor_new = 0usize;
     let mut preserved_count_before = 0;
+
+    // TODO - trace keys
+    trace!("Comparing arrays");
 
     while let Some((next_old, next_new)) =
         find_next_common_item(old_list, new_list, cursor_old, cursor_new)
@@ -79,9 +87,10 @@ pub fn compute_diff<Key: Eq + Clone, T1, T2>(
 }
 
 #[allow(dead_code)]
-//#[cfg(test)]
+#[cfg(test)]
 mod tests {
     use super::*;
+    use test_env_log::test;
 
     fn make_list(keys: &[i32]) -> Vec<(i32, ())> {
         keys.iter().map(|key| (*key, ())).collect()

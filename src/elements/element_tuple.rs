@@ -2,14 +2,13 @@
 #![allow(non_camel_case_types)]
 #![rustfmt::skip]
 
-use derivative::Derivative;
-
+use crate::element_tree::{ElementTree, VirtualDom};
+use crate::elements::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
 
-use crate::element_tree::{ElementTree, VirtualDom};
-
-use crate::elements::EmptyElementData;
+use derivative::Derivative;
+use tracing::instrument;
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound=""))]
@@ -101,6 +100,7 @@ impl<
         ExplicitState,
     >;
 
+    #[instrument(name = "Tuple", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -399,10 +399,12 @@ impl<
         C11::TargetWidgetSeq,
     >;
 
+    #[instrument(name = "Tuple", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "Tuple", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
         let (w0, s0) = self.0.init_tree();
         let (w1, s1) = self.1.init_tree();
@@ -449,6 +451,7 @@ impl<
         (widget, state)
     }
 
+    #[instrument(name = "Tuple", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -471,59 +474,60 @@ impl<
         )
     }
 
+    #[instrument(name = "Tuple", skip(self, explicit_state, children_state, dom_state, cx))]
     fn process_event(
         &self,
         explicit_state: &mut ParentComponentState,
         children_state: &mut Self::AggregateComponentState,
         dom_state: &mut Self::DomState,
-        _cx: &mut GlobalEventCx,
+        cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         let event0 = self
             .0
-            .process_event(explicit_state, &mut children_state.0, &mut dom_state.0, _cx)
+            .process_event(explicit_state, &mut children_state.0, &mut dom_state.0, cx)
             .map(|event| EventEnum::E0(event));
         let event1 = self
             .1
-            .process_event(explicit_state, &mut children_state.1, &mut dom_state.1, _cx)
+            .process_event(explicit_state, &mut children_state.1, &mut dom_state.1, cx)
             .map(|event| EventEnum::E1(event));
         let event2 = self
             .2
-            .process_event(explicit_state, &mut children_state.2, &mut dom_state.2, _cx)
+            .process_event(explicit_state, &mut children_state.2, &mut dom_state.2, cx)
             .map(|event| EventEnum::E2(event));
         let event3 = self
             .3
-            .process_event(explicit_state, &mut children_state.3, &mut dom_state.3, _cx)
+            .process_event(explicit_state, &mut children_state.3, &mut dom_state.3, cx)
             .map(|event| EventEnum::E3(event));
         let event4 = self
             .4
-            .process_event(explicit_state, &mut children_state.4, &mut dom_state.4, _cx)
+            .process_event(explicit_state, &mut children_state.4, &mut dom_state.4, cx)
             .map(|event| EventEnum::E4(event));
         let event5 = self
             .5
-            .process_event(explicit_state, &mut children_state.5, &mut dom_state.5, _cx)
+            .process_event(explicit_state, &mut children_state.5, &mut dom_state.5, cx)
             .map(|event| EventEnum::E5(event));
         let event6 = self
             .6
-            .process_event(explicit_state, &mut children_state.6, &mut dom_state.6, _cx)
+            .process_event(explicit_state, &mut children_state.6, &mut dom_state.6, cx)
             .map(|event| EventEnum::E6(event));
         let event7 = self
             .7
-            .process_event(explicit_state, &mut children_state.7, &mut dom_state.7, _cx)
+            .process_event(explicit_state, &mut children_state.7, &mut dom_state.7, cx)
             .map(|event| EventEnum::E7(event));
         let event8 = self
             .8
-            .process_event(explicit_state, &mut children_state.8, &mut dom_state.8, _cx)
+            .process_event(explicit_state, &mut children_state.8, &mut dom_state.8, cx)
             .map(|event| EventEnum::E8(event));
         let event9 = self
             .9
-            .process_event(explicit_state, &mut children_state.9, &mut dom_state.9, _cx)
+            .process_event(explicit_state, &mut children_state.9, &mut dom_state.9, cx)
             .map(|event| EventEnum::E9(event));
         let event10 = self
             .10
-            .process_event(explicit_state, &mut children_state.10, &mut dom_state.10, _cx)
+            .process_event(explicit_state, &mut children_state.10, &mut dom_state.10, cx)
             .map(|event| EventEnum::E10(event));
         let event11 = self
-            .11.process_event(explicit_state, &mut children_state.11, &mut dom_state.11, _cx)
+            .11.process_event(explicit_state, &mut children_state.11, &mut dom_state.11, cx)
             .map(|event| EventEnum::E11(event));
 
         // FIXME - If several events happen simultaneously, this will swallow all but one
@@ -550,6 +554,7 @@ mod tests {
     use crate::elements::label::Label;
     use crate::element_tree::assign_empty_state_type;
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     #[test]
     fn empty_tuple() {

@@ -1,11 +1,12 @@
-use either::{Left, Right};
-use std::collections::VecDeque;
-
 use crate::element_tree::{ElementTree, VirtualDom};
 use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
+
 use derivative::Derivative;
+use either::{Left, Right};
+use std::collections::VecDeque;
+use tracing::instrument;
 
 // TODO - Add arbitrary index types
 
@@ -32,6 +33,7 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
     type AggregateComponentState = Vec<(String, Child::AggregateComponentState)>;
     type BuildOutput = ElementListData<Child::BuildOutput, ExplicitState>;
 
+    #[instrument(name = "List", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -95,10 +97,12 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 
     type TargetWidgetSeq = WidgetList<Item::TargetWidgetSeq>;
 
+    #[instrument(name = "List", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "List", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Self::DomState) {
         let (widgets, dom_state): (Vec<_>, Vec<_>) = self
             .children
@@ -113,6 +117,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
     // This only works if we assume that items are ever only added at the end of the list.
     // Sounds perfectly reasonable to me.
     // (seriously though, a serious implementation would try to do whatever crochet::List::run does)
+    #[instrument(name = "List", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -198,12 +203,16 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         updated_state
     }
 
+    #[instrument(
+        name = "List",
+        skip(self, explicit_state, children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         explicit_state: &mut ParentComponentState,
         children_state: &mut Self::AggregateComponentState,
         dom_state: &mut Self::DomState,
-        _cx: &mut GlobalEventCx,
+        cx: &mut GlobalEventCx,
     ) -> Option<(usize, Item::Event)> {
         for (i, elem_data) in self
             .children
@@ -216,7 +225,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
             let elem_comp_state = elem_data.0 .1;
             let elem_dom_state = elem_data.1;
             if let Some(event) =
-                element.process_event(explicit_state, &mut elem_comp_state.1, elem_dom_state, _cx)
+                element.process_event(explicit_state, &mut elem_comp_state.1, elem_dom_state, cx)
             {
                 return Some((i, event));
             }
@@ -232,6 +241,7 @@ mod tests {
     use crate::elements::label::{Label, LabelData};
     use crate::elements::{MockState, WithMockState};
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     fn new_label_list<State>(names: &[&str]) -> ElementList<Label<State>, State> {
         let children: Vec<_> = names

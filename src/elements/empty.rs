@@ -1,7 +1,6 @@
+use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::EmptySequence;
-
-use crate::element_tree::{ElementTree, VirtualDom};
 
 use derivative::Derivative;
 
@@ -68,6 +67,7 @@ impl<ParentComponentState> VirtualDom<ParentComponentState>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_env_log::test;
 
     #[test]
     fn new_empty() {

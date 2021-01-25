@@ -7,6 +7,7 @@ use derivative::Derivative;
 use druid::widget as druid_w;
 use druid::widget::Click;
 use druid::widget::ControllerHost;
+use tracing::instrument;
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
@@ -33,6 +34,7 @@ impl<ExplicitState> ElementTree<ExplicitState> for Button<ExplicitState> {
     type AggregateComponentState = ();
     type BuildOutput = ButtonData<ExplicitState>;
 
+    #[instrument(name = "Button", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (ButtonData<ExplicitState>, ()) {
         (ButtonData(self.0, Default::default()), ())
     }
@@ -49,16 +51,19 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonData<Paren
     type TargetWidgetSeq =
         SingleWidget<ControllerHost<druid_w::Button<DruidAppData>, Click<DruidAppData>>>;
 
+    #[instrument(name = "Button", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Id) {
         let text = &self.0;
         let id = Id::new();
         (make_button(text.clone(), id), id)
     }
 
+    #[instrument(name = "Button", skip(self, _other, prev_state, _widget))]
     fn apply_diff(
         &self,
         _other: &Self,
@@ -70,15 +75,19 @@ impl<ParentComponentState> VirtualDom<ParentComponentState> for ButtonData<Paren
         prev_state
     }
 
+    #[instrument(
+        name = "Button",
+        skip(self, _explicit_state, _children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         _explicit_state: &mut ParentComponentState,
         _children_state: &mut (),
         dom_state: &mut Id,
-        _cx: &mut GlobalEventCx,
+        cx: &mut GlobalEventCx,
     ) -> Option<ButtonPressed> {
         let id = *dom_state;
-        if _cx.app_data.dequeue_action(id).is_some() {
+        if cx.app_data.dequeue_action(id).is_some() {
             Some(ButtonPressed())
         } else {
             None
@@ -91,6 +100,7 @@ mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     #[test]
     fn new_button() {

@@ -1,13 +1,10 @@
-use crate::glue::GlobalEventCx;
-
 use crate::element_tree::{ElementTree, VirtualDom};
+use crate::glue::GlobalEventCx;
+use crate::widgets::flex::{Axis, CrossAxisAlignment, Flex, MainAxisAlignment};
 use crate::widgets::SingleWidget;
 
-use crate::widgets::flex::Axis;
-use crate::widgets::flex::CrossAxisAlignment;
-use crate::widgets::flex::Flex;
-use crate::widgets::flex::MainAxisAlignment;
 use derivative::Derivative;
+use tracing::instrument;
 
 // TODO - merge row and column
 
@@ -88,6 +85,7 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
     type AggregateComponentState = Child::AggregateComponentState;
     type BuildOutput = RowData<Child::BuildOutput, ExplicitState>;
 
+    #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -106,10 +104,12 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 
     type TargetWidgetSeq = SingleWidget<Flex<Item::TargetWidgetSeq>>;
 
+    #[instrument(name = "Flex", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "Flex", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Item::DomState) {
         let (widget_seq, dom_state) = self.child.init_tree();
 
@@ -124,6 +124,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         (SingleWidget::new(flex), dom_state)
     }
 
+    #[instrument(name = "Flex", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -137,6 +138,10 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         )
     }
 
+    #[instrument(
+        name = "Flex",
+        skip(self, explicit_state, children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         explicit_state: &mut ParentComponentState,
@@ -158,6 +163,7 @@ impl<ExplicitState, Child: ElementTree<ExplicitState>> ElementTree<ExplicitState
     type AggregateComponentState = Child::AggregateComponentState;
     type BuildOutput = ColumnData<Child::BuildOutput, ExplicitState>;
 
+    #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -176,10 +182,12 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
 
     type TargetWidgetSeq = SingleWidget<Flex<Item::TargetWidgetSeq>>;
 
+    #[instrument(name = "Flex", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         *self = other;
     }
 
+    #[instrument(name = "Flex", skip(self))]
     fn init_tree(&self) -> (Self::TargetWidgetSeq, Item::DomState) {
         let (widget_seq, dom_state) = self.child.init_tree();
 
@@ -194,6 +202,7 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         (SingleWidget::new(flex), dom_state)
     }
 
+    #[instrument(name = "Flex", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -207,6 +216,10 @@ impl<Item: VirtualDom<ParentComponentState>, ParentComponentState> VirtualDom<Pa
         )
     }
 
+    #[instrument(
+        name = "Flex",
+        skip(self, explicit_state, children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         explicit_state: &mut ParentComponentState,
@@ -243,6 +256,7 @@ mod tests {
     use crate::element_tree::assign_empty_state_type;
     use crate::elements::Label;
     use insta::assert_debug_snapshot;
+    use test_env_log::test;
 
     #[test]
     fn empty_rowcol() {

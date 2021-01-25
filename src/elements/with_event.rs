@@ -1,6 +1,7 @@
+use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::GlobalEventCx;
 
-use crate::element_tree::{ElementTree, VirtualDom};
+use tracing::instrument;
 
 pub struct WithEvent<
     Child: ElementTree<ExplicitState>,
@@ -68,6 +69,7 @@ impl<
     type AggregateComponentState = Child::AggregateComponentState;
     type BuildOutput = WithEventTarget<Child::BuildOutput, Cb, ExplicitState>;
 
+    #[instrument(name = "WithEvent", skip(self, prev_state))]
     fn build(
         self,
         prev_state: Self::AggregateComponentState,
@@ -96,14 +98,17 @@ impl<
 
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
+    #[instrument(name = "WithEvent", skip(self, other))]
     fn update_value(&mut self, other: Self) {
         self.element.update_value(other.element);
     }
 
+    #[instrument(name = "WithEvent", skip(self))]
     fn init_tree(&self) -> (Child::TargetWidgetSeq, Child::DomState) {
         self.element.init_tree()
     }
 
+    #[instrument(name = "WithEvent", skip(self, other, prev_state, widget))]
     fn apply_diff(
         &self,
         other: &Self,
@@ -113,6 +118,10 @@ impl<
         self.element.apply_diff(&other.element, prev_state, widget)
     }
 
+    #[instrument(
+        name = "WithEvent",
+        skip(self, explicit_state, children_state, dom_state, cx)
+    )]
     fn process_event(
         &self,
         explicit_state: &mut ParentComponentState,

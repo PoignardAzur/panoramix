@@ -118,9 +118,10 @@ fn ui_builder() -> impl Widget<DruidAppData> {
 }
 
 fn main() -> Result<(), PlatformError> {
+    capitaine::glue::init_tracing();
+
     let main_window = WindowDesc::new(ui_builder);
     let data = Default::default();
     AppLauncher::with_window(main_window)
-        .use_simple_logger()
         .launch(data)
 }

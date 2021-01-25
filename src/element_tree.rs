@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 pub trait ElementTree<ExplicitState>: Debug {
     type Event;
-    type AggregateComponentState: Default;
+    type AggregateComponentState: Default + Debug;
     type BuildOutput: VirtualDom<
         ExplicitState,
         Event = Self::Event,
@@ -20,7 +20,7 @@ pub trait ElementTree<ExplicitState>: Debug {
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
 pub trait VirtualDom<ParentComponentState>: Debug {
     type Event;
-    type AggregateComponentState: Default;
+    type AggregateComponentState: Default + Debug;
 
     // TODO - Might be superfluous
     type DomState;
