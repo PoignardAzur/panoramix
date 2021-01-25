@@ -7,6 +7,7 @@ use druid::{
 };
 
 pub trait WidgetSequence {
+    // TODO - Use associated type instead
     fn widgets(&mut self) -> Vec<&mut dyn FlexWidget>;
 }
 
