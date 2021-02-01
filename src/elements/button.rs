@@ -80,10 +80,10 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         name = "Button",
         skip(self, _component_state, _children_state, widget, cx)
     )]
-    fn process_event(
+    fn process_local_event(
         &self,
         _component_state: &mut ComponentState,
-        _children_state: &mut (),
+        _children_state: &mut Self::AggregateChildrenState,
         widget: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<ButtonPressed> {

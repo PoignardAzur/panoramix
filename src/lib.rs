@@ -6,7 +6,6 @@
 //! [druid](https://github.com/linebender/druid).
 
 pub mod element_tree;
-pub mod element_tree_ext;
 pub mod elements;
 pub mod glue;
 pub mod root_handler;

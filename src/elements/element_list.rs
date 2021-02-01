@@ -40,7 +40,7 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     ElementTree<ComponentState, ComponentEvent>
     for ElementList<Child, ComponentState, ComponentEvent>
 {
-    type Event = (usize, Child::Event);
+    type Event = NoEvent;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type BuildOutput = ElementListData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
@@ -103,7 +103,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     VirtualDom<ComponentState, ComponentEvent>
     for ElementListData<Child, ComponentState, ComponentEvent>
 {
-    type Event = (usize, Child::Event);
+    type Event = NoEvent;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type TargetWidgetSeq = WidgetList<Child::TargetWidgetSeq>;
 
@@ -209,13 +209,12 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<(usize, Child::Event)> {
-        for (i, child_data) in self
+    ) -> Option<ComponentEvent> {
+        for child_data in self
             .children
             .iter()
             .zip(children_state)
             .zip(widget_seq.children.iter_mut())
-            .enumerate()
         {
             let (_key, child) = child_data.0 .0;
             let child_comp_state = child_data.0 .1;
@@ -226,7 +225,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
                 child_widget_seq,
                 cx,
             ) {
-                return Some((i, event));
+                return Some(event);
             }
         }
         return None;

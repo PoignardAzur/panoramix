@@ -1,5 +1,5 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
-use crate::glue::{DruidAppData, GlobalEventCx};
+use crate::glue::DruidAppData;
 use crate::widgets::SingleWidget;
 
 use derivative::Derivative;
@@ -87,17 +87,6 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         if text != prev_text {
             widget.0.widget_mut().set_text(text.clone());
         }
-    }
-
-    #[instrument(name = "Label", skip(self, _component_state, _widget, _cx))]
-    fn process_event(
-        &self,
-        _component_state: &mut ComponentState,
-        _children_state: &mut (),
-        _widget: &mut Self::TargetWidgetSeq,
-        _cx: &mut GlobalEventCx,
-    ) -> Option<NoEvent> {
-        None
     }
 }
 

@@ -75,7 +75,7 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     ElementTree<ComponentState, ComponentEvent>
     for WithMockState<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type BuildOutput = WithMockStateData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
@@ -93,7 +93,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     VirtualDom<ComponentState, ComponentEvent>
     for WithMockStateData<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
@@ -115,7 +115,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Child::Event> {
+    ) -> Option<ComponentEvent> {
         self.0
             .process_event(component_state, &mut children_state.1, widget_seq, cx)
     }

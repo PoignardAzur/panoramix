@@ -39,13 +39,28 @@ pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
 
     fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq);
 
+    // TODO - Rename methods
+    #[allow(unused_variables)]
     fn process_event(
         &self,
         component_state: &mut ComponentState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Self::Event>;
+    ) -> Option<ComponentEvent> {
+        None
+    }
+
+    #[allow(unused_variables)]
+    fn process_local_event(
+        &self,
+        component_state: &mut ComponentState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        cx: &mut GlobalEventCx,
+    ) -> Option<Self::Event> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -63,4 +78,69 @@ pub(crate) fn assign_state_type<
 >(
     _elem: &Elem,
 ) {
+}
+
+use crate::elements::ParentEvent;
+use crate::elements::WithBubbleEvent;
+use crate::elements::WithCallbackEvent;
+use crate::elements::WithMapEvent;
+
+pub trait ElementTreeExt<ComponentState, ComponentEvent>:
+    ElementTree<ComponentState, ComponentEvent> + Sized
+{
+    fn on<EventParam, Cb: Fn(&mut ComponentState, EventParam)>(
+        self,
+        callback: Cb,
+    ) -> WithCallbackEvent<ComponentState, ComponentEvent, EventParam, Self, Cb>
+    where
+        Self::Event: ParentEvent<EventParam>,
+    {
+        WithCallbackEvent {
+            element: self,
+            callback,
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
+            _comp_param: Default::default(),
+        }
+    }
+
+    fn map_event<
+        EventParam,
+        EventReturn,
+        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
+    >(
+        self,
+        callback: Cb,
+    ) -> WithMapEvent<ComponentState, ComponentEvent, EventParam, EventReturn, Self, Cb>
+    where
+        Self::Event: ParentEvent<EventParam>,
+        ComponentEvent: ParentEvent<EventReturn>,
+    {
+        WithMapEvent {
+            element: self,
+            callback,
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
+            _comp_param: Default::default(),
+            _comp_return: Default::default(),
+        }
+    }
+
+    fn bubble_up<Event>(self) -> WithBubbleEvent<ComponentState, ComponentEvent, Event, Self>
+    where
+        Self::Event: ParentEvent<Event>,
+        ComponentEvent: ParentEvent<Event>,
+    {
+        WithBubbleEvent {
+            element: self,
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
+            _comp_param: Default::default(),
+        }
+    }
+}
+
+impl<ComponentState, ComponentEvent, ET: ElementTree<ComponentState, ComponentEvent>>
+    ElementTreeExt<ComponentState, ComponentEvent> for ET
+{
 }

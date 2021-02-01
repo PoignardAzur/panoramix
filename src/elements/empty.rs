@@ -57,7 +57,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         _children_state: &mut (),
         _widget_seq: &mut EmptySequence,
         _cx: &mut GlobalEventCx,
-    ) -> Option<NoEvent> {
+    ) -> Option<ComponentEvent> {
         return None;
     }
 }

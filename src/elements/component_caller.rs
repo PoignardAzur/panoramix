@@ -118,7 +118,7 @@ impl<
         ParentComponentEvent,
     >
 {
-    type Event = ReturnedTree::Event;
+    type Event = ChildComponentEvent;
     type AggregateChildrenState = (ChildComponentState, ReturnedTree::AggregateChildrenState);
     type BuildOutput = ComponentCallerData<
         ChildComponentState,
@@ -163,7 +163,7 @@ impl<
         ParentComponentEvent,
     >
 {
-    type Event = Child::Event;
+    type Event = ChildComponentEvent;
     type AggregateChildrenState = (ChildComponentState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
@@ -186,7 +186,7 @@ impl<
         name = "Component",
         skip(self, _component_state, children_state, widget_seq, cx)
     )]
-    fn process_event(
+    fn process_local_event(
         &self,
         _component_state: &mut ParentComponentState,
         children_state: &mut Self::AggregateChildrenState,
@@ -202,21 +202,20 @@ impl<
 mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
+    use crate::element_tree::ElementTreeExt;
     use crate::element_tree::NoEvent;
-    use crate::element_tree_ext::ElementTreeExt;
-    use crate::elements::{Button, ButtonPressed, EventEnum, Label};
+    use crate::elements::{Button, Label};
     use crate::make_row;
 
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
-    type MyEvent = EventEnum<ButtonPressed, NoEvent>;
-
     // TODO - add tracing, and detect when this function is called by tests
-    fn my_component(state: &u16, props: i64) -> impl ElementTree<u16, Event = MyEvent> {
+    fn my_component(state: &u16, props: i64) -> impl ElementTree<u16, NoEvent> {
         make_row!(
-            Button::new("Press me").with_event(|state: &mut u16, _| {
+            Button::new("Press me").map_event(|state: &mut u16, _| {
                 *state += 1;
+                None
             }),
             Label::new(format!("Values: {} {}", state, props)),
         )

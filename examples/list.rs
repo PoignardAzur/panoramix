@@ -1,6 +1,5 @@
-use capitaine::element_tree::{ElementTree, NoEvent};
-use capitaine::element_tree_ext::ElementTreeExt;
-use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, EventEnum, Label};
+use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
+use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
 use capitaine::glue::DruidAppData;
 use capitaine::root_handler::RootHandler;
 use capitaine::{make_group, make_row};
@@ -20,17 +19,18 @@ struct AppState {
     next_id: i32,
 }
 
-type RowEvent = EventEnum<ButtonPressed, NoEvent, NoEvent, NoEvent>;
+type RowEvent = ButtonPressed;
 struct RowProps {
     list_item: ListItem,
     is_selected: bool,
 }
 
-fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, Event = RowEvent> {
+fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, RowEvent> {
     let age = *state;
     make_row!(
-        Button::new("Select").with_event(|state: &mut u16, _| {
+        Button::new("Select").map_event(|state: &mut u16, event| {
             *state += 1;
+            Some(event)
         }),
         Label::new(if props.is_selected { " [*]" } else { " [ ]" }),
         Label::new(format!("{} - age={}", &props.list_item.text, age)),
@@ -38,18 +38,15 @@ fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, Event = RowEv
     )
 }
 
-type AppEvent =
-    EventEnum<ButtonPressed, ButtonPressed, ButtonPressed, ButtonPressed, (usize, RowEvent)>;
-
-fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Event = AppEvent> {
-    let button_create = Button::new("Create").with_event(|state: &mut AppState, _| {
+fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
+    let button_create = Button::new("Create").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),
             id: state.next_id,
         });
         state.next_id += 1;
     });
-    let button_insert = Button::new("Insert").with_event(|state: &mut AppState, _| {
+    let button_insert = Button::new("Insert").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         state.data.insert(
             0,
             ListItem {
@@ -59,13 +56,13 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         );
         state.next_id += 1;
     });
-    let button_delete = Button::new("Delete").with_event(|state: &mut AppState, _| {
+    let button_delete = Button::new("Delete").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data.remove(row as usize);
             state.selected_row = None;
         }
     });
-    let button_update = Button::new("Update").with_event(|state: &mut AppState, _| {
+    let button_update = Button::new("Update").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data[row as usize].text = "updated".to_string();
         }
@@ -82,6 +79,9 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
             };
 
             let comp_builder = ComponentCaller::prepare(list_row, row_props);
+            let comp_builder = comp_builder.on::<RowEvent, _>(move |state: &mut AppState, _| {
+                state.selected_row = Some(i);
+            });
 
             (list_item.id.to_string(), comp_builder)
         })
@@ -97,10 +97,7 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, Ev
         button_insert,
         button_delete,
         button_update,
-        list_view.with_event(|state: &mut AppState, event| {
-            let i = event.0;
-            state.selected_row = Some(i);
-        }),
+        list_view,
     )
 }
 

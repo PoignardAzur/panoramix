@@ -5,13 +5,13 @@ expression: component_result
 ComponentCallerData(
     RowData {
         child: ElementTupleData(
-            WithEvent {
+            WithEventTarget {
                 element: ButtonData(
                     "Press me",
                     PhantomData,
                     PhantomData,
                 ),
-                callback: "capitaine::elements::component_caller::tests::my_component::{{closure}}",
+                callback: &capitaine::elements::component_caller::tests::my_component::{{closure}},
             },
             LabelData(
                 "Values: 999 16",

@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use either::{Either, Left, Right};
@@ -8,7 +8,7 @@ use tracing_unwrap::OptionExt;
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
     ElementTree<ComponentState, ComponentEvent> for Option<Child>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type BuildOutput = Option<Child::BuildOutput>;
 
@@ -29,7 +29,7 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
     VirtualDom<ComponentState, ComponentEvent> for Option<Child>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type TargetWidgetSeq = Option<Child::TargetWidgetSeq>;
 
@@ -68,7 +68,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Self::Event> {
+    ) -> Option<ComponentEvent> {
         let child = self.as_ref()?;
         child.process_event(
             component_state,
@@ -88,7 +88,7 @@ impl<
         ChildRight: ElementTree<ComponentState, ComponentEvent>,
     > ElementTree<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
 {
-    type Event = Either<ChildLeft::Event, ChildRight::Event>;
+    type Event = NoEvent;
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type BuildOutput = Either<ChildLeft::BuildOutput, ChildRight::BuildOutput>;
@@ -120,7 +120,7 @@ impl<
         ChildRight: VirtualDom<ComponentState, ComponentEvent>,
     > VirtualDom<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
 {
-    type Event = Either<ChildLeft::Event, ChildRight::Event>;
+    type Event = NoEvent;
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type TargetWidgetSeq = Either<ChildLeft::TargetWidgetSeq, ChildRight::TargetWidgetSeq>;
@@ -172,34 +172,30 @@ impl<
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Self::Event> {
+    ) -> Option<ComponentEvent> {
         match self {
-            Left(child) => child
-                .process_event(
-                    component_state,
-                    &mut children_state
-                        .as_mut()
-                        .unwrap_or_log()
-                        .as_mut()
-                        .left()
-                        .unwrap_or_log(),
-                    widget_seq.as_mut().left().unwrap_or_log(),
-                    cx,
-                )
-                .map(Left),
-            Right(child) => child
-                .process_event(
-                    component_state,
-                    &mut children_state
-                        .as_mut()
-                        .unwrap_or_log()
-                        .as_mut()
-                        .right()
-                        .unwrap_or_log(),
-                    widget_seq.as_mut().right().unwrap_or_log(),
-                    cx,
-                )
-                .map(Right),
+            Left(child) => child.process_event(
+                component_state,
+                &mut children_state
+                    .as_mut()
+                    .unwrap_or_log()
+                    .as_mut()
+                    .left()
+                    .unwrap_or_log(),
+                widget_seq.as_mut().left().unwrap_or_log(),
+                cx,
+            ),
+            Right(child) => child.process_event(
+                component_state,
+                &mut children_state
+                    .as_mut()
+                    .unwrap_or_log()
+                    .as_mut()
+                    .right()
+                    .unwrap_or_log(),
+                widget_seq.as_mut().right().unwrap_or_log(),
+                cx,
+            ),
         }
     }
 }

@@ -109,7 +109,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
     ElementTree<ComponentState, ComponentEvent> for Row<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = RowData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
@@ -126,7 +126,7 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
     VirtualDom<ComponentState, ComponentEvent> for RowData<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
 
     type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
@@ -165,7 +165,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Child::Event> {
+    ) -> Option<ComponentEvent> {
         self.child.process_event(
             component_state,
             children_state,
@@ -180,7 +180,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
     ElementTree<ComponentState, ComponentEvent> for Column<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = ColumnData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
@@ -198,7 +198,7 @@ impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, Componen
     VirtualDom<ComponentState, ComponentEvent>
     for ColumnData<Child, ComponentState, ComponentEvent>
 {
-    type Event = Child::Event;
+    type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
 
@@ -236,7 +236,7 @@ impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, Componen
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Child::Event> {
+    ) -> Option<ComponentEvent> {
         self.child.process_event(
             component_state,
             children_state,

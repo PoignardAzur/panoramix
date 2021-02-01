@@ -6,11 +6,11 @@ use crate::widget_sequence::WidgetSequence;
 use crate::widgets::flex::FlexParams;
 
 use druid::kurbo::{Rect, Size};
-use druid::{
-    BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle,
-    LifeCycleCtx, PaintCtx, UpdateCtx, WidgetPod,
-};
 use druid::widget::{Button, Click, ControllerHost};
+use druid::{
+    BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
+    WidgetPod,
+};
 
 pub struct ButtonWidget(
     pub WidgetPod<DruidAppData, ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
@@ -46,7 +46,8 @@ impl FlexWidget for ButtonWidget {
         env: &Env,
     ) {
         self.0.lifecycle(ctx, event, data, env);
-    }   fn update(
+    }
+    fn update(
         &mut self,
         ctx: &mut UpdateCtx,
         _old_data: &DruidAppData,

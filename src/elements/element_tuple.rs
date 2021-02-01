@@ -79,14 +79,7 @@ impl<
         )*
     > ElementTree<ComponentState, ComponentEvent> for $TupleName<$($Type,)* ComponentState, ComponentEvent>
 {
-    type Event = EventEnum<
-        $(
-            $Type::Event,
-        )*
-        $(replace_ty!(($Remainder) >>>
-            NoEvent
-        ),)*
-    >;
+    type Event = NoEvent;
     type AggregateChildrenState = (
         $(
             $Type::AggregateChildrenState,
@@ -289,36 +282,6 @@ macro_rules! make_group {
 
 }
 
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum EventEnum<
-T0 = NoEvent,
-T1 = NoEvent,
-T2 = NoEvent,
-T3 = NoEvent,
-T4 = NoEvent,
-T5 = NoEvent,
-T6 = NoEvent,
-T7 = NoEvent,
-T8 = NoEvent,
-T9 = NoEvent,
-T10 = NoEvent,
-T11 = NoEvent,
-> {
-    E0(T0),
-    E1(T1),
-    E2(T2),
-    E3(T3),
-    E4(T4),
-    E5(T5),
-    E6(T6),
-    E7(T7),
-    E8(T8),
-    E9(T9),
-    E10(T10),
-    E11(T11),
-}
-
 impl<
         ComponentState,
         ComponentEvent,
@@ -351,20 +314,7 @@ impl<
         ComponentEvent,
     >
 {
-    type Event = EventEnum<
-        C0::Event,
-        C1::Event,
-        C2::Event,
-        C3::Event,
-        C4::Event,
-        C5::Event,
-        C6::Event,
-        C7::Event,
-        C8::Event,
-        C9::Event,
-        C10::Event,
-        C11::Event,
-    >;
+    type Event = NoEvent;
     type AggregateChildrenState = (
         C0::AggregateChildrenState,
         C1::AggregateChildrenState,
@@ -444,54 +394,31 @@ impl<
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<Self::Event> {
-        let event0 = self
-            .0
-            .process_event(component_state, &mut children_state.0, &mut widget_seq.0, cx)
-            .map(|event| EventEnum::E0(event));
-        let event1 = self
-            .1
-            .process_event(component_state, &mut children_state.1, &mut widget_seq.1, cx)
-            .map(|event| EventEnum::E1(event));
-        let event2 = self
-            .2
-            .process_event(component_state, &mut children_state.2, &mut widget_seq.2, cx)
-            .map(|event| EventEnum::E2(event));
-        let event3 = self
-            .3
-            .process_event(component_state, &mut children_state.3, &mut widget_seq.3, cx)
-            .map(|event| EventEnum::E3(event));
-        let event4 = self
-            .4
-            .process_event(component_state, &mut children_state.4, &mut widget_seq.4, cx)
-            .map(|event| EventEnum::E4(event));
-        let event5 = self
-            .5
-            .process_event(component_state, &mut children_state.5, &mut widget_seq.5, cx)
-            .map(|event| EventEnum::E5(event));
-        let event6 = self
-            .6
-            .process_event(component_state, &mut children_state.6, &mut widget_seq.6, cx)
-            .map(|event| EventEnum::E6(event));
-        let event7 = self
-            .7
-            .process_event(component_state, &mut children_state.7, &mut widget_seq.7, cx)
-            .map(|event| EventEnum::E7(event));
-        let event8 = self
-            .8
-            .process_event(component_state, &mut children_state.8, &mut widget_seq.8, cx)
-            .map(|event| EventEnum::E8(event));
-        let event9 = self
-            .9
-            .process_event(component_state, &mut children_state.9, &mut widget_seq.9, cx)
-            .map(|event| EventEnum::E9(event));
-        let event10 = self
-            .10
-            .process_event(component_state, &mut children_state.10, &mut widget_seq.10, cx)
-            .map(|event| EventEnum::E10(event));
-        let event11 = self
-            .11.process_event(component_state, &mut children_state.11, &mut widget_seq.11, cx)
-            .map(|event| EventEnum::E11(event));
+    ) -> Option<ComponentEvent> {
+        let event0 = self.0
+            .process_event(component_state, &mut children_state.0, &mut widget_seq.0, cx);
+        let event1 = self.1
+            .process_event(component_state, &mut children_state.1, &mut widget_seq.1, cx);
+        let event2 = self.2
+            .process_event(component_state, &mut children_state.2, &mut widget_seq.2, cx);
+        let event3 = self.3
+            .process_event(component_state, &mut children_state.3, &mut widget_seq.3, cx);
+        let event4 = self.4
+            .process_event(component_state, &mut children_state.4, &mut widget_seq.4, cx);
+        let event5 = self.5
+            .process_event(component_state, &mut children_state.5, &mut widget_seq.5, cx);
+        let event6 = self.6
+            .process_event(component_state, &mut children_state.6, &mut widget_seq.6, cx);
+        let event7 = self.7
+            .process_event(component_state, &mut children_state.7, &mut widget_seq.7, cx);
+        let event8 = self.8
+            .process_event(component_state, &mut children_state.8, &mut widget_seq.8, cx);
+        let event9 = self.9
+            .process_event(component_state, &mut children_state.9, &mut widget_seq.9, cx);
+        let event10 = self.10
+            .process_event(component_state, &mut children_state.10, &mut widget_seq.10, cx);
+        let event11 = self.11
+            .process_event(component_state, &mut children_state.11, &mut widget_seq.11, cx);
 
         // FIXME - If several events happen simultaneously, this will swallow all but one
         // process_event() should return an iterator or an observable instead.
