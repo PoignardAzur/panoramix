@@ -8,24 +8,27 @@ use druid::{
     Widget, WidgetPod,
 };
 
-pub struct SingleWidget<W: Widget<DruidAppData>>(pub WidgetPod<DruidAppData, W>);
+pub struct SingleWidget<W: Widget<DruidAppData>> {
+    pub pod: WidgetPod<DruidAppData, W>,
+    pub flex: FlexParams,
+}
 
 impl<W: Widget<DruidAppData>> SingleWidget<W> {
-    pub fn new(widget: W) -> Self {
-        SingleWidget(WidgetPod::new(widget))
+    pub fn new(widget: W, flex: FlexParams) -> Self {
+        SingleWidget {
+            pod: WidgetPod::new(widget),
+            flex,
+        }
     }
 }
 
 impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
     fn flex_params(&self) -> FlexParams {
-        FlexParams {
-            flex: 1.0,
-            alignment: None,
-        }
+        self.flex
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
-        self.0.event(ctx, event, data, env);
+        self.pod.event(ctx, event, data, env);
     }
 
     fn lifecycle(
@@ -35,7 +38,7 @@ impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
         data: &DruidAppData,
         env: &Env,
     ) {
-        self.0.lifecycle(ctx, event, data, env);
+        self.pod.lifecycle(ctx, event, data, env);
     }
 
     fn update(
@@ -45,7 +48,7 @@ impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
         data: &DruidAppData,
         env: &Env,
     ) {
-        self.0.update(ctx, data, env);
+        self.pod.update(ctx, data, env);
     }
 
     fn layout(
@@ -55,23 +58,23 @@ impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
         data: &DruidAppData,
         env: &Env,
     ) -> Size {
-        self.0.layout(ctx, bc, data, env)
+        self.pod.layout(ctx, bc, data, env)
     }
 
     fn paint_rect(&self) -> Rect {
-        self.0.paint_rect()
+        self.pod.paint_rect()
     }
 
     fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect) {
-        self.0.set_layout_rect(ctx, data, env, rect)
+        self.pod.set_layout_rect(ctx, data, env, rect)
     }
 
     fn layout_rect(&self) -> Rect {
-        self.0.layout_rect()
+        self.pod.layout_rect()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
-        self.0.paint(ctx, data, env);
+        self.pod.paint(ctx, data, env);
     }
 }
 
@@ -79,19 +82,4 @@ impl<W: Widget<DruidAppData>> WidgetSequence for SingleWidget<W> {
     fn widgets(&mut self) -> Vec<&mut dyn FlexWidget> {
         vec![self]
     }
-}
-
-use crate::glue::Action;
-use crate::glue::Id;
-use druid::widget::Button;
-use druid::widget::Click;
-use druid::widget::ControllerHost;
-pub fn make_button(
-    text: String,
-    id: Id,
-) -> SingleWidget<ControllerHost<Button<DruidAppData>, Click<DruidAppData>>> {
-    let button = Button::new(text)
-        .on_click(move |_, data: &mut DruidAppData, _| data.queue_action(id, Action::Clicked));
-
-    SingleWidget(WidgetPod::new(button))
 }

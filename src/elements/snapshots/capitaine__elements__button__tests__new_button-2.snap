@@ -4,6 +4,10 @@ expression: button_data
 ---
 ButtonData(
     "Hello",
+    FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
     PhantomData,
     PhantomData,
 )

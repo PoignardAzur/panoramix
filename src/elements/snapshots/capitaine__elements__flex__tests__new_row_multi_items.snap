@@ -6,22 +6,43 @@ Row {
     child: ElementTuple_3(
         Label(
             "Hello",
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
             PhantomData,
             PhantomData,
         ),
         Label(
             "Hello2",
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
             PhantomData,
             PhantomData,
         ),
         Label(
             "Hello3",
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
             PhantomData,
             PhantomData,
         ),
         PhantomData,
         PhantomData,
     ),
+    flex: FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
+    flex_container: FlexContainerParams {
+        cross_alignment: Center,
+        main_alignment: Start,
+        fill_major_axis: false,
+    },
     _comp_state: PhantomData,
     _comp_event: PhantomData,
 }

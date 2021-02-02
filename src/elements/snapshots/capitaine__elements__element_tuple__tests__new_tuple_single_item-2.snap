@@ -6,6 +6,10 @@ expression: tuple_data
     ElementTupleData(
         LabelData(
             "Hello",
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
             PhantomData,
             PhantomData,
         ),

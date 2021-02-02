@@ -1,6 +1,8 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
-use crate::widgets::flex::{Axis, CrossAxisAlignment, Flex, MainAxisAlignment};
+use crate::widgets::flex::{
+    Axis, CrossAxisAlignment, Flex, FlexContainerParams, FlexParams, MainAxisAlignment,
+};
 use crate::widgets::SingleWidget;
 
 use derivative::Derivative;
@@ -8,7 +10,7 @@ use tracing::instrument;
 
 // TODO - merge row and column
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
 pub struct Row<
     Child: ElementTree<ComponentState, ComponentEvent>,
@@ -16,11 +18,13 @@ pub struct Row<
     ComponentEvent = NoEvent,
 > {
     pub child: Child,
+    pub flex: FlexParams,
+    pub flex_container: FlexContainerParams,
     pub _comp_state: std::marker::PhantomData<ComponentState>,
     pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
 pub struct RowData<
     Child: VirtualDom<ComponentState, ComponentEvent>,
@@ -28,11 +32,13 @@ pub struct RowData<
     ComponentEvent = NoEvent,
 > {
     pub child: Child,
+    pub flex: FlexParams,
+    pub flex_container: FlexContainerParams,
     pub _comp_state: std::marker::PhantomData<ComponentState>,
     pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
 pub struct Column<
     Child: ElementTree<ComponentState, ComponentEvent>,
@@ -40,11 +46,13 @@ pub struct Column<
     ComponentEvent = NoEvent,
 > {
     pub child: Child,
+    pub flex: FlexParams,
+    pub flex_container: FlexContainerParams,
     pub _comp_state: std::marker::PhantomData<ComponentState>,
     pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
 pub struct ColumnData<
     Child: VirtualDom<ComponentState, ComponentEvent>,
@@ -52,6 +60,8 @@ pub struct ColumnData<
     ComponentEvent = NoEvent,
 > {
     pub child: Child,
+    pub flex: FlexParams,
+    pub flex_container: FlexContainerParams,
     pub _comp_state: std::marker::PhantomData<ComponentState>,
     pub _comp_event: std::marker::PhantomData<ComponentEvent>,
 }
@@ -64,8 +74,31 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     pub fn new(child: Child) -> Self {
         Row {
             child,
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            flex_container: FlexContainerParams {
+                cross_alignment: CrossAxisAlignment::Center,
+                main_alignment: MainAxisAlignment::Start,
+                fill_major_axis: false,
+            },
             _comp_state: Default::default(),
             _comp_event: Default::default(),
+        }
+    }
+
+    pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
+        Row {
+            flex: flex_params,
+            ..self
+        }
+    }
+
+    pub fn with_flex_container_params(self, flex_container: FlexContainerParams) -> Self {
+        Row {
+            flex_container,
+            ..self
         }
     }
 }
@@ -73,9 +106,11 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
     RowData<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Child) -> Self {
+    pub fn new(child: Child, flex: FlexParams, flex_container: FlexContainerParams) -> Self {
         RowData {
             child,
+            flex,
+            flex_container,
             _comp_state: Default::default(),
             _comp_event: Default::default(),
         }
@@ -88,8 +123,31 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     pub fn new(child: Child) -> Self {
         Column {
             child,
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            flex_container: FlexContainerParams {
+                cross_alignment: CrossAxisAlignment::Center,
+                main_alignment: MainAxisAlignment::Start,
+                fill_major_axis: false,
+            },
             _comp_state: Default::default(),
             _comp_event: Default::default(),
+        }
+    }
+
+    pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
+        Column {
+            flex: flex_params,
+            ..self
+        }
+    }
+
+    pub fn with_flex_container_params(self, flex_container: FlexContainerParams) -> Self {
+        Column {
+            flex_container,
+            ..self
         }
     }
 }
@@ -97,9 +155,11 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
     ColumnData<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Child) -> Self {
+    pub fn new(child: Child, flex: FlexParams, flex_container: FlexContainerParams) -> Self {
         ColumnData {
             child,
+            flex,
+            flex_container,
             _comp_state: Default::default(),
             _comp_event: Default::default(),
         }
@@ -119,7 +179,10 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, component_state) = self.child.build(prev_state);
-        (RowData::new(element), component_state)
+        (
+            RowData::new(element, self.flex, self.flex_container),
+            component_state,
+        )
     }
 }
 
@@ -141,18 +204,16 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         // FIXME - Pull params from constructor
         let flex = Flex {
             direction: Axis::Horizontal,
-            cross_alignment: CrossAxisAlignment::Center,
-            main_alignment: MainAxisAlignment::Start,
-            fill_major_axis: false,
+            flex_params: self.flex_container,
             children_seq: self.child.init_tree(),
         };
-        SingleWidget::new(flex)
+        SingleWidget::new(flex, self.flex)
     }
 
     #[instrument(name = "Flex", skip(self, other, widget_seq))]
     fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
         self.child
-            .reconcile(&other.child, &mut widget_seq.0.widget_mut().children_seq);
+            .reconcile(&other.child, &mut widget_seq.pod.widget_mut().children_seq);
     }
 
     #[instrument(
@@ -169,7 +230,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         self.child.process_event(
             component_state,
             children_state,
-            &mut widget_seq.0.widget_mut().children_seq,
+            &mut widget_seq.pod.widget_mut().children_seq,
             cx,
         )
     }
@@ -190,7 +251,10 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, component_state) = self.child.build(prev_state);
-        (ColumnData::new(element), component_state)
+        (
+            ColumnData::new(element, self.flex, self.flex_container),
+            component_state,
+        )
     }
 }
 
@@ -212,18 +276,16 @@ impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, Componen
         // FIXME - Pull params from constructor
         let flex = Flex {
             direction: Axis::Vertical,
-            cross_alignment: CrossAxisAlignment::Center,
-            main_alignment: MainAxisAlignment::Start,
-            fill_major_axis: false,
+            flex_params: self.flex_container,
             children_seq: self.child.init_tree(),
         };
-        SingleWidget::new(flex)
+        SingleWidget::new(flex, self.flex)
     }
 
     #[instrument(name = "Flex", skip(self, other, widget_seq))]
     fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
         self.child
-            .reconcile(&other.child, &mut widget_seq.0.widget_mut().children_seq)
+            .reconcile(&other.child, &mut widget_seq.pod.widget_mut().children_seq)
     }
 
     #[instrument(
@@ -240,7 +302,7 @@ impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, Componen
         self.child.process_event(
             component_state,
             children_state,
-            &mut widget_seq.0.widget_mut().children_seq,
+            &mut widget_seq.pod.widget_mut().children_seq,
             cx,
         )
     }

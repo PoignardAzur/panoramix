@@ -2,9 +2,16 @@ use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
 use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
 use capitaine::glue::DruidAppData;
 use capitaine::root_handler::RootHandler;
+use capitaine::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use capitaine::{make_group, make_row};
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
+
+const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
+    cross_alignment: CrossAxisAlignment::Center,
+    main_alignment: MainAxisAlignment::End,
+    fill_major_axis: false,
+};
 
 #[derive(Debug, Default, Clone)]
 struct ListItem {
@@ -36,6 +43,7 @@ fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, RowEvent> {
         Label::new(format!("{} - age={}", &props.list_item.text, age)),
         Label::new(format!("id={}", props.list_item.id)),
     )
+    .with_flex_container_params(ROW_FLEX_PARAMS)
 }
 
 fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
@@ -93,10 +101,8 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, No
     };
 
     make_group!(
-        button_create,
-        button_insert,
-        button_delete,
-        button_update,
+        make_row!(button_create, button_insert, button_delete, button_update,)
+            .with_flex_container_params(ROW_FLEX_PARAMS),
         list_view,
     )
 }

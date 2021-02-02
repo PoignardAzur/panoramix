@@ -8,6 +8,10 @@ ElementList {
             "aaa",
             Label(
                 "aaa",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),
@@ -16,6 +20,10 @@ ElementList {
             "bbb",
             Label(
                 "bbb",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),
@@ -24,6 +32,10 @@ ElementList {
             "ccc",
             Label(
                 "ccc",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),

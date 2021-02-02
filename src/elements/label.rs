@@ -1,23 +1,26 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::DruidAppData;
+use crate::widgets::flex::FlexParams;
 use crate::widgets::SingleWidget;
 
 use derivative::Derivative;
 use druid::widget as druid_w;
 use tracing::instrument;
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct Label<ComponentState = (), ComponentEvent = NoEvent>(
     pub String,
+    pub FlexParams,
     pub std::marker::PhantomData<ComponentState>,
     pub std::marker::PhantomData<ComponentEvent>,
 );
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct LabelData<ComponentState = (), ComponentEvent = NoEvent>(
     pub String,
+    pub FlexParams,
     pub std::marker::PhantomData<ComponentState>,
     pub std::marker::PhantomData<ComponentEvent>,
 );
@@ -27,7 +30,19 @@ pub struct LabelData<ComponentState = (), ComponentEvent = NoEvent>(
 
 impl<ComponentState, ComponentEvent> Label<ComponentState, ComponentEvent> {
     pub fn new(text: impl Into<String>) -> Label<ComponentState, ComponentEvent> {
-        Label(text.into(), Default::default(), Default::default())
+        Label(
+            text.into(),
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            Default::default(),
+            Default::default(),
+        )
+    }
+
+    pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
+        Label(self.0, flex_params, Default::default(), Default::default())
     }
 
     pub fn with_mock_state(self) -> super::WithMockState<Self, ComponentState, ComponentEvent> {
@@ -37,7 +52,15 @@ impl<ComponentState, ComponentEvent> Label<ComponentState, ComponentEvent> {
 
 impl<ComponentState, ComponentEvent> LabelData<ComponentState, ComponentEvent> {
     pub fn new(text: impl Into<String>) -> LabelData<ComponentState, ComponentEvent> {
-        LabelData(text.into(), Default::default(), Default::default())
+        LabelData(
+            text.into(),
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            Default::default(),
+            Default::default(),
+        )
     }
 
     pub fn with_mock_state(self) -> super::WithMockStateData<Self, ComponentState, ComponentEvent> {
@@ -55,7 +78,7 @@ impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
     #[instrument(name = "Label", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (LabelData<ComponentState, ComponentEvent>, ()) {
         (
-            LabelData(self.0, Default::default(), Default::default()),
+            LabelData(self.0, self.1, Default::default(), Default::default()),
             (),
         )
     }
@@ -77,7 +100,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         let text = &self.0;
         let label = druid_w::Label::new(text.clone());
-        SingleWidget::new(label)
+        SingleWidget::new(label, self.1)
     }
 
     #[instrument(name = "Label", skip(self, other, widget))]
@@ -85,7 +108,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         let text = &self.0;
         let prev_text = &other.0;
         if text != prev_text {
-            widget.0.widget_mut().set_text(text.clone());
+            widget.pod.widget_mut().set_text(text.clone());
         }
     }
 }

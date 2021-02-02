@@ -5,16 +5,28 @@ expression: tuple
 ElementTuple_3(
     Label(
         "Hello",
+        FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
         PhantomData,
         PhantomData,
     ),
     Label(
         "Hello2",
+        FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
         PhantomData,
         PhantomData,
     ),
     Label(
         "Hello3",
+        FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
         PhantomData,
         PhantomData,
     ),

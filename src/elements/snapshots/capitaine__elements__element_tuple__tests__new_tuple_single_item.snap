@@ -5,6 +5,10 @@ expression: tuple
 ElementTuple_1(
     Label(
         "Hello",
+        FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
         PhantomData,
         PhantomData,
     ),

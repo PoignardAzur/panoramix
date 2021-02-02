@@ -7,16 +7,28 @@ expression: row_data
         child: ElementTupleData(
             LabelData(
                 "Hello",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),
             LabelData(
                 "Hello2",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),
             LabelData(
                 "Hello3",
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 PhantomData,
                 PhantomData,
             ),
@@ -59,6 +71,15 @@ expression: row_data
             PhantomData,
             PhantomData,
         ),
+        flex: FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
+        flex_container: FlexContainerParams {
+            cross_alignment: Center,
+            main_alignment: Start,
+            fill_major_axis: false,
+        },
         _comp_state: PhantomData,
         _comp_event: PhantomData,
     },

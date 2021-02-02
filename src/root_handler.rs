@@ -99,11 +99,15 @@ impl<
             std::mem::drop(_span_process_event);
         } else {
             let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
+            // FIXME - Fix alignment to be consistent
+            // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
             let flex_widget = WidgetPod::new(flex::Flex {
                 direction: flex::Axis::Vertical,
-                cross_alignment: flex::CrossAxisAlignment::Center,
-                main_alignment: flex::MainAxisAlignment::Start,
-                fill_major_axis: false,
+                flex_params: flex::FlexContainerParams {
+                    cross_alignment: flex::CrossAxisAlignment::Center,
+                    main_alignment: flex::MainAxisAlignment::Start,
+                    fill_major_axis: false,
+                },
                 children_seq: widget_seq,
             });
             ctx.children_changed();

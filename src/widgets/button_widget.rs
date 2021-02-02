@@ -12,30 +12,32 @@ use druid::{
     WidgetPod,
 };
 
-pub struct ButtonWidget(
-    pub WidgetPod<DruidAppData, ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
-    pub Id,
-);
+pub struct ButtonWidget {
+    pub pod: WidgetPod<DruidAppData, ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
+    pub flex: FlexParams,
+    pub id: Id,
+}
 
 impl ButtonWidget {
-    pub fn new(text: String, id: Id) -> Self {
+    pub fn new(text: String, flex: FlexParams, id: Id) -> Self {
         let button = Button::new(text)
             .on_click(move |_, data: &mut DruidAppData, _| data.queue_action(id, Action::Clicked));
 
-        ButtonWidget(WidgetPod::new(button), id)
+        ButtonWidget {
+            pod: WidgetPod::new(button),
+            flex,
+            id,
+        }
     }
 }
 
 impl FlexWidget for ButtonWidget {
     fn flex_params(&self) -> FlexParams {
-        FlexParams {
-            flex: 1.0,
-            alignment: None,
-        }
+        self.flex
     }
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
-        self.0.event(ctx, event, data, env);
+        self.pod.event(ctx, event, data, env);
     }
 
     fn lifecycle(
@@ -45,7 +47,7 @@ impl FlexWidget for ButtonWidget {
         data: &DruidAppData,
         env: &Env,
     ) {
-        self.0.lifecycle(ctx, event, data, env);
+        self.pod.lifecycle(ctx, event, data, env);
     }
     fn update(
         &mut self,
@@ -54,7 +56,7 @@ impl FlexWidget for ButtonWidget {
         data: &DruidAppData,
         env: &Env,
     ) {
-        self.0.update(ctx, data, env);
+        self.pod.update(ctx, data, env);
     }
 
     fn layout(
@@ -64,23 +66,23 @@ impl FlexWidget for ButtonWidget {
         data: &DruidAppData,
         env: &Env,
     ) -> Size {
-        self.0.layout(ctx, bc, data, env)
+        self.pod.layout(ctx, bc, data, env)
     }
 
     fn paint_rect(&self) -> Rect {
-        self.0.paint_rect()
+        self.pod.paint_rect()
     }
 
     fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect) {
-        self.0.set_layout_rect(ctx, data, env, rect)
+        self.pod.set_layout_rect(ctx, data, env, rect)
     }
 
     fn layout_rect(&self) -> Rect {
-        self.0.layout_rect()
+        self.pod.layout_rect()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
-        self.0.paint(ctx, data, env);
+        self.pod.paint(ctx, data, env);
     }
 }
 

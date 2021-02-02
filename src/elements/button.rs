@@ -1,28 +1,31 @@
 use crate::glue::{GlobalEventCx, Id};
 
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::widgets::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
 use derivative::Derivative;
 use tracing::instrument;
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct Button<ComponentState = (), ComponentEvent = NoEvent>(
     pub String,
+    pub FlexParams,
     pub std::marker::PhantomData<ComponentState>,
     pub std::marker::PhantomData<ComponentEvent>,
 );
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
+#[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct ButtonData<ComponentState = (), ComponentEvent = NoEvent>(
     pub String,
+    pub FlexParams,
     pub std::marker::PhantomData<ComponentState>,
     pub std::marker::PhantomData<ComponentEvent>,
 );
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ButtonPressed();
 
 //
@@ -30,7 +33,19 @@ pub struct ButtonPressed();
 
 impl<ComponentState, ComponentEvent> Button<ComponentState, ComponentEvent> {
     pub fn new(text: impl Into<String>) -> Self {
-        Button(text.into(), Default::default(), Default::default())
+        Button(
+            text.into(),
+            FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            Default::default(),
+            Default::default(),
+        )
+    }
+
+    pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
+        Button(self.0, flex_params, Default::default(), Default::default())
     }
 }
 
@@ -44,7 +59,7 @@ impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
     #[instrument(name = "Button", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (ButtonData<ComponentState, ComponentEvent>, ()) {
         (
-            ButtonData(self.0, Default::default(), Default::default()),
+            ButtonData(self.0, self.1, Default::default(), Default::default()),
             (),
         )
     }
@@ -67,7 +82,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
     #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> ButtonWidget {
         let text = &self.0;
-        ButtonWidget::new(text.clone(), Id::new())
+        ButtonWidget::new(text.clone(), self.1, Id::new())
     }
 
     #[instrument(name = "Button", skip(self, _other, _widget))]
@@ -88,7 +103,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         cx: &mut GlobalEventCx,
     ) -> Option<ButtonPressed> {
         // FIXME - Rework event dispatching
-        let id = widget.1;
+        let id = widget.id;
         if cx.app_data.dequeue_action(id).is_some() {
             Some(ButtonPressed())
         } else {
@@ -116,8 +131,12 @@ mod tests {
             button_data,
             ButtonData(
                 String::from("Hello"),
+                FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
                 Default::default(),
-                Default::default()
+                Default::default(),
             )
         );
 

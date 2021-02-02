@@ -4,6 +4,10 @@ expression: label_data
 ---
 LabelData(
     "Hello",
+    FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
     PhantomData,
     PhantomData,
 )

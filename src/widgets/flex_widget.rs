@@ -146,10 +146,15 @@ use crate::widget_sequence::WidgetSequence;
 /// [`SizedBox`]: struct.SizedBox.html
 pub struct Flex<Children: WidgetSequence> {
     pub(crate) direction: Axis,
-    pub(crate) cross_alignment: CrossAxisAlignment,
-    pub(crate) main_alignment: MainAxisAlignment,
-    pub(crate) fill_major_axis: bool,
+    pub(crate) flex_params: FlexContainerParams,
     pub children_seq: Children,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct FlexContainerParams {
+    pub cross_alignment: CrossAxisAlignment,
+    pub main_alignment: MainAxisAlignment,
+    pub fill_major_axis: bool,
 }
 
 /// A dummy widget we use to do spacing.
@@ -189,13 +194,13 @@ struct Spacer {
 /// [`Flex`]: struct.Flex.html
 /// [`with_flex_child`]: struct.Flex.html#method.with_flex_child
 /// [`add_flex_child`]: struct.Flex.html#method.add_flex_child
-#[derive(Copy, Clone, Default, Debug)]
+#[derive(Copy, Clone, Default, Debug, PartialEq)]
 pub struct FlexParams {
     pub flex: f64,
     pub alignment: Option<CrossAxisAlignment>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Axis {
     Horizontal,
     Vertical,
@@ -205,7 +210,7 @@ pub enum Axis {
 ///
 /// If a widget is smaller than the container on the minor axis, this determines
 /// where it is positioned.
-#[derive(Debug, Clone, Copy, PartialEq, Data)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Data)]
 pub enum CrossAxisAlignment {
     /// Top or leading.
     ///
@@ -225,7 +230,7 @@ pub enum CrossAxisAlignment {
 ///
 /// If there is surplus space on the main axis after laying out children, this
 /// enum represents how children are laid out in this space.
-#[derive(Debug, Clone, Copy, PartialEq, Data)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Data)]
 pub enum MainAxisAlignment {
     /// Top or leading.
     ///
@@ -411,7 +416,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
         }
 
         // figure out if we have extra space on major axis, and if so how to use it
-        let extra = if self.fill_major_axis {
+        let extra = if self.flex_params.fill_major_axis {
             (remaining - major_flex).max(0.0)
         } else {
             // if we are *not* expected to fill our available space this usually
@@ -419,7 +424,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
             (self.direction.major(bc.min()) - (major_non_flex + major_flex)).max(0.0)
         };
 
-        let mut spacing = Spacing::new(self.main_alignment, extra, child_widgets.len());
+        let mut spacing = Spacing::new(self.flex_params.main_alignment, extra, child_widgets.len());
         // Finalize layout, assigning positions to each child.
         let mut major = spacing.next().unwrap_or(0.);
         let mut child_paint_rect = Rect::ZERO;
@@ -429,7 +434,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
             let alignment = child
                 .flex_params()
                 .alignment
-                .unwrap_or(self.cross_alignment);
+                .unwrap_or(self.flex_params.cross_alignment);
             let align_minor = alignment.align(extra_minor);
             let pos: Point = self.direction.pack(major, align_minor).into();
 
@@ -450,7 +455,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
         let my_size: Size = self.direction.pack(major, minor).into();
 
         // if we don't have to fill the main axis, we loosen that axis before constraining
-        let my_size = if !self.fill_major_axis {
+        let my_size = if !self.flex_params.fill_major_axis {
             let max_major = self.direction.major(bc.max());
             self.direction
                 .constraints(bc, 0.0, max_major)
