@@ -1,6 +1,8 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ReconcileCtx;
+
 use either::{Either, Left, Right};
 use tracing::instrument;
 use tracing_unwrap::OptionExt;
@@ -47,11 +49,16 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         }
     }
 
-    #[instrument(name = "Option", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+    #[instrument(name = "Option", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
         if let Some(child) = self.as_ref() {
             if let Some(other_child) = other {
-                child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log());
+                child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log(), ctx);
             } else {
                 *widget_seq = Some(child.init_tree());
             }
@@ -138,8 +145,13 @@ impl<
         }
     }
 
-    #[instrument(name = "Either", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+    #[instrument(name = "Either", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
         match self {
             Left(child) => {
                 if let Right(_) = &other {
@@ -148,6 +160,7 @@ impl<
                 child.reconcile(
                     other.as_ref().left().unwrap_or_log(),
                     &mut widget_seq.as_mut().left().unwrap_or_log(),
+                    ctx,
                 );
             }
             Right(child) => {
@@ -157,6 +170,7 @@ impl<
                 child.reconcile(
                     other.as_ref().right().unwrap_or_log(),
                     &mut widget_seq.as_mut().right().unwrap_or_log(),
+                    ctx,
                 );
             }
         }

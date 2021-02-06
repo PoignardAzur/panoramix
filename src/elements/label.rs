@@ -3,8 +3,10 @@ use crate::glue::DruidAppData;
 use crate::widgets::flex::FlexParams;
 use crate::widgets::SingleWidget;
 
-use derivative::Derivative;
+use crate::element_tree::ReconcileCtx;
 use druid::widget as druid_w;
+
+use derivative::Derivative;
 use tracing::instrument;
 
 #[derive(Derivative, PartialEq)]
@@ -103,12 +105,13 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         SingleWidget::new(label, self.1)
     }
 
-    #[instrument(name = "Label", skip(self, other, widget))]
-    fn reconcile(&self, other: &Self, widget: &mut Self::TargetWidgetSeq) {
+    #[instrument(name = "Label", skip(self, other, widget, ctx))]
+    fn reconcile(&self, other: &Self, widget: &mut Self::TargetWidgetSeq, ctx: &mut ReconcileCtx) {
         let text = &self.0;
         let prev_text = &other.0;
         if text != prev_text {
             widget.pod.widget_mut().set_text(text.clone());
+            widget.request_druid_update(ctx);
         }
     }
 }

@@ -1,3 +1,4 @@
+use crate::element_tree::ReconcileCtx;
 use crate::glue::DruidAppData;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
@@ -7,6 +8,7 @@ use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
     Widget, WidgetPod,
 };
+use tracing::trace;
 
 pub struct SingleWidget<W: Widget<DruidAppData>> {
     pub pod: WidgetPod<DruidAppData, W>,
@@ -19,6 +21,14 @@ impl<W: Widget<DruidAppData>> SingleWidget<W> {
             pod: WidgetPod::new(widget),
             flex,
         }
+    }
+
+    pub fn request_druid_update(&mut self, ctx: &mut ReconcileCtx) {
+        self.pod
+            .with_event_context(ctx.event_ctx, |_widget: &mut W, ctx: &mut EventCtx| {
+                trace!("request_druid_update: {:?}", ctx.widget_id());
+                ctx.request_update();
+            });
     }
 }
 

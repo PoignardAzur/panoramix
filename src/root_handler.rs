@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{ElementTree, NoEvent, ReconcileCtx, VirtualDom};
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex;
 
@@ -67,9 +67,25 @@ impl<
         }
     }
 
-    #[instrument(level = "debug", skip(self, ctx, cx))]
-    pub fn run(&mut self, ctx: &mut EventCtx, cx: &mut GlobalEventCx) {
+    #[instrument(level = "debug", skip(self, ctx, data, env))]
+    pub fn run(&mut self, ctx: &mut EventCtx, data: &mut DruidAppData, env: &Env) {
         use tracing::debug_span;
+
+        if let Some(prev_vdom) = self.vdom.as_mut() {
+            let flex_widget = self.widget.as_mut().unwrap().widget_mut();
+            let mut cx = GlobalEventCx::new(data);
+
+            let _span_process_event = debug_span!("process_event");
+            let _span_process_event = _span_process_event.enter();
+            // TODO - use process_event's return?
+            let _ = prev_vdom.process_event(
+                &mut self.component_state.0,
+                &mut self.component_state.1,
+                &mut flex_widget.children_seq,
+                &mut cx,
+            );
+            std::mem::drop(_span_process_event);
+        }
 
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
             (self.root_component.component)(&self.component_state.0, ())
@@ -79,24 +95,20 @@ impl<
 
         if let Some(prev_vdom) = self.vdom.as_mut() {
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
+            let mut reconcile_ctx = ReconcileCtx {
+                event_ctx: ctx,
+                data,
+                env,
+            };
 
             debug_span!("reconcile").in_scope(|| {
-                new_vdom.reconcile(prev_vdom, &mut flex_widget.children_seq);
+                new_vdom.reconcile(prev_vdom, &mut flex_widget.children_seq, &mut reconcile_ctx);
             });
             debug_span!("update_value").in_scope(|| {
                 prev_vdom.update_value(new_vdom);
             });
 
-            let _span_process_event = debug_span!("process_event");
-            let _span_process_event = _span_process_event.enter();
-            // TODO - use process_event's return?
-            let _ = prev_vdom.process_event(
-                &mut self.component_state.0,
-                &mut self.component_state.1,
-                &mut flex_widget.children_seq,
-                cx,
-            );
-            std::mem::drop(_span_process_event);
+            ctx.request_update();
         } else {
             let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
             // FIXME - Fix alignment to be consistent
@@ -114,6 +126,8 @@ impl<
             self.widget = Some(flex_widget);
             self.vdom = Some(new_vdom);
         }
+
+        ctx.request_paint();
     }
 }
 
@@ -132,8 +146,7 @@ impl<
             self.default_widget.event(ctx, event, data, env);
         }
 
-        let mut cx = GlobalEventCx::new(data);
-        self.run(ctx, &mut cx);
+        self.run(ctx, data, env);
     }
 
     fn lifecycle(

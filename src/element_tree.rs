@@ -1,7 +1,15 @@
-use crate::glue::GlobalEventCx;
+use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widget_sequence::WidgetSequence;
 
+use druid::{Env, EventCtx};
+
 use std::fmt::Debug;
+
+pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
+    pub event_ctx: &'a mut EventCtx<'d, 'e>,
+    pub data: &'b mut DruidAppData,
+    pub env: &'c Env,
+}
 
 // TODO - must-use
 // TODO - Default + Debug bounds
@@ -37,7 +45,12 @@ pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
 
     fn init_tree(&self) -> Self::TargetWidgetSeq;
 
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq);
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    );
 
     // TODO - Rename methods
     #[allow(unused_variables)]

@@ -5,6 +5,8 @@ use crate::widgets::flex::{
 };
 use crate::widgets::SingleWidget;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
 use tracing::instrument;
 
@@ -210,10 +212,18 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         SingleWidget::new(flex, self.flex)
     }
 
-    #[instrument(name = "Flex", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
-        self.child
-            .reconcile(&other.child, &mut widget_seq.pod.widget_mut().children_seq);
+    #[instrument(name = "Flex", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        self.child.reconcile(
+            &other.child,
+            &mut widget_seq.pod.widget_mut().children_seq,
+            ctx,
+        );
     }
 
     #[instrument(
@@ -282,10 +292,18 @@ impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, Componen
         SingleWidget::new(flex, self.flex)
     }
 
-    #[instrument(name = "Flex", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
-        self.child
-            .reconcile(&other.child, &mut widget_seq.pod.widget_mut().children_seq)
+    #[instrument(name = "Flex", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        self.child.reconcile(
+            &other.child,
+            &mut widget_seq.pod.widget_mut().children_seq,
+            ctx,
+        );
     }
 
     #[instrument(

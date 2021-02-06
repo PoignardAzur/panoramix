@@ -3,6 +3,8 @@ use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
 use either::{Left, Right};
 use std::collections::VecDeque;
@@ -127,8 +129,13 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     // This only works if we assume that items are ever only added at the end of the list.
     // Sounds perfectly reasonable to me.
     // (seriously though, a serious implementation would try to do whatever crochet::List::run does)
-    #[instrument(name = "List", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
+    #[instrument(name = "List", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
         let mutation = compute_diff(&other.children, &self.children);
 
         let mut prev_data: Vec<_> = other
@@ -165,7 +172,7 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
             match child_prev_data {
                 Left(prev_data) => {
                     let ((_key, child_prev_data), child_widget_seq) = prev_data;
-                    child_data.reconcile(child_prev_data, child_widget_seq);
+                    child_data.reconcile(child_prev_data, child_widget_seq, ctx);
                 }
                 Right(new_data) => {
                     let (_key, child_data) = new_data;

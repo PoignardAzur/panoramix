@@ -9,8 +9,8 @@ use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
 const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
     cross_alignment: CrossAxisAlignment::Center,
-    main_alignment: MainAxisAlignment::End,
-    fill_major_axis: false,
+    main_alignment: MainAxisAlignment::Center,
+    fill_major_axis: true,
 };
 
 #[derive(Debug, Default, Clone)]
@@ -127,6 +127,5 @@ fn main() -> Result<(), PlatformError> {
 
     let main_window = WindowDesc::new(ui_builder());
     let data = Default::default();
-    AppLauncher::with_window(main_window)
-        .launch(data)
+    AppLauncher::with_window(main_window).launch(data)
 }

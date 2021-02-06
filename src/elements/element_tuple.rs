@@ -7,6 +7,8 @@ use crate::elements::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
 use tracing::instrument;
 
@@ -367,24 +369,25 @@ impl<
         )
     }
 
-    #[instrument(name = "Tuple", skip(self, other, widget_seq))]
+    #[instrument(name = "Tuple", skip(self, other, widget_seq, ctx))]
     fn reconcile(
         &self,
         other: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
     ) {
-            self.0.reconcile(&other.0, &mut widget_seq.0);
-            self.1.reconcile(&other.1, &mut widget_seq.1);
-            self.2.reconcile(&other.2, &mut widget_seq.2);
-            self.3.reconcile(&other.3, &mut widget_seq.3);
-            self.4.reconcile(&other.4, &mut widget_seq.4);
-            self.5.reconcile(&other.5, &mut widget_seq.5);
-            self.6.reconcile(&other.6, &mut widget_seq.6);
-            self.7.reconcile(&other.7, &mut widget_seq.7);
-            self.8.reconcile(&other.8, &mut widget_seq.8);
-            self.9.reconcile(&other.9, &mut widget_seq.9);
-            self.10.reconcile(&other.10, &mut widget_seq.10);
-            self.11.reconcile(&other.11, &mut widget_seq.11);
+            self.0.reconcile(&other.0, &mut widget_seq.0, ctx);
+            self.1.reconcile(&other.1, &mut widget_seq.1, ctx);
+            self.2.reconcile(&other.2, &mut widget_seq.2, ctx);
+            self.3.reconcile(&other.3, &mut widget_seq.3, ctx);
+            self.4.reconcile(&other.4, &mut widget_seq.4, ctx);
+            self.5.reconcile(&other.5, &mut widget_seq.5, ctx);
+            self.6.reconcile(&other.6, &mut widget_seq.6, ctx);
+            self.7.reconcile(&other.7, &mut widget_seq.7, ctx);
+            self.8.reconcile(&other.8, &mut widget_seq.8, ctx);
+            self.9.reconcile(&other.9, &mut widget_seq.9, ctx);
+            self.10.reconcile(&other.10, &mut widget_seq.10, ctx);
+            self.11.reconcile(&other.11, &mut widget_seq.11, ctx);
     }
 
     #[instrument(name = "Tuple", skip(self, component_state, children_state, widget_seq, cx))]

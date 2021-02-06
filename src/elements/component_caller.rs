@@ -1,6 +1,8 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
 use std::fmt::Debug;
 use tracing::instrument;
@@ -177,9 +179,14 @@ impl<
         self.0.init_tree()
     }
 
-    #[instrument(name = "Component", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Child::TargetWidgetSeq) {
-        self.0.reconcile(&other.0, widget_seq);
+    #[instrument(name = "Component", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Child::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        self.0.reconcile(&other.0, widget_seq, ctx);
     }
 
     #[instrument(

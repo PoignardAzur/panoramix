@@ -2,6 +2,8 @@ use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::EmptySequence;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
@@ -49,7 +51,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         EmptySequence
     }
 
-    fn reconcile(&self, _other: &Self, _widget_seq: &mut EmptySequence) {}
+    fn reconcile(&self, _other: &Self, _widget_seq: &mut EmptySequence, _ctx: &mut ReconcileCtx) {}
 
     fn process_event(
         &self,

@@ -1,7 +1,9 @@
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
-use ::derivative::Derivative;
+use crate::element_tree::ReconcileCtx;
+
+use derivative::Derivative;
 
 // Used for testing
 
@@ -105,8 +107,13 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         self.0.init_tree()
     }
 
-    fn reconcile(&self, other: &Self, widget_seq: &mut Child::TargetWidgetSeq) {
-        self.0.reconcile(&other.0, widget_seq);
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Child::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        self.0.reconcile(&other.0, widget_seq, ctx);
     }
 
     fn process_event(

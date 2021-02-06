@@ -1,8 +1,10 @@
 use crate::element_tree::{ElementTree, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
-use tracing::instrument;
+use tracing::{instrument, trace};
 
 /*
 TODO - Revisit names
@@ -320,9 +322,14 @@ where
         self.element.init_tree()
     }
 
-    #[instrument(name = "WithEvent", skip(self, other, widget_seq))]
-    fn reconcile(&self, other: &Self, widget_seq: &mut Self::TargetWidgetSeq) {
-        self.element.reconcile(&other.element, widget_seq)
+    #[instrument(name = "WithEvent", skip(self, other, widget_seq, ctx))]
+    fn reconcile(
+        &self,
+        other: &Self,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        self.element.reconcile(&other.element, widget_seq, ctx)
     }
 
     #[instrument(
@@ -347,6 +354,7 @@ where
             .element
             .process_event(component_state, children_state, widget_seq, cx);
         if let Some(event) = event {
+            trace!("Returned child event");
             return Some(event);
         }
         let local_event =
@@ -354,6 +362,7 @@ where
                 .process_local_event(component_state, children_state, widget_seq, cx);
         // FIXME
         if let Some(Some(local_event)) = local_event.map(ParentEvent::into_child_event) {
+            trace!("Returned local event");
             return (self.callback)(component_state, local_event)
                 .to_option()
                 .map(ComponentEvent::from_child_event);

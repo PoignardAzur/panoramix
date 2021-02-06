@@ -4,8 +4,10 @@ use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::widgets::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
+use crate::element_tree::ReconcileCtx;
+
 use derivative::Derivative;
-use tracing::instrument;
+use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
@@ -85,8 +87,13 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         ButtonWidget::new(text.clone(), self.1, Id::new())
     }
 
-    #[instrument(name = "Button", skip(self, _other, _widget))]
-    fn reconcile(&self, _other: &Self, _widget: &mut Self::TargetWidgetSeq) {
+    #[instrument(name = "Button", skip(self, _other, _widget, _ctx))]
+    fn reconcile(
+        &self,
+        _other: &Self,
+        _widget: &mut Self::TargetWidgetSeq,
+        _ctx: &mut ReconcileCtx,
+    ) {
         let _text = &self.0;
         //widget.set_text(text.clone());
     }
@@ -105,6 +112,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
         // FIXME - Rework event dispatching
         let id = widget.id;
         if cx.app_data.dequeue_action(id).is_some() {
+            trace!("Processed button press");
             Some(ButtonPressed())
         } else {
             None
