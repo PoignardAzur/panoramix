@@ -6,7 +6,7 @@ use capitaine::root_handler::RootHandler;
 
 use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 struct AppState {
     count: i32,
 }

@@ -13,13 +13,13 @@ const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
     fill_major_axis: true,
 };
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 struct ListItem {
     text: String,
     id: i32,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 struct AppState {
     data: Vec<ListItem>,
     selected_row: Option<usize>,

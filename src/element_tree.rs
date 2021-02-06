@@ -16,7 +16,7 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
 pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
     type Event;
 
-    type AggregateChildrenState: Default + Debug;
+    type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
         ComponentState,
         ComponentEvent,
@@ -32,7 +32,7 @@ pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
 pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
-    type AggregateChildrenState: Default + Debug;
+    type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type TargetWidgetSeq: WidgetSequence;
 
     type Event;

@@ -7,13 +7,14 @@ use crate::elements::component_caller::ComponentCaller;
 
 use druid::widget::prelude::*;
 use druid::{widget, Point, Widget, WidgetPod};
-use tracing::instrument;
+use std::fmt::Debug;
+use tracing::{debug_span, info, instrument};
 
 pub type WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree> =
    <<ReturnedTree as ElementTree<RootComponentState, RootComponentEvent>>::BuildOutput as VirtualDom<RootComponentState, RootComponentEvent>>::TargetWidgetSeq;
 
 pub struct RootHandler<
-    RootComponentState: Default + std::fmt::Debug,
+    RootComponentState: Clone + Default + Debug + PartialEq,
     RootComponentEvent,
     ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
     Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
@@ -39,7 +40,7 @@ pub struct RootHandler<
 }
 
 impl<
-        RootComponentState: Default + std::fmt::Debug,
+        RootComponentState: Clone + Default + Debug + PartialEq,
         RootComponentEvent,
         ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
         Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
@@ -67,9 +68,41 @@ impl<
         }
     }
 
+    #[instrument(level = "debug", skip(self, ctx))]
+    pub fn init(&mut self, ctx: &mut EventCtx) {
+        let (new_vdom, state) = debug_span!("build").in_scope(|| {
+            (self.root_component.component)(&self.component_state.0, ()).build(Default::default())
+        });
+        self.component_state.1 = state;
+
+        let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
+        // FIXME - Fix alignment to be consistent
+        // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
+        let flex_widget = WidgetPod::new(flex::Flex {
+            direction: flex::Axis::Vertical,
+            flex_params: flex::FlexContainerParams {
+                cross_alignment: flex::CrossAxisAlignment::Center,
+                main_alignment: flex::MainAxisAlignment::Start,
+                fill_major_axis: false,
+            },
+            children_seq: widget_seq,
+        });
+        ctx.children_changed();
+        self.widget = Some(flex_widget);
+        self.vdom = Some(new_vdom);
+
+        ctx.request_paint();
+    }
+
     #[instrument(level = "debug", skip(self, ctx, data, env))]
     pub fn run(&mut self, ctx: &mut EventCtx, data: &mut DruidAppData, env: &Env) {
-        use tracing::debug_span;
+        // The high-level workflow is:
+        // - Make a copy of the app state.
+        // - Run events that can change app state.
+        //  -> If app state is unchanged, return early.
+        // - Generate new vdom from new app state.
+        // - Reconcile new vdom with previous vdom.
+        let prev_component_state = self.component_state.clone();
 
         if let Some(prev_vdom) = self.vdom.as_mut() {
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
@@ -87,52 +120,39 @@ impl<
             std::mem::drop(_span_process_event);
         }
 
+        if self.component_state == prev_component_state {
+            info!("State is unchanged. Skipping virtual DOM update.");
+            return;
+        }
+
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
             (self.root_component.component)(&self.component_state.0, ())
                 .build(std::mem::take(&mut self.component_state.1))
         });
         self.component_state.1 = state;
 
-        if let Some(prev_vdom) = self.vdom.as_mut() {
-            let flex_widget = self.widget.as_mut().unwrap().widget_mut();
-            let mut reconcile_ctx = ReconcileCtx {
-                event_ctx: ctx,
-                data,
-                env,
-            };
+        let prev_vdom = self.vdom.as_mut().unwrap();
+        let flex_widget = self.widget.as_mut().unwrap().widget_mut();
+        let mut reconcile_ctx = ReconcileCtx {
+            event_ctx: ctx,
+            data,
+            env,
+        };
 
-            debug_span!("reconcile").in_scope(|| {
-                new_vdom.reconcile(prev_vdom, &mut flex_widget.children_seq, &mut reconcile_ctx);
-            });
-            debug_span!("update_value").in_scope(|| {
-                prev_vdom.update_value(new_vdom);
-            });
+        debug_span!("reconcile").in_scope(|| {
+            new_vdom.reconcile(prev_vdom, &mut flex_widget.children_seq, &mut reconcile_ctx);
+        });
+        debug_span!("update_value").in_scope(|| {
+            prev_vdom.update_value(new_vdom);
+        });
 
-            ctx.request_update();
-        } else {
-            let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
-            // FIXME - Fix alignment to be consistent
-            // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
-            let flex_widget = WidgetPod::new(flex::Flex {
-                direction: flex::Axis::Vertical,
-                flex_params: flex::FlexContainerParams {
-                    cross_alignment: flex::CrossAxisAlignment::Center,
-                    main_alignment: flex::MainAxisAlignment::Start,
-                    fill_major_axis: false,
-                },
-                children_seq: widget_seq,
-            });
-            ctx.children_changed();
-            self.widget = Some(flex_widget);
-            self.vdom = Some(new_vdom);
-        }
-
+        ctx.request_update();
         ctx.request_paint();
     }
 }
 
 impl<
-        RootComponentState: Default + std::fmt::Debug,
+        RootComponentState: Clone + Default + Debug + PartialEq,
         RootComponentEvent,
         ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
         Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
@@ -146,7 +166,11 @@ impl<
             self.default_widget.event(ctx, event, data, env);
         }
 
-        self.run(ctx, data, env);
+        if self.vdom.is_none() {
+            self.init(ctx);
+        } else {
+            self.run(ctx, data, env);
+        }
     }
 
     fn lifecycle(

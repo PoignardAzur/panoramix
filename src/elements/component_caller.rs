@@ -8,7 +8,7 @@ use std::fmt::Debug;
 use tracing::instrument;
 
 pub struct ComponentCaller<
-    ChildComponentState: Default + Debug,
+    ChildComponentState: Clone + Default + Debug + PartialEq,
     ChildComponentEvent,
     Props,
     ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
@@ -28,7 +28,7 @@ pub struct ComponentCaller<
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = "Child: Default"))]
 pub struct ComponentCallerData<
-    ChildComponentState: Default + Debug,
+    ChildComponentState: Clone + Default + Debug + PartialEq,
     ChildComponentEvent,
     Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
     ParentComponentState,
@@ -44,7 +44,7 @@ pub struct ComponentCallerData<
 impl<
         ParentComponentState,
         ParentComponentEvent,
-        ChildComponentState: Default + Debug,
+        ChildComponentState: Clone + Default + Debug + PartialEq,
         ChildComponentEvent,
         Props,
         ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
@@ -76,7 +76,7 @@ impl<
 impl<
         ParentComponentState,
         ParentComponentEvent,
-        ChildComponentState: Default + Debug,
+        ChildComponentState: Clone + Default + Debug + PartialEq,
         ChildComponentEvent,
         Props,
         ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
@@ -104,7 +104,7 @@ impl<
         ParentComponentState,
         ParentComponentEvent,
         // TODO - remove?
-        ChildComponentState: Default + Debug,
+        ChildComponentState: Clone + Default + Debug + PartialEq,
         ChildComponentEvent,
         Props,
         ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
@@ -153,7 +153,7 @@ impl<
 impl<
         ParentComponentState,
         ParentComponentEvent,
-        ChildComponentState: Default + Debug,
+        ChildComponentState: Clone + Default + Debug + PartialEq,
         ChildComponentEvent,
         Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
     > VirtualDom<ParentComponentState, ParentComponentEvent>
