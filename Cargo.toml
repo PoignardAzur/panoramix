@@ -11,7 +11,8 @@ edition = "2018"
 
 [dependencies.druid]
 git = "https://github.com/linebender/druid"
-rev = "6bb0f51adb7fe55d06fb53c2649f3ff0842aa6b2"
+rev = "c6e5a5ed925fbf722af482e168ff1af44c926110"
+features = ["crochet"]
 
 [dependencies]
 derivative = "2.1.3"
