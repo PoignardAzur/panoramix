@@ -103,7 +103,6 @@ impl<
 impl<
         ParentComponentState,
         ParentComponentEvent,
-        // TODO - remove?
         ChildComponentState: Clone + Default + Debug + PartialEq,
         ChildComponentEvent,
         Props,

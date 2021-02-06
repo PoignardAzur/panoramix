@@ -2,7 +2,8 @@
 source: src/elements/flex.rs
 expression: column
 ---
-Column {
+Flex {
+    axis: Vertical,
     child: ElementTuple_1(
         Label(
             "Greetings",

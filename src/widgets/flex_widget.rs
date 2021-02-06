@@ -144,7 +144,7 @@ use crate::widget_sequence::WidgetSequence;
 /// [`expand_width`]: ../trait.WidgetExt.html#method.expand_width
 /// [`TextBox`]: struct.TextBox.html
 /// [`SizedBox`]: struct.SizedBox.html
-pub struct Flex<Children: WidgetSequence> {
+pub struct FlexWidget<Children: WidgetSequence> {
     pub(crate) direction: Axis,
     pub(crate) flex_params: FlexContainerParams,
     pub children_seq: Children,
@@ -312,7 +312,7 @@ impl Axis {
 }
 
 use crate::glue::DruidAppData;
-impl<Children: WidgetSequence> Widget<DruidAppData> for Flex<Children> {
+impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         // FIXME
         ctx.children_changed();

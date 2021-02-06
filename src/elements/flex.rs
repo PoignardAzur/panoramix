@@ -1,24 +1,22 @@
+use crate::element_tree::ReconcileCtx;
 use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::flex::{
-    Axis, CrossAxisAlignment, Flex, FlexContainerParams, FlexParams, MainAxisAlignment,
+    Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, FlexWidget, MainAxisAlignment,
 };
 use crate::widgets::SingleWidget;
-
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 use tracing::instrument;
 
-// TODO - merge row and column
-
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct Row<
+pub struct Flex<
     Child: ElementTree<ComponentState, ComponentEvent>,
     ComponentState = (),
     ComponentEvent = NoEvent,
 > {
+    pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
@@ -28,39 +26,12 @@ pub struct Row<
 
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct RowData<
+pub struct FlexData<
     Child: VirtualDom<ComponentState, ComponentEvent>,
     ComponentState = (),
     ComponentEvent = NoEvent,
 > {
-    pub child: Child,
-    pub flex: FlexParams,
-    pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
-}
-
-#[derive(Derivative, Clone, PartialEq)]
-#[derivative(Debug(bound = ""))]
-pub struct Column<
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
-    pub child: Child,
-    pub flex: FlexParams,
-    pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
-}
-
-#[derive(Derivative, Clone, PartialEq)]
-#[derivative(Debug(bound = ""))]
-pub struct ColumnData<
-    Child: VirtualDom<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
+    pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
@@ -71,10 +42,11 @@ pub struct ColumnData<
 // ----
 
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    Row<Child, ComponentState, ComponentEvent>
+    Flex<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Child) -> Self {
-        Row {
+    pub fn new(axis: Axis, child: Child) -> Self {
+        Flex {
+            axis,
             child,
             flex: FlexParams {
                 flex: 1.0,
@@ -91,14 +63,14 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        Row {
+        Flex {
             flex: flex_params,
             ..self
         }
     }
 
     pub fn with_flex_container_params(self, flex_container: FlexContainerParams) -> Self {
-        Row {
+        Flex {
             flex_container,
             ..self
         }
@@ -106,10 +78,16 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
 }
 
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    RowData<Child, ComponentState, ComponentEvent>
+    FlexData<Child, ComponentState, ComponentEvent>
 {
-    pub fn new(child: Child, flex: FlexParams, flex_container: FlexContainerParams) -> Self {
-        RowData {
+    pub fn new(
+        axis: Axis,
+        child: Child,
+        flex: FlexParams,
+        flex_container: FlexContainerParams,
+    ) -> Self {
+        FlexData {
+            axis,
             child,
             flex,
             flex_container,
@@ -119,61 +97,14 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    Column<Child, ComponentState, ComponentEvent>
-{
-    pub fn new(child: Child) -> Self {
-        Column {
-            child,
-            flex: FlexParams {
-                flex: 1.0,
-                alignment: None,
-            },
-            flex_container: FlexContainerParams {
-                cross_alignment: CrossAxisAlignment::Center,
-                main_alignment: MainAxisAlignment::Start,
-                fill_major_axis: false,
-            },
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-        }
-    }
-
-    pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        Column {
-            flex: flex_params,
-            ..self
-        }
-    }
-
-    pub fn with_flex_container_params(self, flex_container: FlexContainerParams) -> Self {
-        Column {
-            flex_container,
-            ..self
-        }
-    }
-}
-
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    ColumnData<Child, ComponentState, ComponentEvent>
-{
-    pub fn new(child: Child, flex: FlexParams, flex_container: FlexContainerParams) -> Self {
-        ColumnData {
-            child,
-            flex,
-            flex_container,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-        }
-    }
-}
+// ----
 
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent> for Row<Child, ComponentState, ComponentEvent>
+    ElementTree<ComponentState, ComponentEvent> for Flex<Child, ComponentState, ComponentEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = RowData<Child::BuildOutput, ComponentState, ComponentEvent>;
+    type BuildOutput = FlexData<Child::BuildOutput, ComponentState, ComponentEvent>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
@@ -182,19 +113,19 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, component_state) = self.child.build(prev_state);
         (
-            RowData::new(element, self.flex, self.flex_container),
+            FlexData::new(self.axis, element, self.flex, self.flex_container),
             component_state,
         )
     }
 }
 
 impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    VirtualDom<ComponentState, ComponentEvent> for RowData<Child, ComponentState, ComponentEvent>
+    VirtualDom<ComponentState, ComponentEvent> for FlexData<Child, ComponentState, ComponentEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
 
-    type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
+    type TargetWidgetSeq = SingleWidget<FlexWidget<Child::TargetWidgetSeq>>;
 
     #[instrument(name = "Flex", skip(self, other))]
     fn update_value(&mut self, other: Self) {
@@ -203,9 +134,8 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 
     #[instrument(name = "Flex", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
-        // FIXME - Pull params from constructor
-        let flex = Flex {
-            direction: Axis::Horizontal,
+        let flex = FlexWidget {
+            direction: self.axis,
             flex_params: self.flex_container,
             children_seq: self.child.init_tree(),
         };
@@ -248,88 +178,13 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 
 // ----
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent> for Column<Child, ComponentState, ComponentEvent>
-{
-    type Event = NoEvent;
-    type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = ColumnData<Child::BuildOutput, ComponentState, ComponentEvent>;
-
-    #[instrument(name = "Flex", skip(self, prev_state))]
-    fn build(
-        self,
-        prev_state: Self::AggregateChildrenState,
-    ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
-        let (element, component_state) = self.child.build(prev_state);
-        (
-            ColumnData::new(element, self.flex, self.flex_container),
-            component_state,
-        )
-    }
-}
-
-impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
-    VirtualDom<ComponentState, ComponentEvent>
-    for ColumnData<Child, ComponentState, ComponentEvent>
-{
-    type Event = NoEvent;
-    type AggregateChildrenState = Child::AggregateChildrenState;
-    type TargetWidgetSeq = SingleWidget<Flex<Child::TargetWidgetSeq>>;
-
-    #[instrument(name = "Flex", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
-    #[instrument(name = "Flex", skip(self))]
-    fn init_tree(&self) -> Self::TargetWidgetSeq {
-        // FIXME - Pull params from constructor
-        let flex = Flex {
-            direction: Axis::Vertical,
-            flex_params: self.flex_container,
-            children_seq: self.child.init_tree(),
-        };
-        SingleWidget::new(flex, self.flex)
-    }
-
-    #[instrument(name = "Flex", skip(self, other, widget_seq, ctx))]
-    fn reconcile(
-        &self,
-        other: &Self,
-        widget_seq: &mut Self::TargetWidgetSeq,
-        ctx: &mut ReconcileCtx,
-    ) {
-        self.child.reconcile(
-            &other.child,
-            &mut widget_seq.pod.widget_mut().children_seq,
-            ctx,
-        );
-    }
-
-    #[instrument(
-        name = "Flex",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
-    fn process_event(
-        &self,
-        component_state: &mut ComponentState,
-        children_state: &mut Child::AggregateChildrenState,
-        widget_seq: &mut Self::TargetWidgetSeq,
-        cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
-        self.child.process_event(
-            component_state,
-            children_state,
-            &mut widget_seq.pod.widget_mut().children_seq,
-            cx,
-        )
-    }
-}
+// TODO - Add keyword params
 
 #[macro_export]
 macro_rules! make_row {
     ( $($arg:expr),* $(,)?) => {
-        $crate::elements::Row::new(
+        $crate::elements::Flex::new(
+            $crate::widgets::flex::Axis::Horizontal,
             $crate::make_group!($($arg,)*)
         )
     };
@@ -338,7 +193,8 @@ macro_rules! make_row {
 #[macro_export]
 macro_rules! make_column {
     ( $($arg:expr),* $(,)?) => {
-        $crate::elements::Column::new(
+        $crate::elements::Flex::new(
+            $crate::widgets::flex::Axis::Vertical,
             $crate::make_group!($($arg,)*)
         )
     };

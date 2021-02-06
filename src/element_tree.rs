@@ -2,7 +2,6 @@ use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widget_sequence::WidgetSequence;
 
 use druid::{Env, EventCtx};
-
 use std::fmt::Debug;
 
 pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
@@ -11,8 +10,6 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
     pub env: &'c Env,
 }
 
-// TODO - must-use
-// TODO - Default + Debug bounds
 pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
     type Event;
 

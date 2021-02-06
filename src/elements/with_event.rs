@@ -360,12 +360,15 @@ where
         let local_event =
             self.element
                 .process_local_event(component_state, children_state, widget_seq, cx);
-        // FIXME
-        if let Some(Some(local_event)) = local_event.map(ParentEvent::into_child_event) {
-            trace!("Returned local event");
-            return (self.callback)(component_state, local_event)
+        if let Some(local_event) = local_event.map(ParentEvent::into_child_event).flatten() {
+            trace!("Processing callback for local event");
+            let event = (self.callback)(component_state, local_event)
                 .to_option()
                 .map(ComponentEvent::from_child_event);
+            if event.is_some() {
+                trace!("Callback returned event");
+            }
+            return event;
         }
         None
     }

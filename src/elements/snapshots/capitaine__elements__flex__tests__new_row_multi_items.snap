@@ -2,7 +2,8 @@
 source: src/elements/flex.rs
 expression: row
 ---
-Row {
+Flex {
+    axis: Horizontal,
     child: ElementTuple_3(
         Label(
             "Hello",

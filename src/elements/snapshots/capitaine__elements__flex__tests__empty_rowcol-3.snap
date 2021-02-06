@@ -3,7 +3,8 @@ source: src/elements/flex.rs
 expression: row_data
 ---
 (
-    RowData {
+    FlexData {
+        axis: Horizontal,
         child: EmptyElementData(
             PhantomData,
             PhantomData,

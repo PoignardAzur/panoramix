@@ -8,7 +8,7 @@ use crate::element_tree::ReconcileCtx;
 use derivative::Derivative;
 use either::{Left, Right};
 use std::collections::VecDeque;
-use tracing::instrument;
+use tracing::{debug_span, instrument};
 
 // TODO - Add arbitrary index types
 
@@ -125,10 +125,6 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
         }
     }
 
-    // FIXME
-    // This only works if we assume that items are ever only added at the end of the list.
-    // Sounds perfectly reasonable to me.
-    // (seriously though, a serious implementation would try to do whatever crochet::List::run does)
     #[instrument(name = "List", skip(self, other, widget_seq, ctx))]
     fn reconcile(
         &self,
@@ -176,7 +172,8 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
                 }
                 Right(new_data) => {
                     let (_key, child_data) = new_data;
-                    let new_widget_seq = child_data.init_tree();
+                    let new_widget_seq =
+                        debug_span!("init_tree").in_scope(|| child_data.init_tree());
                     widgets_to_insert.push_back(new_widget_seq);
                 }
             }

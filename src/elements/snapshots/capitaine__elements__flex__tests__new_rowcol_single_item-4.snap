@@ -3,7 +3,8 @@ source: src/elements/flex.rs
 expression: column_data
 ---
 (
-    ColumnData {
+    FlexData {
+        axis: Vertical,
         child: ElementTupleData(
             LabelData(
                 "Greetings",

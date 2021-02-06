@@ -3,7 +3,8 @@ source: src/elements/component_caller.rs
 expression: component_result
 ---
 ComponentCallerData(
-    RowData {
+    FlexData {
+        axis: Horizontal,
         child: ElementTupleData(
             WithEventTarget {
                 element: ButtonData(
