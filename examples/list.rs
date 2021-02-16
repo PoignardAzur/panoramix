@@ -1,11 +1,10 @@
 use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
 use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
-use capitaine::glue::DruidAppData;
 use capitaine::root_handler::RootHandler;
 use capitaine::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use capitaine::{make_group, make_row};
 
-use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
+use druid::PlatformError;
 
 const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
     cross_alignment: CrossAxisAlignment::Center,
@@ -46,7 +45,7 @@ fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, RowEvent> {
     .with_flex_container_params(ROW_FLEX_PARAMS)
 }
 
-fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
+fn editable_list(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
     let button_create = Button::new("Create").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),
@@ -107,7 +106,7 @@ fn some_component(state: &AppState, _props: ()) -> impl ElementTree<AppState, No
     )
 }
 
-fn ui_builder() -> impl Widget<DruidAppData> {
+fn main() -> Result<(), PlatformError> {
     let state = AppState {
         data: (0..8_i32)
             .map(|i| ListItem {
@@ -119,13 +118,7 @@ fn ui_builder() -> impl Widget<DruidAppData> {
         next_id: 8,
     };
 
-    RootHandler::new(&some_component, state)
-}
-
-fn main() -> Result<(), PlatformError> {
-    capitaine::glue::init_tracing();
-
-    let main_window = WindowDesc::new(ui_builder());
-    let data = Default::default();
-    AppLauncher::with_window(main_window).launch(data)
+    RootHandler::new(&editable_list, state)
+        .with_tracing(true)
+        .launch()
 }

@@ -4,14 +4,14 @@ use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex;
 
 use druid::widget::prelude::*;
-use druid::{widget, Point, Widget, WidgetPod};
+use druid::{widget, AppLauncher, PlatformError, Point, Widget, WidgetPod, WindowDesc};
 use std::fmt::Debug;
-use tracing::{debug_span, instrument, trace};
+use tracing::{debug_span, info, instrument, trace};
 
 pub type WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree> =
    <<ReturnedTree as ElementTree<RootComponentState, RootComponentEvent>>::BuildOutput as VirtualDom<RootComponentState, RootComponentEvent>>::TargetWidgetSeq;
 
-pub struct RootHandler<
+pub struct RootWidget<
     RootComponentState: Clone + Default + Debug + PartialEq,
     RootComponentEvent,
     ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
@@ -42,14 +42,11 @@ impl<
         RootComponentEvent,
         ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
         Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
-    > RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
+    > RootWidget<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
 {
-    pub fn new(
-        root_component: Comp,
-        root_state: RootComponentState,
-    ) -> RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp> {
+    pub fn new(root_component: Comp, root_state: RootComponentState) -> Self {
         let default_widget = WidgetPod::new(widget::Flex::row());
-        RootHandler {
+        RootWidget {
             root_component: ComponentCaller {
                 component: root_component,
                 props: (),
@@ -72,6 +69,8 @@ impl<
             (self.root_component.component)(&self.component_state.0, ()).build(Default::default())
         });
         self.component_state.1 = state;
+
+        info!("Initial aggregate app state: {:?}", self.component_state);
 
         let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
         // FIXME - Fix alignment to be consistent
@@ -125,6 +124,8 @@ impl<
             return event;
         }
 
+        info!("New aggregate app state: {:?}", self.component_state);
+
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
             (self.root_component.component)(&self.component_state.0, ())
                 .build(std::mem::take(&mut self.component_state.1))
@@ -163,7 +164,7 @@ impl<
         ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
         Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
     > Widget<DruidAppData>
-    for RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
+    for RootWidget<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Some(widget) = &mut self.widget {
@@ -177,7 +178,7 @@ impl<
         } else {
             // We ignore the root event for now.
             // This might change in cases where the
-            // user controls when RootHandler::run() is called.
+            // user controls when RootWidget::run() is called.
             let _ = self.run(ctx, data, env);
         }
     }
@@ -237,5 +238,49 @@ impl<
         } else {
             self.default_widget.paint(ctx, data, env);
         }
+    }
+}
+
+pub struct RootHandler<
+    RootComponentState: Clone + Default + Debug + PartialEq,
+    RootComponentEvent,
+    ReturnedTree: ElementTree<RootComponentState, RootComponentEvent>,
+    Comp: Fn(&RootComponentState, ()) -> ReturnedTree,
+> {
+    pub root_widget: RootWidget<RootComponentState, RootComponentEvent, ReturnedTree, Comp>,
+    pub init_tracing: bool,
+}
+
+impl<
+        RootComponentState: 'static + Clone + Default + Debug + PartialEq,
+        RootComponentEvent: 'static,
+        ReturnedTree: 'static + ElementTree<RootComponentState, RootComponentEvent>,
+        Comp: 'static + Fn(&RootComponentState, ()) -> ReturnedTree,
+    > RootHandler<RootComponentState, RootComponentEvent, ReturnedTree, Comp>
+{
+    pub fn new(root_component: Comp, root_state: RootComponentState) -> Self {
+        RootHandler {
+            root_widget: RootWidget::new(root_component, root_state),
+            init_tracing: false,
+        }
+    }
+
+    pub fn with_tracing(self, init_tracing: bool) -> Self {
+        RootHandler {
+            init_tracing,
+            ..self
+        }
+    }
+
+    pub fn launch(self) -> Result<(), PlatformError> {
+        if self.init_tracing {
+            crate::glue::init_tracing();
+        }
+
+        let widget = self.root_widget;
+        let main_window = WindowDesc::new(widget);
+        let data = Default::default();
+
+        AppLauncher::with_window(main_window).launch(data)
     }
 }

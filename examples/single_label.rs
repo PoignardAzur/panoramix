@@ -1,10 +1,9 @@
 use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
 use capitaine::elements::{Button, ButtonPressed, Label};
-use capitaine::glue::DruidAppData;
 use capitaine::make_row;
 use capitaine::root_handler::RootHandler;
 
-use druid::{AppLauncher, PlatformError, Widget, WindowDesc};
+use druid::PlatformError;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct AppState {
@@ -20,16 +19,10 @@ fn single_label(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEv
     )
 }
 
-fn ui_builder() -> impl Widget<DruidAppData> {
+fn main() -> Result<(), PlatformError> {
     let state = AppState { count: 0 };
 
     RootHandler::new(&single_label, state)
-}
-
-fn main() -> Result<(), PlatformError> {
-    capitaine::glue::init_tracing();
-
-    let main_window = WindowDesc::new(ui_builder());
-    let data = Default::default();
-    AppLauncher::with_window(main_window).launch(data)
+        .with_tracing(true)
+        .launch()
 }
