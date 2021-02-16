@@ -8,7 +8,7 @@ use crate::element_tree::ReconcileCtx;
 use derivative::Derivative;
 use either::{Left, Right};
 use std::collections::VecDeque;
-use tracing::{debug_span, instrument};
+use tracing::{debug_span, info, instrument};
 
 // TODO - Add arbitrary index types
 
@@ -172,8 +172,10 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
                 }
                 Right(new_data) => {
                     let (_key, child_data) = new_data;
-                    let new_widget_seq =
-                        debug_span!("init_tree").in_scope(|| child_data.init_tree());
+                    let new_widget_seq = debug_span!("init_tree").in_scope(|| {
+                        info!("creating child");
+                        child_data.init_tree()
+                    });
                     widgets_to_insert.push_back(new_widget_seq);
                 }
             }

@@ -4,7 +4,7 @@ use crate::glue::GlobalEventCx;
 use crate::element_tree::ReconcileCtx;
 
 use either::{Either, Left, Right};
-use tracing::instrument;
+use tracing::{debug_span, info, instrument};
 use tracing_unwrap::OptionExt;
 
 impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
@@ -60,7 +60,10 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
             if let Some(other_child) = other {
                 child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log(), ctx);
             } else {
-                *widget_seq = Some(child.init_tree());
+                debug_span!("init_tree").in_scope(|| {
+                    info!("creating child");
+                    *widget_seq = Some(child.init_tree());
+                });
             }
         }
     }
@@ -155,7 +158,10 @@ impl<
         match self {
             Left(child) => {
                 if let Right(_) = &other {
-                    *widget_seq = Left(child.init_tree());
+                    debug_span!("init_tree").in_scope(|| {
+                        info!("creating child");
+                        *widget_seq = Left(child.init_tree());
+                    });
                 }
                 child.reconcile(
                     other.as_ref().left().unwrap_or_log(),
@@ -165,7 +171,10 @@ impl<
             }
             Right(child) => {
                 if let Left(_) = &other {
-                    *widget_seq = Right(child.init_tree());
+                    debug_span!("init_tree").in_scope(|| {
+                        info!("creating child");
+                        *widget_seq = Right(child.init_tree());
+                    });
                 }
                 child.reconcile(
                     other.as_ref().right().unwrap_or_log(),
