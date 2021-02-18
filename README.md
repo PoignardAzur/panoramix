@@ -9,7 +9,35 @@ It aims to use **simple, idiomatic Rust**: Capitaine doesn't use unsafe code, ce
 
 ## Getting started
 
-- **TODO**: An example of the TODO-list program.
+Here is our "hello world" example:
+
+```rust
+use capitaine::elements::{Button, ButtonPressed, Label};
+use capitaine::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+
+#[derive(Debug, Default, Clone, PartialEq)]
+struct HelloBoxState {
+    count: i32,
+}
+
+fn hello_box(state: &HelloBoxState, _props: ()) -> impl ElementTree<HelloBoxState, NoEvent> {
+    make_row!(
+        Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
+            println!("Hello world - {}", state.count);
+            state.count += 1;
+        }),
+        Label::new(format!("Hello count: {}", state.count)),
+    )
+}
+
+fn main() -> Result<(), druid::PlatformError> {
+    let state = HelloBoxState { count: 0 };
+
+    RootHandler::new(&hello_box, state)
+        .with_tracing(true)
+        .launch()
+}
+```
 
 See the documentation for details - "Writing your first component". **TODO**
 
@@ -60,11 +88,16 @@ This project has been possible thanks to the extremely clean and approchable wor
  - [X] Flex logic.
  - [X] Event logic.
 - [] Write documentation.
+ - [] Readme.
+ - [] Top-level doc page.
+ - [] Writing a component.
+ - [] All symbols (types, traits, functions, etc).
 - [] Write unit tests.
  - [X] Basic constructors.
  - [X] compute_diff algorithm.
  - [] Event handling
  - [] Widget mutation.
+- [] Add TextBox element.
 - [] Add testing backend to druid for unit tests.
 - [] Add integration tests based on visual snapshots.
 - [] Write some benchmarks.

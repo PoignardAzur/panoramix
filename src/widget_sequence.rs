@@ -7,7 +7,9 @@ use druid::{
 };
 
 pub trait WidgetSequence {
-    // TODO - Use associated type instead
+    // TODO - This is horribly inefficient. We'd like to have
+    //     -> impl Iterator<&mut dyn FlexWidget>
+    // instead, but this would require both GATs and trait-method existential types to be stable
     fn widgets(&mut self) -> Vec<&mut dyn FlexWidget>;
 }
 

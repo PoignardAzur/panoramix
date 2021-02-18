@@ -8,7 +8,7 @@ use druid::{widget, AppLauncher, PlatformError, Point, Widget, WidgetPod, Window
 use std::fmt::Debug;
 use tracing::{debug_span, info, instrument, trace};
 
-pub type WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree> =
+type WidgetSeqOf<RootComponentState, RootComponentEvent, ReturnedTree> =
    <<ReturnedTree as ElementTree<RootComponentState, RootComponentEvent>>::BuildOutput as VirtualDom<RootComponentState, RootComponentEvent>>::TargetWidgetSeq;
 
 pub struct RootWidget<

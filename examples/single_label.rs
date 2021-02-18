@@ -1,28 +1,25 @@
-use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
 use capitaine::elements::{Button, ButtonPressed, Label};
-use capitaine::make_row;
-use capitaine::root_handler::RootHandler;
-
-use druid::PlatformError;
+use capitaine::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
 
 #[derive(Debug, Default, Clone, PartialEq)]
-struct AppState {
+struct HelloBoxState {
     count: i32,
 }
 
-fn single_label(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
+fn hello_box(state: &HelloBoxState, _props: ()) -> impl ElementTree<HelloBoxState, NoEvent> {
     make_row!(
-        Button::new("Increase").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+        Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
+            println!("Hello world - {}", state.count);
             state.count += 1;
         }),
-        Label::new(format!("Count: {}", state.count)),
+        Label::new(format!("Hello count: {}", state.count)),
     )
 }
 
-fn main() -> Result<(), PlatformError> {
-    let state = AppState { count: 0 };
+fn main() -> Result<(), druid::PlatformError> {
+    let state = HelloBoxState { count: 0 };
 
-    RootHandler::new(&single_label, state)
+    RootHandler::new(&hello_box, state)
         .with_tracing(true)
         .launch()
 }

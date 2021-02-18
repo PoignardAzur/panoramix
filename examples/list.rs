@@ -1,8 +1,6 @@
-use capitaine::element_tree::{ElementTree, ElementTreeExt, NoEvent};
 use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
-use capitaine::root_handler::RootHandler;
 use capitaine::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use capitaine::{make_group, make_row};
+use capitaine::{make_group, make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
 
 use druid::PlatformError;
 
