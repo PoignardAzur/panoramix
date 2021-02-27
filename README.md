@@ -1,15 +1,15 @@
-# Capitaine
+# Panoramix
 
-[![crates.io](https://meritbadge.herokuapp.com/capitaine)](https://crates.io/crates/capitaine)
-[![docs.rs](https://docs.rs/capitaine/badge.svg)](https://docs.rs/capitaine/)
-[![license](https://img.shields.io/github/license/PoignardAzur/capitaine)](https://github.com/linebender/druid/blob/master/LICENSE)
+[![crates.io](https://meritbadge.herokuapp.com/panoramix)](https://crates.io/crates/panoramix)
+[![docs.rs](https://docs.rs/panoramix/badge.svg)](https://docs.rs/panoramix/)
+[![license](https://img.shields.io/github/license/PoignardAzur/panoramix)](https://github.com/linebender/druid/blob/master/LICENSE)
 [![chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://xi.zulipchat.com)
 
-**Capitaine is an experimental GUI framework for the Rust programming language.**
+**Panoramix is an experimental GUI framework for the Rust programming language.**
 
-The framework is **data-driven and declarative**, drawing some inspiration from [React](https://github.com/facebook/react), and implemented on top of the [Druid](https://github.com/linebender/druid) toolkit.
+The framework is **data-driven and declarative**, drawing some inspiration from [React](https://github.com/facebook/react), and implemented on top of the [Druid](https://github.com/linebender/druid) toolkit (hence the name).
 
-It aims to use **simple, idiomatic Rust**: Capitaine doesn't use unsafe code, cells, mutexes, or DSL macros.
+It aims to use **simple, idiomatic Rust**: Panoramix doesn't use unsafe code, cells, mutexes, or DSL macros.
 
 
 ## Getting started
@@ -17,8 +17,8 @@ It aims to use **simple, idiomatic Rust**: Capitaine doesn't use unsafe code, ce
 Here is our "hello world" example:
 
 ```rust
-use capitaine::elements::{Button, ButtonPressed, Label};
-use capitaine::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+use panoramix::elements::{Button, ButtonPressed, Label};
+use panoramix::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct HelloBoxState {
@@ -57,7 +57,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the rules to follow when making a PR.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for a high-level presentation of the project code.
 
-To ask questions and discuss development work, go to [Druid's Zulip chat](https://xi.zulipchat.com/), in the `#capitaine` channel.
+To ask questions and discuss development work, go to [Druid's Zulip chat](https://xi.zulipchat.com/), in the `#panoramix` channel.
 
 
 ## Usage
@@ -65,16 +65,16 @@ To ask questions and discuss development work, go to [Druid's Zulip chat](https:
 In your `Cargo.toml`, add the following:
 
 ```toml
-capitaine = "0.1.0"
+panoramix = "0.1.0"
 ```
 
 If you want the bleeding-edge version, add the following instead:
 
 ```toml
-capitaine = { git = "https://github.com/PoignardAzur/capitaine.git" }
+panoramix = { git = "https://github.com/PoignardAzur/panoramix.git" }
 ```
 
-**Note for Linux users:** Capitaine is built on top of Druid, using the GTK backend, which requires a dev version of GTK3. See [GTK installation page](https://www.gtk.org/docs/installations/linux/#installing-gtk-from-packages) for install info.
+**Note for Linux users:** Panoramix is built on top of Druid, using the GTK backend, which requires a dev version of GTK3. See [GTK installation page](https://www.gtk.org/docs/installations/linux/#installing-gtk-from-packages) for install info.
 
 Eg on Ubuntu-based distributions, you should run `sudo apt install libgtk-3-dev`.
 
@@ -91,7 +91,7 @@ The short term roadmap is:
 On the longer timescale, there are two broad goals:
 
 - Achieve feature parity with React.
-- Use Capitaine to build a debugging framework, similar to chrome-devtools. TODO - Write blog posts about this.
+- Use Panoramix to build a debugging framework, similar to chrome-devtools. TODO - Write blog posts about this.
 
 See [ROADMAP.md](ROADMAP.md) for details.
 
@@ -100,4 +100,5 @@ See [ROADMAP.md](ROADMAP.md) for details.
 
 This crate has been almost entirely written by Olivier FAURE. Any other contributor will be added to [AUTHORS.md](AUTHORS.md).
 
-This project has been possible thanks to the extremely clean and approchable work of Raph Levien and Colin Rofls, as well as some mentoring on their part, and general interaction with the Druid community. In particular, Capitaine is inspired from [Crochet](https://github.com/raphlinus/crochet/), hence the name.
+This project has been possible thanks to the extremely clean and approchable work of Raph Levien and Colin Rofls, as well as some mentoring on their part, and general interaction with the Druid community. In particular, Panoramix is inspired from [Crochet](https://github.com/raphlinus/crochet/).
+

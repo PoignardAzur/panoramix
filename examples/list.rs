@@ -1,6 +1,6 @@
-use capitaine::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
-use capitaine::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use capitaine::{make_group, make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+use panoramix::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
+use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
+use panoramix::{make_group, make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
 
 use druid::PlatformError;
 

@@ -1,5 +1,5 @@
-use capitaine::elements::{Button, ButtonPressed, Label};
-use capitaine::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+use panoramix::elements::{Button, ButtonPressed, Label};
+use panoramix::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct HelloBoxState {

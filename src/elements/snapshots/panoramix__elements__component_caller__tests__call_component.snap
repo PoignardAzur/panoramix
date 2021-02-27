@@ -16,7 +16,7 @@ ComponentCallerData(
                     PhantomData,
                     PhantomData,
                 ),
-                callback: &capitaine::elements::component_caller::tests::my_component::{{closure}},
+                callback: &panoramix::elements::component_caller::tests::my_component::{{closure}},
             },
             LabelData(
                 "Values: 999 16",

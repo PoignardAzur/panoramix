@@ -1,10 +1,10 @@
 # Writing a component
 
-Components in Capitaine are plain old functions, that follow a specific format.
+Components in Panoramix are plain old functions, that follow a specific format.
 
-While Capitaine performs some non-intuitive logic in the background, component themselves are very much non-magical. The function you write is the function than Capitaine execute, with no hidden codegen or side-effects.
+While Panoramix performs some non-intuitive logic in the background, component themselves are very much non-magical. The function you write is the function than Panoramix execute, with no hidden codegen or side-effects.
 
-Where there *is* some background logic is in the arguments passed to your components, and how Capitaine processes the return value.
+Where there *is* some background logic is in the arguments passed to your components, and how Panoramix processes the return value.
 
 ## Our first component
 
@@ -18,7 +18,7 @@ fn hello_text(state: &StateType, props: PropsType) -> impl ElementTree<StateType
 }
 ```
 
-For now, we're not using local state, so `StateType` can be `()`, and we're not raising events, so `EventType` can be `capitaine::NoEvent` (will eventually be `!`).
+For now, we're not using local state, so `StateType` can be `()`, and we're not raising events, so `EventType` can be `panoramix::NoEvent` (will eventually be `!`).
 
 We want to pass a string, so `PropsType` can be `&str`.
 
@@ -36,7 +36,7 @@ fn hello_text(_state: &(), name: &str) -> impl ElementTree<(), NoEvent> {
 }
 ```
 
-If we want to test our component in a program, we can pass it to `capitaine::RootHandler` from our main function:
+If we want to test our component in a program, we can pass it to `panoramix::RootHandler` from our main function:
 
 ```rust
 fn main() -> Result<(), druid::PlatformError> {

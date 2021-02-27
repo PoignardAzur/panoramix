@@ -1,10 +1,10 @@
 [package]
-name = "capitaine"
-version = "0.1.0"
+name = "panoramix"
+version = "0.0.1"
 license = "MIT"
 authors = ["Olivier FAURE <couteaubleu@gmail.com>"]
 description = "A prototype implementation of reactive UI in rust "
-repository = "https://github.com/PoignardAzur/capitaine"
+repository = "https://github.com/PoignardAzur/panoramix"
 categories = ["gui"]
 readme = "README.md"
 edition = "2018"
