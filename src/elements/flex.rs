@@ -1,5 +1,5 @@
 use crate::element_tree::ReconcileCtx;
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::flex::{
     Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, FlexWidget, MainAxisAlignment,
@@ -11,39 +11,29 @@ use tracing::instrument;
 
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct Flex<
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
+pub struct Flex<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct FlexData<
-    Child: VirtualDom<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
+pub struct FlexData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // ----
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    Flex<Child, ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Flex<Child, CpState, CpEvent> {
     pub fn new(axis: Axis, child: Child) -> Self {
         Flex {
             axis,
@@ -77,9 +67,7 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    FlexData<Child, ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> FlexData<Child, CpState, CpEvent> {
     pub fn new(
         axis: Axis,
         child: Child,
@@ -99,12 +87,12 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 
 // ----
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent> for Flex<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+    for Flex<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = FlexData<Child::BuildOutput, ComponentState, ComponentEvent>;
+    type BuildOutput = FlexData<Child::BuildOutput, CpState, CpEvent>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
@@ -119,8 +107,8 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    VirtualDom<ComponentState, ComponentEvent> for FlexData<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
+    for FlexData<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
@@ -162,11 +150,11 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     )]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         self.child.process_event(
             component_state,
             children_state,

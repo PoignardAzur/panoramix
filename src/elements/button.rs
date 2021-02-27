@@ -1,6 +1,6 @@
 use crate::glue::{GlobalEventCx, Id};
 
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::widgets::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
@@ -11,20 +11,20 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Button<ComponentState = (), ComponentEvent = NoEvent>(
+pub struct Button<CpState = (), CpEvent = NoEvent>(
     pub String,
     pub FlexParams,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct ButtonData<ComponentState = (), ComponentEvent = NoEvent>(
+pub struct ButtonData<CpState = (), CpEvent = NoEvent>(
     pub String,
     pub FlexParams,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -33,7 +33,7 @@ pub struct ButtonPressed();
 //
 // --- IMPLS
 
-impl<ComponentState, ComponentEvent> Button<ComponentState, ComponentEvent> {
+impl<CpState, CpEvent> Button<CpState, CpEvent> {
     pub fn new(text: impl Into<String>) -> Self {
         Button(
             text.into(),
@@ -51,15 +51,13 @@ impl<ComponentState, ComponentEvent> Button<ComponentState, ComponentEvent> {
     }
 }
 
-impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
-    for Button<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
     type Event = ButtonPressed;
     type AggregateChildrenState = ();
-    type BuildOutput = ButtonData<ComponentState, ComponentEvent>;
+    type BuildOutput = ButtonData<CpState, CpEvent>;
 
     #[instrument(name = "Button", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (ButtonData<ComponentState, ComponentEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (ButtonData<CpState, CpEvent>, ()) {
         (
             ButtonData(self.0, self.1, Default::default(), Default::default()),
             (),
@@ -67,9 +65,7 @@ impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
     }
 }
 
-impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
-    for ButtonData<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for ButtonData<CpState, CpEvent> {
     type Event = ButtonPressed;
     type AggregateChildrenState = ();
 
@@ -104,7 +100,7 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
     )]
     fn process_local_event(
         &self,
-        _component_state: &mut ComponentState,
+        _component_state: &mut CpState,
         _children_state: &mut Self::AggregateChildrenState,
         widget: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

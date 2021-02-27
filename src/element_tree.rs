@@ -12,14 +12,14 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
 }
 
 ///
-pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
+pub trait Element<CpState = (), CpEvent = NoEvent>: Debug {
     /// The type of event that
     type Event;
 
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         Event = Self::Event,
         AggregateChildrenState = Self::AggregateChildrenState,
     >;
@@ -31,7 +31,7 @@ pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
-pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
+pub trait VirtualDom<CpState, CpEvent>: Debug {
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type TargetWidgetSeq: WidgetSequence;
 
@@ -56,18 +56,18 @@ pub trait VirtualDom<ComponentState, ComponentEvent>: Debug {
     #[allow(unused_variables)]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         None
     }
 
     #[allow(unused_variables)]
     fn process_local_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -81,27 +81,18 @@ pub enum NoEvent {}
 
 // Used in unit tests
 #[allow(dead_code)]
-pub(crate) fn assign_empty_state_type(_elem: &impl ElementTree<(), NoEvent>) {}
+pub(crate) fn assign_empty_state_type(_elem: &impl Element<(), NoEvent>) {}
 
 #[allow(dead_code)]
-pub(crate) fn assign_state_type<
-    ComponentState,
-    ComponentEvent,
-    Elem: ElementTree<ComponentState, ComponentEvent>,
->(
-    _elem: &Elem,
-) {
-}
+pub(crate) fn assign_state_type<CpState, CpEvent, Elem: Element<CpState, CpEvent>>(_elem: &Elem) {}
 
 use crate::elements::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
-pub trait ElementTreeExt<ComponentState, ComponentEvent>:
-    ElementTree<ComponentState, ComponentEvent> + Sized
-{
-    fn on<EventParam, Cb: Fn(&mut ComponentState, EventParam)>(
+pub trait ElementExt<CpState, CpEvent>: Element<CpState, CpEvent> + Sized {
+    fn on<EventParam, Cb: Fn(&mut CpState, EventParam)>(
         self,
         callback: Cb,
-    ) -> WithCallbackEvent<ComponentState, ComponentEvent, EventParam, Self, Cb>
+    ) -> WithCallbackEvent<CpState, CpEvent, EventParam, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
     {
@@ -114,17 +105,13 @@ pub trait ElementTreeExt<ComponentState, ComponentEvent>:
         }
     }
 
-    fn map_event<
-        EventParam,
-        EventReturn,
-        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
-    >(
+    fn map_event<EventParam, EventReturn, Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>>(
         self,
         callback: Cb,
-    ) -> WithMapEvent<ComponentState, ComponentEvent, EventParam, EventReturn, Self, Cb>
+    ) -> WithMapEvent<CpState, CpEvent, EventParam, EventReturn, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
-        ComponentEvent: ParentEvent<EventReturn>,
+        CpEvent: ParentEvent<EventReturn>,
     {
         WithMapEvent {
             element: self,
@@ -136,10 +123,10 @@ pub trait ElementTreeExt<ComponentState, ComponentEvent>:
         }
     }
 
-    fn bubble_up<Event>(self) -> WithBubbleEvent<ComponentState, ComponentEvent, Event, Self>
+    fn bubble_up<Event>(self) -> WithBubbleEvent<CpState, CpEvent, Event, Self>
     where
         Self::Event: ParentEvent<Event>,
-        ComponentEvent: ParentEvent<Event>,
+        CpEvent: ParentEvent<Event>,
     {
         WithBubbleEvent {
             element: self,
@@ -150,7 +137,4 @@ pub trait ElementTreeExt<ComponentState, ComponentEvent>:
     }
 }
 
-impl<ComponentState, ComponentEvent, ET: ElementTree<ComponentState, ComponentEvent>>
-    ElementTreeExt<ComponentState, ComponentEvent> for ET
-{
-}
+impl<CpState, CpEvent, ET: Element<CpState, CpEvent>> ElementExt<CpState, CpEvent> for ET {}

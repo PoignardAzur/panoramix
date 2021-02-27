@@ -2,7 +2,7 @@
 #![allow(non_camel_case_types)]
 #![rustfmt::skip]
 
-use crate::element_tree::{ElementTree, VirtualDom, NoEvent};
+use crate::element_tree::{Element, VirtualDom, NoEvent};
 use crate::elements::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
@@ -15,20 +15,20 @@ use tracing::instrument;
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound=""))]
 pub struct ElementTupleData<
-    C0: VirtualDom<ComponentState, ComponentEvent>,
-    C1: VirtualDom<ComponentState, ComponentEvent>,
-    C2: VirtualDom<ComponentState, ComponentEvent>,
-    C3: VirtualDom<ComponentState, ComponentEvent>,
-    C4: VirtualDom<ComponentState, ComponentEvent>,
-    C5: VirtualDom<ComponentState, ComponentEvent>,
-    C6: VirtualDom<ComponentState, ComponentEvent>,
-    C7: VirtualDom<ComponentState, ComponentEvent>,
-    C8: VirtualDom<ComponentState, ComponentEvent>,
-    C9: VirtualDom<ComponentState, ComponentEvent>,
-    C10: VirtualDom<ComponentState, ComponentEvent>,
-    C11: VirtualDom<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
+    C0: VirtualDom<CpState, CpEvent>,
+    C1: VirtualDom<CpState, CpEvent>,
+    C2: VirtualDom<CpState, CpEvent>,
+    C3: VirtualDom<CpState, CpEvent>,
+    C4: VirtualDom<CpState, CpEvent>,
+    C5: VirtualDom<CpState, CpEvent>,
+    C6: VirtualDom<CpState, CpEvent>,
+    C7: VirtualDom<CpState, CpEvent>,
+    C8: VirtualDom<CpState, CpEvent>,
+    C9: VirtualDom<CpState, CpEvent>,
+    C10: VirtualDom<CpState, CpEvent>,
+    C11: VirtualDom<CpState, CpEvent>,
+    CpState = (),
+    CpEvent = NoEvent,
 >(
     pub C0,
     pub C1,
@@ -42,8 +42,8 @@ pub struct ElementTupleData<
     pub C9,
     pub C10,
     pub C11,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 macro_rules! replace_ty {
@@ -61,25 +61,25 @@ macro_rules! declare_stuff {
 #[derivative(Debug(bound=""))]
 pub struct $TupleName<
     $(
-        $Type: ElementTree<ComponentState, ComponentEvent>,
+        $Type: Element<CpState, CpEvent>,
     )*
-    ComponentState = (),
-    ComponentEvent = NoEvent,
+    CpState = (),
+    CpEvent = NoEvent,
 >(
     $(
         pub $Type,
     )*
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 impl<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         $(
-            $Type: ElementTree<ComponentState, ComponentEvent>,
+            $Type: Element<CpState, CpEvent>,
         )*
-    > ElementTree<ComponentState, ComponentEvent> for $TupleName<$($Type,)* ComponentState, ComponentEvent>
+    > Element<CpState, CpEvent> for $TupleName<$($Type,)* CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (
@@ -95,10 +95,10 @@ impl<
             $Type::BuildOutput,
         )*
         $(replace_ty!(($Remainder) >>>
-            EmptyElementData<ComponentState, ComponentEvent>
+            EmptyElementData<CpState, CpEvent>
         ),)*
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
     >;
 
     #[instrument(name = "Tuple", skip(self, prev_state))]
@@ -285,21 +285,21 @@ macro_rules! make_group {
 }
 
 impl<
-        ComponentState,
-        ComponentEvent,
-        C0: VirtualDom<ComponentState, ComponentEvent>,
-        C1: VirtualDom<ComponentState, ComponentEvent>,
-        C2: VirtualDom<ComponentState, ComponentEvent>,
-        C3: VirtualDom<ComponentState, ComponentEvent>,
-        C4: VirtualDom<ComponentState, ComponentEvent>,
-        C5: VirtualDom<ComponentState, ComponentEvent>,
-        C6: VirtualDom<ComponentState, ComponentEvent>,
-        C7: VirtualDom<ComponentState, ComponentEvent>,
-        C8: VirtualDom<ComponentState, ComponentEvent>,
-        C9: VirtualDom<ComponentState, ComponentEvent>,
-        C10: VirtualDom<ComponentState, ComponentEvent>,
-        C11: VirtualDom<ComponentState, ComponentEvent>,
-    > VirtualDom<ComponentState, ComponentEvent> for ElementTupleData<
+        CpState,
+        CpEvent,
+        C0: VirtualDom<CpState, CpEvent>,
+        C1: VirtualDom<CpState, CpEvent>,
+        C2: VirtualDom<CpState, CpEvent>,
+        C3: VirtualDom<CpState, CpEvent>,
+        C4: VirtualDom<CpState, CpEvent>,
+        C5: VirtualDom<CpState, CpEvent>,
+        C6: VirtualDom<CpState, CpEvent>,
+        C7: VirtualDom<CpState, CpEvent>,
+        C8: VirtualDom<CpState, CpEvent>,
+        C9: VirtualDom<CpState, CpEvent>,
+        C10: VirtualDom<CpState, CpEvent>,
+        C11: VirtualDom<CpState, CpEvent>,
+    > VirtualDom<CpState, CpEvent> for ElementTupleData<
         C0,
         C1,
         C2,
@@ -312,8 +312,8 @@ impl<
         C9,
         C10,
         C11,
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
     >
 {
     type Event = NoEvent;
@@ -393,11 +393,11 @@ impl<
     #[instrument(name = "Tuple", skip(self, component_state, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         let event0 = self.0
             .process_event(component_state, &mut children_state.0, &mut widget_seq.0, cx);
         let event1 = self.1

@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::EmptySequence;
 
@@ -8,39 +8,35 @@ use derivative::Derivative;
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElement<ComponentState = (), ComponentEvent = NoEvent>(
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+pub struct EmptyElement<CpState = (), CpEvent = NoEvent>(
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElementData<ComponentState = (), ComponentEvent = NoEvent>(
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+pub struct EmptyElementData<CpState = (), CpEvent = NoEvent>(
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
-impl<ComponentState, ComponentEvent> EmptyElement<ComponentState, ComponentEvent> {
-    pub fn new() -> EmptyElement<ComponentState, ComponentEvent> {
+impl<CpState, CpEvent> EmptyElement<CpState, CpEvent> {
+    pub fn new() -> EmptyElement<CpState, CpEvent> {
         EmptyElement(Default::default(), Default::default())
     }
 }
 
-impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
-    for EmptyElement<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> Element<CpState, CpEvent> for EmptyElement<CpState, CpEvent> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
-    type BuildOutput = EmptyElementData<ComponentState, ComponentEvent>;
+    type BuildOutput = EmptyElementData<CpState, CpEvent>;
 
-    fn build(self, _prev_state: ()) -> (EmptyElementData<ComponentState, ComponentEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (EmptyElementData<CpState, CpEvent>, ()) {
         (EmptyElementData(Default::default(), Default::default()), ())
     }
 }
 
-impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
-    for EmptyElementData<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for EmptyElementData<CpState, CpEvent> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = EmptySequence;
@@ -55,11 +51,11 @@ impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
 
     fn process_event(
         &self,
-        _component_state: &mut ComponentState,
+        _component_state: &mut CpState,
         _children_state: &mut (),
         _widget_seq: &mut EmptySequence,
         _cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         return None;
     }
 }

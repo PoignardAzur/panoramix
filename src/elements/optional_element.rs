@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ReconcileCtx;
@@ -7,8 +7,8 @@ use either::{Either, Left, Right};
 use tracing::{debug_span, info, instrument};
 use tracing_unwrap::OptionExt;
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent> for Option<Child>
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+    for Option<Child>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
@@ -28,8 +28,8 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    VirtualDom<ComponentState, ComponentEvent> for Option<Child>
+impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
+    for Option<Child>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
@@ -74,11 +74,11 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     )]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         let child = self.as_ref()?;
         child.process_event(
             component_state,
@@ -92,11 +92,11 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 // ----
 
 impl<
-        ComponentState,
-        ComponentEvent,
-        ChildLeft: ElementTree<ComponentState, ComponentEvent>,
-        ChildRight: ElementTree<ComponentState, ComponentEvent>,
-    > ElementTree<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
+        CpState,
+        CpEvent,
+        ChildLeft: Element<CpState, CpEvent>,
+        ChildRight: Element<CpState, CpEvent>,
+    > Element<CpState, CpEvent> for Either<ChildLeft, ChildRight>
 {
     type Event = NoEvent;
     type AggregateChildrenState =
@@ -124,11 +124,11 @@ impl<
 }
 
 impl<
-        ComponentState,
-        ComponentEvent,
-        ChildLeft: VirtualDom<ComponentState, ComponentEvent>,
-        ChildRight: VirtualDom<ComponentState, ComponentEvent>,
-    > VirtualDom<ComponentState, ComponentEvent> for Either<ChildLeft, ChildRight>
+        CpState,
+        CpEvent,
+        ChildLeft: VirtualDom<CpState, CpEvent>,
+        ChildRight: VirtualDom<CpState, CpEvent>,
+    > VirtualDom<CpState, CpEvent> for Either<ChildLeft, ChildRight>
 {
     type Event = NoEvent;
     type AggregateChildrenState =
@@ -191,11 +191,11 @@ impl<
     )]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         match self {
             Left(child) => child.process_event(
                 component_state,

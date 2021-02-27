@@ -11,14 +11,14 @@
 //!
 //! ```rust
 //! use panoramix::elements::{Button, ButtonPressed, Label};
-//! use panoramix::{make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+//! use panoramix::{make_row, Element, ElementExt, NoEvent, RootHandler};
 //!
 //! #[derive(Debug, Default, Clone, PartialEq)]
 //! struct HelloBoxState {
 //!     count: i32,
 //! }
 //!
-//! fn hello_box(state: &HelloBoxState, _props: ()) -> impl ElementTree<HelloBoxState, NoEvent> {
+//! fn hello_box(state: &HelloBoxState, _props: ()) -> impl Element<HelloBoxState, NoEvent> {
 //!     make_row!(
 //!         Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
 //!             println!("Hello world - {}", state.count);
@@ -50,9 +50,9 @@
 //! ```rust
 //! // main.rs
 //!
-//! use panoramix::{ElementTree, NoEvent, RootHandler};
+//! use panoramix::{Element, NoEvent, RootHandler};
 //!
-//! fn my_root_component(state: &RootState, _props: ()) -> impl ElementTree<RootState, NoEvent> {
+//! fn my_root_component(state: &RootState, _props: ()) -> impl Element<RootState, NoEvent> {
 //!     // ...
 //! }
 //!
@@ -75,7 +75,7 @@ mod widget_sequence;
 pub mod elements;
 pub mod widgets;
 
-pub use element_tree::{ElementTree, ElementTreeExt, NoEvent};
+pub use element_tree::{Element, ElementExt, NoEvent};
 
 pub use root_handler::{RootHandler, RootWidget};
 

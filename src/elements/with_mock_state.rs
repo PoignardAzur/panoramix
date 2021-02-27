@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ReconcileCtx;
@@ -13,14 +13,10 @@ use derivative::Derivative;
     Default(bound = "Child: Default"),
     Clone(bound = "Child: Clone")
 )]
-pub struct WithMockState<
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
->(
+pub struct WithMockState<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEvent>(
     pub Child,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, PartialEq, Eq, Hash)]
@@ -29,14 +25,10 @@ pub struct WithMockState<
     Default(bound = "Child: Default"),
     Clone(bound = "Child: Clone")
 )]
-pub struct WithMockStateData<
-    Child: VirtualDom<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
->(
+pub struct WithMockStateData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent = NoEvent>(
     pub Child,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -45,16 +37,14 @@ pub struct MockState(String);
 //
 // --- IMPLS
 
-impl<Child: ElementTree<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
-    WithMockState<Child, ComponentState, ComponentEvent>
-{
+impl<Child: Element<CpState, CpEvent>, CpState, CpEvent> WithMockState<Child, CpState, CpEvent> {
     pub fn new(child: Child) -> Self {
         WithMockState(child, Default::default(), Default::default())
     }
 }
 
-impl<Child: VirtualDom<ComponentState, ComponentEvent>, ComponentState, ComponentEvent>
-    WithMockStateData<Child, ComponentState, ComponentEvent>
+impl<Child: VirtualDom<CpState, CpEvent>, CpState, CpEvent>
+    WithMockStateData<Child, CpState, CpEvent>
 {
     pub fn new(child: Child) -> Self {
         WithMockStateData(child, Default::default(), Default::default())
@@ -73,13 +63,12 @@ impl Default for MockState {
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent>
-    for WithMockState<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+    for WithMockState<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
-    type BuildOutput = WithMockStateData<Child::BuildOutput, ComponentState, ComponentEvent>;
+    type BuildOutput = WithMockStateData<Child::BuildOutput, CpState, CpEvent>;
 
     fn build(
         self,
@@ -91,9 +80,8 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    VirtualDom<ComponentState, ComponentEvent>
-    for WithMockStateData<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
+    for WithMockStateData<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
@@ -118,11 +106,11 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
 
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         self.0
             .process_event(component_state, &mut children_state.1, widget_seq, cx)
     }

@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
@@ -14,37 +14,28 @@ use tracing::{debug_span, info, instrument};
 
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
-pub struct ElementList<
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
+pub struct ElementList<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
     pub children: Vec<(String, Child)>,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
-pub struct ElementListData<
-    Child: VirtualDom<ComponentState, ComponentEvent>,
-    ComponentState = (),
-    ComponentEvent = NoEvent,
-> {
+pub struct ElementListData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
     pub children: Vec<(String, Child)>,
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // ----
 
-impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent>
-    for ElementList<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+    for ElementList<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
-    type BuildOutput = ElementListData<Child::BuildOutput, ComponentState, ComponentEvent>;
+    type BuildOutput = ElementListData<Child::BuildOutput, CpState, CpEvent>;
 
     #[instrument(name = "List", skip(self, prev_state))]
     fn build(
@@ -101,9 +92,8 @@ impl<ComponentState, ComponentEvent, Child: ElementTree<ComponentState, Componen
     }
 }
 
-impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, ComponentEvent>>
-    VirtualDom<ComponentState, ComponentEvent>
-    for ElementListData<Child, ComponentState, ComponentEvent>
+impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
+    for ElementListData<Child, CpState, CpEvent>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
@@ -211,11 +201,11 @@ impl<ComponentState, ComponentEvent, Child: VirtualDom<ComponentState, Component
     )]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         for child_data in self
             .children
             .iter()

@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ReconcileCtx;
@@ -8,56 +8,56 @@ use std::fmt::Debug;
 use tracing::instrument;
 
 pub struct ComponentCaller<
-    ChildComponentState: Clone + Default + Debug + PartialEq,
-    ChildComponentEvent,
+    ChildCpState: Clone + Default + Debug + PartialEq,
+    ChildCpEvent,
     Props,
-    ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
-    Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
-    ParentComponentState = (),
-    ParentComponentEvent = NoEvent,
+    ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+    Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+    ParentCpState = (),
+    ParentCpEvent = NoEvent,
 > {
     pub component: Comp,
     pub props: Props,
-    pub _parent_state: std::marker::PhantomData<ParentComponentState>,
-    pub _parent_event: std::marker::PhantomData<ParentComponentEvent>,
-    pub _child_state: std::marker::PhantomData<ChildComponentState>,
-    pub _child_event: std::marker::PhantomData<ChildComponentEvent>,
+    pub _parent_state: std::marker::PhantomData<ParentCpState>,
+    pub _parent_event: std::marker::PhantomData<ParentCpEvent>,
+    pub _child_state: std::marker::PhantomData<ChildCpState>,
+    pub _child_event: std::marker::PhantomData<ChildCpEvent>,
     pub _returned_tree: std::marker::PhantomData<ReturnedTree>,
 }
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = "Child: Default"))]
 pub struct ComponentCallerData<
-    ChildComponentState: Clone + Default + Debug + PartialEq,
-    ChildComponentEvent,
-    Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
-    ParentComponentState,
-    ParentComponentEvent,
+    ChildCpState: Clone + Default + Debug + PartialEq,
+    ChildCpEvent,
+    Child: VirtualDom<ChildCpState, ChildCpEvent>,
+    ParentCpState,
+    ParentCpEvent,
 >(
     Child,
-    std::marker::PhantomData<ParentComponentState>,
-    std::marker::PhantomData<ParentComponentEvent>,
-    std::marker::PhantomData<ChildComponentState>,
-    std::marker::PhantomData<ChildComponentEvent>,
+    std::marker::PhantomData<ParentCpState>,
+    std::marker::PhantomData<ParentCpEvent>,
+    std::marker::PhantomData<ChildCpState>,
+    std::marker::PhantomData<ChildCpEvent>,
 );
 
 impl<
-        ParentComponentState,
-        ParentComponentEvent,
-        ChildComponentState: Clone + Default + Debug + PartialEq,
-        ChildComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
+        ChildCpEvent,
         Props,
-        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
-        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
+        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
     >
     ComponentCaller<
-        ChildComponentState,
-        ChildComponentEvent,
+        ChildCpState,
+        ChildCpEvent,
         Props,
         ReturnedTree,
         Comp,
-        ParentComponentState,
-        ParentComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
     >
 {
     pub fn prepare(component: Comp, props: Props) -> Self {
@@ -74,22 +74,22 @@ impl<
 }
 
 impl<
-        ParentComponentState,
-        ParentComponentEvent,
-        ChildComponentState: Clone + Default + Debug + PartialEq,
-        ChildComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
+        ChildCpEvent,
         Props,
-        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
-        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
+        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
     > std::fmt::Debug
     for ComponentCaller<
-        ChildComponentState,
-        ChildComponentEvent,
+        ChildCpState,
+        ChildCpEvent,
         Props,
         ReturnedTree,
         Comp,
-        ParentComponentState,
-        ParentComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
     >
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -101,32 +101,32 @@ impl<
 }
 
 impl<
-        ParentComponentState,
-        ParentComponentEvent,
-        ChildComponentState: Clone + Default + Debug + PartialEq,
-        ChildComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
+        ChildCpEvent,
         Props,
-        ReturnedTree: ElementTree<ChildComponentState, ChildComponentEvent>,
-        Comp: Fn(&ChildComponentState, Props) -> ReturnedTree,
-    > ElementTree<ParentComponentState, ParentComponentEvent>
+        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+    > Element<ParentCpState, ParentCpEvent>
     for ComponentCaller<
-        ChildComponentState,
-        ChildComponentEvent,
+        ChildCpState,
+        ChildCpEvent,
         Props,
         ReturnedTree,
         Comp,
-        ParentComponentState,
-        ParentComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
     >
 {
-    type Event = ChildComponentEvent;
-    type AggregateChildrenState = (ChildComponentState, ReturnedTree::AggregateChildrenState);
+    type Event = ChildCpEvent;
+    type AggregateChildrenState = (ChildCpState, ReturnedTree::AggregateChildrenState);
     type BuildOutput = ComponentCallerData<
-        ChildComponentState,
-        ChildComponentEvent,
+        ChildCpState,
+        ChildCpEvent,
         ReturnedTree::BuildOutput,
-        ParentComponentState,
-        ParentComponentEvent,
+        ParentCpState,
+        ParentCpEvent,
     >;
 
     #[instrument(name = "Component", skip(self, prev_state))]
@@ -150,22 +150,16 @@ impl<
 }
 
 impl<
-        ParentComponentState,
-        ParentComponentEvent,
-        ChildComponentState: Clone + Default + Debug + PartialEq,
-        ChildComponentEvent,
-        Child: VirtualDom<ChildComponentState, ChildComponentEvent>,
-    > VirtualDom<ParentComponentState, ParentComponentEvent>
-    for ComponentCallerData<
-        ChildComponentState,
-        ChildComponentEvent,
-        Child,
-        ParentComponentState,
-        ParentComponentEvent,
-    >
+        ParentCpState,
+        ParentCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
+        ChildCpEvent,
+        Child: VirtualDom<ChildCpState, ChildCpEvent>,
+    > VirtualDom<ParentCpState, ParentCpEvent>
+    for ComponentCallerData<ChildCpState, ChildCpEvent, Child, ParentCpState, ParentCpEvent>
 {
-    type Event = ChildComponentEvent;
-    type AggregateChildrenState = (ChildComponentState, Child::AggregateChildrenState);
+    type Event = ChildCpEvent;
+    type AggregateChildrenState = (ChildCpState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     #[instrument(name = "Component", skip(self, other))]
@@ -194,7 +188,7 @@ impl<
     )]
     fn process_local_event(
         &self,
-        _component_state: &mut ParentComponentState,
+        _component_state: &mut ParentCpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -208,7 +202,7 @@ impl<
 mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
-    use crate::element_tree::ElementTreeExt;
+    use crate::element_tree::ElementExt;
     use crate::element_tree::NoEvent;
     use crate::elements::{Button, Label};
     use crate::make_row;
@@ -217,7 +211,7 @@ mod tests {
     use test_env_log::test;
 
     // TODO - add tracing, and detect when this function is called by tests
-    fn my_component(state: &u16, props: i64) -> impl ElementTree<u16, NoEvent> {
+    fn my_component(state: &u16, props: i64) -> impl Element<u16, NoEvent> {
         make_row!(
             Button::new("Press me").map_event(|state: &mut u16, _| {
                 *state += 1;

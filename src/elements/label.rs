@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::DruidAppData;
 use crate::widgets::flex::FlexParams;
 use crate::widgets::SingleWidget;
@@ -11,27 +11,27 @@ use tracing::instrument;
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Label<ComponentState = (), ComponentEvent = NoEvent>(
+pub struct Label<CpState = (), CpEvent = NoEvent>(
     pub String,
     pub FlexParams,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct LabelData<ComponentState = (), ComponentEvent = NoEvent>(
+pub struct LabelData<CpState = (), CpEvent = NoEvent>(
     pub String,
     pub FlexParams,
-    pub std::marker::PhantomData<ComponentState>,
-    pub std::marker::PhantomData<ComponentEvent>,
+    pub std::marker::PhantomData<CpState>,
+    pub std::marker::PhantomData<CpEvent>,
 );
 
 //
 // --- IMPLS
 
-impl<ComponentState, ComponentEvent> Label<ComponentState, ComponentEvent> {
-    pub fn new(text: impl Into<String>) -> Label<ComponentState, ComponentEvent> {
+impl<CpState, CpEvent> Label<CpState, CpEvent> {
+    pub fn new(text: impl Into<String>) -> Label<CpState, CpEvent> {
         Label(
             text.into(),
             FlexParams {
@@ -47,13 +47,13 @@ impl<ComponentState, ComponentEvent> Label<ComponentState, ComponentEvent> {
         Label(self.0, flex_params, Default::default(), Default::default())
     }
 
-    pub fn with_mock_state(self) -> super::WithMockState<Self, ComponentState, ComponentEvent> {
+    pub fn with_mock_state(self) -> super::WithMockState<Self, CpState, CpEvent> {
         super::WithMockState::new(self)
     }
 }
 
-impl<ComponentState, ComponentEvent> LabelData<ComponentState, ComponentEvent> {
-    pub fn new(text: impl Into<String>) -> LabelData<ComponentState, ComponentEvent> {
+impl<CpState, CpEvent> LabelData<CpState, CpEvent> {
+    pub fn new(text: impl Into<String>) -> LabelData<CpState, CpEvent> {
         LabelData(
             text.into(),
             FlexParams {
@@ -65,20 +65,18 @@ impl<ComponentState, ComponentEvent> LabelData<ComponentState, ComponentEvent> {
         )
     }
 
-    pub fn with_mock_state(self) -> super::WithMockStateData<Self, ComponentState, ComponentEvent> {
+    pub fn with_mock_state(self) -> super::WithMockStateData<Self, CpState, CpEvent> {
         super::WithMockStateData::new(self)
     }
 }
 
-impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
-    for Label<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> Element<CpState, CpEvent> for Label<CpState, CpEvent> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
-    type BuildOutput = LabelData<ComponentState, ComponentEvent>;
+    type BuildOutput = LabelData<CpState, CpEvent>;
 
     #[instrument(name = "Label", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (LabelData<ComponentState, ComponentEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (LabelData<CpState, CpEvent>, ()) {
         (
             LabelData(self.0, self.1, Default::default(), Default::default()),
             (),
@@ -86,9 +84,7 @@ impl<ComponentState, ComponentEvent> ElementTree<ComponentState, ComponentEvent>
     }
 }
 
-impl<ComponentState, ComponentEvent> VirtualDom<ComponentState, ComponentEvent>
-    for LabelData<ComponentState, ComponentEvent>
-{
+impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for LabelData<CpState, CpEvent> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = SingleWidget<druid_w::Label<DruidAppData>>;

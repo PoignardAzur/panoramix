@@ -1,6 +1,6 @@
 use panoramix::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{make_group, make_row, ElementTree, ElementTreeExt, NoEvent, RootHandler};
+use panoramix::{make_group, make_row, Element, ElementExt, NoEvent, RootHandler};
 
 use druid::PlatformError;
 
@@ -29,7 +29,7 @@ struct RowProps {
     is_selected: bool,
 }
 
-fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, RowEvent> {
+fn list_row(state: &u16, props: RowProps) -> impl Element<u16, RowEvent> {
     let age = *state;
     make_row!(
         Button::new("Select").map_event(|state: &mut u16, event| {
@@ -43,7 +43,7 @@ fn list_row(state: &u16, props: RowProps) -> impl ElementTree<u16, RowEvent> {
     .with_flex_container_params(ROW_FLEX_PARAMS)
 }
 
-fn editable_list(state: &AppState, _props: ()) -> impl ElementTree<AppState, NoEvent> {
+fn editable_list(state: &AppState, _props: ()) -> impl Element<AppState, NoEvent> {
     let button_create = Button::new("Create").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),

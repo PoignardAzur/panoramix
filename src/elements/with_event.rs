@@ -1,4 +1,4 @@
-use crate::element_tree::{ElementTree, VirtualDom};
+use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ReconcileCtx;
@@ -65,11 +65,11 @@ fn bubble_event_up<State, Event>(_state: &mut State, event: Event) -> Option<Eve
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithCallbackEvent<
-    ComponentState,
-    ComponentEvent,
+    CpState,
+    CpEvent,
     EventParam,
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    Cb: Fn(&mut ComponentState, EventParam),
+    Child: Element<CpState, CpEvent>,
+    Cb: Fn(&mut CpState, EventParam),
 > where
     Child::Event: ParentEvent<EventParam>,
 {
@@ -77,9 +77,9 @@ pub struct WithCallbackEvent<
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
     #[derivative(Debug = "ignore")]
     pub _comp_param: std::marker::PhantomData<EventParam>,
 }
@@ -87,23 +87,23 @@ pub struct WithCallbackEvent<
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithMapEvent<
-    ComponentState,
-    ComponentEvent,
+    CpState,
+    CpEvent,
     EventParam,
     EventReturn,
-    Child: ElementTree<ComponentState, ComponentEvent>,
-    Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
+    Child: Element<CpState, CpEvent>,
+    Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
 > where
     Child::Event: ParentEvent<EventParam>,
-    ComponentEvent: ParentEvent<EventReturn>,
+    CpEvent: ParentEvent<EventReturn>,
 {
     pub element: Child,
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
     #[derivative(Debug = "ignore")]
     pub _comp_param: std::marker::PhantomData<EventParam>,
     #[derivative(Debug = "ignore")]
@@ -112,20 +112,16 @@ pub struct WithMapEvent<
 
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct WithBubbleEvent<
-    ComponentState,
-    ComponentEvent,
-    Event,
-    Child: ElementTree<ComponentState, ComponentEvent>,
-> where
+pub struct WithBubbleEvent<CpState, CpEvent, Event, Child: Element<CpState, CpEvent>>
+where
     Child::Event: ParentEvent<Event>,
-    ComponentEvent: ParentEvent<Event>,
+    CpEvent: ParentEvent<Event>,
 {
     pub element: Child,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<ComponentState>,
+    pub _comp_state: std::marker::PhantomData<CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<ComponentEvent>,
+    pub _comp_event: std::marker::PhantomData<CpEvent>,
     #[derivative(Debug = "ignore")]
     pub _comp_param: std::marker::PhantomData<Event>,
 }
@@ -133,24 +129,24 @@ pub struct WithBubbleEvent<
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithEventTarget<
-    ComponentState,
-    ComponentEvent,
+    CpState,
+    CpEvent,
     EventParam,
     EventReturn,
     CbReturn: OptionOrUnit<EventReturn>,
-    Child: VirtualDom<ComponentState, ComponentEvent>,
-    Cb: Fn(&mut ComponentState, EventParam) -> CbReturn,
+    Child: VirtualDom<CpState, CpEvent>,
+    Cb: Fn(&mut CpState, EventParam) -> CbReturn,
 > where
     Child::Event: ParentEvent<EventParam>,
-    ComponentEvent: ParentEvent<EventReturn>,
+    CpEvent: ParentEvent<EventReturn>,
 {
     element: Child,
     #[derivative(Debug(format_with = "format_typename"))]
     callback: Cb,
     #[derivative(Debug = "ignore")]
-    _comp_state: std::marker::PhantomData<ComponentState>,
+    _comp_state: std::marker::PhantomData<CpState>,
     #[derivative(Debug = "ignore")]
-    _comp_event: std::marker::PhantomData<ComponentEvent>,
+    _comp_event: std::marker::PhantomData<CpEvent>,
     #[derivative(Debug = "ignore")]
     _comp_param: std::marker::PhantomData<EventParam>,
     #[derivative(Debug = "ignore")]
@@ -160,27 +156,19 @@ pub struct WithEventTarget<
 // ---
 
 impl<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         EventParam,
-        Child: ElementTree<ComponentState, ComponentEvent>,
-        Cb: Fn(&mut ComponentState, EventParam),
-    > ElementTree<ComponentState, ComponentEvent>
-    for WithCallbackEvent<ComponentState, ComponentEvent, EventParam, Child, Cb>
+        Child: Element<CpState, CpEvent>,
+        Cb: Fn(&mut CpState, EventParam),
+    > Element<CpState, CpEvent> for WithCallbackEvent<CpState, CpEvent, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = WithEventTarget<
-        ComponentState,
-        ComponentEvent,
-        EventParam,
-        ComponentEvent,
-        (),
-        Child::BuildOutput,
-        Cb,
-    >;
+    type BuildOutput =
+        WithEventTarget<CpState, CpEvent, EventParam, CpEvent, (), Child::BuildOutput, Cb>;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
     fn build(
@@ -203,23 +191,23 @@ where
 }
 
 impl<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         EventParam,
         EventReturn,
-        Child: ElementTree<ComponentState, ComponentEvent>,
-        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
-    > ElementTree<ComponentState, ComponentEvent>
-    for WithMapEvent<ComponentState, ComponentEvent, EventParam, EventReturn, Child, Cb>
+        Child: Element<CpState, CpEvent>,
+        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
+    > Element<CpState, CpEvent>
+    for WithMapEvent<CpState, CpEvent, EventParam, EventReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
-    ComponentEvent: ParentEvent<EventReturn>,
+    CpEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         EventParam,
         EventReturn,
         Option<EventReturn>,
@@ -247,23 +235,22 @@ where
     }
 }
 
-impl<ComponentState, ComponentEvent, Event, Child: ElementTree<ComponentState, ComponentEvent>>
-    ElementTree<ComponentState, ComponentEvent>
-    for WithBubbleEvent<ComponentState, ComponentEvent, Event, Child>
+impl<CpState, CpEvent, Event, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+    for WithBubbleEvent<CpState, CpEvent, Event, Child>
 where
     Child::Event: ParentEvent<Event>,
-    ComponentEvent: ParentEvent<Event>,
+    CpEvent: ParentEvent<Event>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         Event,
         Event,
         Option<Event>,
         Child::BuildOutput,
-        fn(&mut ComponentState, Event) -> Option<Event>,
+        fn(&mut CpState, Event) -> Option<Event>,
     >;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
@@ -287,26 +274,18 @@ where
 }
 
 impl<
-        ComponentState,
-        ComponentEvent,
+        CpState,
+        CpEvent,
         EventParam,
         EventReturn,
         CbReturn: OptionOrUnit<EventReturn>,
-        Child: VirtualDom<ComponentState, ComponentEvent>,
-        Cb: Fn(&mut ComponentState, EventParam) -> CbReturn,
-    > VirtualDom<ComponentState, ComponentEvent>
-    for WithEventTarget<
-        ComponentState,
-        ComponentEvent,
-        EventParam,
-        EventReturn,
-        CbReturn,
-        Child,
-        Cb,
-    >
+        Child: VirtualDom<CpState, CpEvent>,
+        Cb: Fn(&mut CpState, EventParam) -> CbReturn,
+    > VirtualDom<CpState, CpEvent>
+    for WithEventTarget<CpState, CpEvent, EventParam, EventReturn, CbReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
-    ComponentEvent: ParentEvent<EventReturn>,
+    CpEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
@@ -338,11 +317,11 @@ where
     )]
     fn process_event(
         &self,
-        component_state: &mut ComponentState,
+        component_state: &mut CpState,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ComponentEvent> {
+    ) -> Option<CpEvent> {
         // FIXME - Handle chains of callbacks eg
         /*
             Button(...)
@@ -364,7 +343,7 @@ where
             trace!("Processing callback for local event");
             let event = (self.callback)(component_state, local_event)
                 .to_option()
-                .map(ComponentEvent::from_child_event);
+                .map(CpEvent::from_child_event);
             if event.is_some() {
                 trace!("Callback returned event");
             }
