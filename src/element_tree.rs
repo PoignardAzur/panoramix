@@ -4,13 +4,16 @@ use crate::widget_sequence::WidgetSequence;
 use druid::{Env, EventCtx};
 use std::fmt::Debug;
 
+/// Context required by [VirtualDom.reconcile]
 pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
     pub event_ctx: &'a mut EventCtx<'d, 'e>,
     pub data: &'b mut DruidAppData,
     pub env: &'c Env,
 }
 
+///
 pub trait ElementTree<ComponentState = (), ComponentEvent = NoEvent>: Debug {
+    /// The type of event that
     type Event;
 
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
@@ -90,10 +93,7 @@ pub(crate) fn assign_state_type<
 ) {
 }
 
-use crate::elements::ParentEvent;
-use crate::elements::WithBubbleEvent;
-use crate::elements::WithCallbackEvent;
-use crate::elements::WithMapEvent;
+use crate::elements::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
 pub trait ElementTreeExt<ComponentState, ComponentEvent>:
     ElementTree<ComponentState, ComponentEvent> + Sized

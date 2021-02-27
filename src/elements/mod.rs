@@ -1,3 +1,5 @@
+//! GUI elements that can be built in a component.
+
 pub mod button;
 pub mod component_caller;
 pub mod compute_diff;

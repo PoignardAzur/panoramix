@@ -32,7 +32,7 @@ Finally, we want to return a label that says hello:
 
 ```rust
 fn hello_text(_state: &(), name: &str) -> impl ElementTree<(), NoEvent> {
-  Label::new(format!("Hello, {}", props))
+  Label::new(format!("Hello, {}", name))
 }
 ```
 

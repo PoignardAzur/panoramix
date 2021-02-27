@@ -1,3 +1,5 @@
+//! Wrapper types around druid widgets.
+
 pub mod button_widget;
 pub mod empty_sequence;
 pub mod flex_widget;
