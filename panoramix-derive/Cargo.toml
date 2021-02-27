@@ -1,0 +1,25 @@
+[package]
+name = "panoramix-derive"
+version = "0.0.1"
+license = "MIT"
+authors = ["Olivier FAURE <couteaubleu@gmail.com>"]
+
+description = "Derive implementations for panoramix, prototype reactive UI."
+repository = "https://github.com/PoignardAzur/panoramix"
+categories = ["gui"]
+readme = "README.md"
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+
+[dependencies]
+syn = "1.0.39"
+quote = "1.0.7"
+proc-macro2 = "1.0.19"
+derive_more = "0.99.11"
+tracing = "0.1.25"
+
+[dev-dependencies]
+panoramix = { version = "0.0.1", path = ".." }
