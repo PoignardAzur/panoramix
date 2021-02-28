@@ -30,6 +30,29 @@ pub struct ElementListData<Child: VirtualDom<CpState, CpEvent>, CpState = (), Cp
 
 // ----
 
+impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> ElementList<Child, CpState, CpEvent> {
+    pub fn from_pairs(pairs: impl std::iter::IntoIterator<Item = (String, Child)>) -> Self {
+        Self {
+            children: pairs.into_iter().collect(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
+        }
+    }
+
+    pub fn from_keys_elems(
+        keys: impl std::iter::IntoIterator<Item = String>,
+        elems: impl std::iter::IntoIterator<Item = Child>,
+    ) -> Self {
+        Self {
+            children: keys.into_iter().zip(elems.into_iter()).collect(),
+            _comp_state: Default::default(),
+            _comp_event: Default::default(),
+        }
+    }
+}
+
+// ----
+
 impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
     for ElementList<Child, CpState, CpEvent>
 {

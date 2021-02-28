@@ -32,7 +32,7 @@ pub struct RowProps {
 }
 
 #[component]
-fn ListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
+fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
     let age = ctx.use_local_state::<u16>();
     make_row!(
         Button::new("Select").map_event(|state: &mut u16, event| {
@@ -76,32 +76,22 @@ fn editable_list(state: &AppState, _props: ()) -> impl Element<AppState, NoEvent
         }
     });
 
-    let list_view_data = state
-        .data
-        .iter()
-        .enumerate()
-        .map(|(i, list_item)| {
-            let row_props = RowProps {
-                list_item: list_item.clone(),
-                is_selected: state.selected_row == Some(i),
-            };
+    // TODO - Find a syntax that looks more hierachical
+    let list_keys = state.data.iter().map(|list_item| list_item.id.to_string());
+    let list_rows = state.data.iter().enumerate().map(|(i, list_item)| {
+        let row_props = RowProps {
+            list_item: list_item.clone(),
+            is_selected: state.selected_row == Some(i),
+        };
 
-            let list_row =
-                ListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, _| {
-                    state.selected_row = Some(i);
-                });
-
-            (list_item.id.to_string(), list_row)
+        MyListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, _| {
+            state.selected_row = Some(i);
         })
-        .collect();
-    let list_view = ElementList {
-        children: list_view_data,
-        _comp_state: Default::default(),
-        _comp_event: Default::default(),
-    };
+    });
+    let list_view = ElementList::from_keys_elems(list_keys, list_rows);
 
     make_group!(
-        make_row!(button_create, button_insert, button_delete, button_update,)
+        make_row!(button_create, button_insert, button_delete, button_update)
             .with_flex_container_params(ROW_FLEX_PARAMS),
         list_view,
     )
