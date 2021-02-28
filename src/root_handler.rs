@@ -1,5 +1,5 @@
-use crate::element_tree::{Element, NoEvent, ReconcileCtx, VirtualDom};
-use crate::elements::component_caller::ComponentCaller;
+use crate::element_tree::{CompCtx, Element, ReconcileCtx, VirtualDom};
+use crate::elements::{Component, ComponentHolder};
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex;
 
@@ -13,14 +13,16 @@ type WidgetSeqOf<RootCpState, RootCpEvent, ReturnedTree> = <<ReturnedTree as Ele
     RootCpEvent,
 >>::BuildOutput as VirtualDom<RootCpState, RootCpEvent>>::TargetWidgetSeq;
 
+// FIXME - RootComponent must be Clone to be able to clone the props
+// Not intuitive, find different abstraction?
+
 pub struct RootWidget<
-    RootCpState: Clone + Default + Debug + PartialEq,
+    RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
     ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Fn(&RootCpState, ()) -> ReturnedTree,
+    Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
 > {
-    pub root_component:
-        ComponentCaller<RootCpState, RootCpEvent, (), ReturnedTree, Comp, (), NoEvent>,
+    pub root_component: Comp,
     pub component_state: (RootCpState, ReturnedTree::AggregateChildrenState),
     pub vdom: Option<ReturnedTree::BuildOutput>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
@@ -33,35 +35,38 @@ pub struct RootWidget<
 }
 
 impl<
-        RootCpState: Clone + Default + Debug + PartialEq,
+        RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
         ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Fn(&RootCpState, ()) -> ReturnedTree,
+        Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
     > RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
-    pub fn new(root_component: Comp, root_state: RootCpState) -> Self {
+    pub fn new(root_component: ComponentHolder<Comp>) -> Self {
         let default_widget = WidgetPod::new(widget::Flex::row());
         RootWidget {
-            root_component: ComponentCaller {
-                component: root_component,
-                props: (),
-                _parent_state: Default::default(),
-                _parent_event: Default::default(),
-                _child_state: Default::default(),
-                _child_event: Default::default(),
-                _returned_tree: Default::default(),
-            },
-            component_state: (root_state, Default::default()),
+            root_component: root_component.0,
+            component_state: Default::default(),
             vdom: None,
             default_widget,
             widget: None,
         }
     }
 
+    pub fn with_state(self, root_state: RootCpState) -> Self {
+        RootWidget {
+            component_state: (root_state, Default::default()),
+            ..self
+        }
+    }
+
     #[instrument(level = "debug", skip(self, ctx))]
     pub fn init(&mut self, ctx: &mut EventCtx) {
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
-            (self.root_component.component)(&self.component_state.0, ()).build(Default::default())
+            // FIXME - clone
+            let ctx = CompCtx {
+                local_state: Box::new(self.component_state.0.clone()),
+            };
+            self.root_component.clone().call(&ctx).build(Default::default())
         });
         self.component_state.1 = state;
 
@@ -122,8 +127,11 @@ impl<
         info!("New aggregate app state: {:?}", self.component_state);
 
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
-            (self.root_component.component)(&self.component_state.0, ())
-                .build(std::mem::take(&mut self.component_state.1))
+            // FIXME - clone
+            let ctx = CompCtx {
+                local_state: Box::new(self.component_state.0.clone()),
+            };
+            self.root_component.clone().call(&ctx).build(std::mem::take(&mut self.component_state.1))
         });
         self.component_state.1 = state;
 
@@ -154,10 +162,10 @@ impl<
 }
 
 impl<
-        RootCpState: Clone + Default + Debug + PartialEq,
+        RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
         ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Fn(&RootCpState, ()) -> ReturnedTree,
+        Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
     > Widget<DruidAppData> for RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
@@ -236,10 +244,10 @@ impl<
 }
 
 pub struct RootHandler<
-    RootCpState: Clone + Default + Debug + PartialEq,
+    RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
     ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Fn(&RootCpState, ()) -> ReturnedTree,
+    Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
 > {
     pub root_widget: RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>,
     pub init_tracing: bool,
@@ -249,13 +257,20 @@ impl<
         RootCpState: 'static + Clone + Default + Debug + PartialEq,
         RootCpEvent: 'static,
         ReturnedTree: 'static + Element<RootCpState, RootCpEvent>,
-        Comp: 'static + Fn(&RootCpState, ()) -> ReturnedTree,
+        Comp: 'static + Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
     > RootHandler<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
-    pub fn new(root_component: Comp, root_state: RootCpState) -> Self {
+    pub fn new(root_component: ComponentHolder<Comp>) -> Self {
         RootHandler {
-            root_widget: RootWidget::new(root_component, root_state),
+            root_widget: RootWidget::new(root_component),
             init_tracing: false,
+        }
+    }
+
+    pub fn with_state(self, root_state: RootCpState) -> Self {
+        RootHandler {
+            root_widget: self.root_widget.with_state(root_state),
+            ..self
         }
     }
 

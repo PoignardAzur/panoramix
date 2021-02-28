@@ -12,13 +12,13 @@ const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
 };
 
 #[derive(Debug, Default, Clone, PartialEq)]
-struct ListItem {
+pub struct ListItem {
     text: String,
     id: i32,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-struct AppState {
+pub struct AppState {
     data: Vec<ListItem>,
     selected_row: Option<usize>,
     next_id: i32,
@@ -26,6 +26,7 @@ struct AppState {
 
 type RowEvent = ButtonPressed;
 // TODO - private type leak?
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct RowProps {
     list_item: ListItem,
     is_selected: bool,
@@ -46,7 +47,10 @@ fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
     .with_flex_container_params(ROW_FLEX_PARAMS)
 }
 
-fn editable_list(state: &AppState, _props: ()) -> impl Element<AppState, NoEvent> {
+#[component]
+fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEvent> {
+    let state = ctx.use_local_state::<AppState>();
+
     let button_create = Button::new("Create").on::<ButtonPressed, _>(|state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),
@@ -109,7 +113,8 @@ fn main() -> Result<(), PlatformError> {
         next_id: 8,
     };
 
-    RootHandler::new(&editable_list, state)
+    RootHandler::new(AwesomeEditableList::new(()))
+        .with_state(state)
         .with_tracing(true)
         .launch()
 }

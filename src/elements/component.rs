@@ -7,7 +7,7 @@ use derivative::Derivative;
 use std::fmt::Debug;
 use tracing::instrument;
 
-pub trait Component<ParentCpState = (), ParentCpEvent = NoEvent>: Debug {
+pub trait Component<ParentCpState = (), ParentCpEvent = NoEvent>: Debug + Clone {
     type LocalState: Clone + Default + Debug + PartialEq;
     type LocalEvent;
     type Output: Element<Self::LocalState, Self::LocalEvent>;
@@ -123,12 +123,14 @@ impl<
 
 // ---
 
+#[derive(Derivative)]
+#[derivative(Clone(bound = ""))]
 pub struct ComponentCaller2<
     ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
-    Props,
+    Props : Clone,
     ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-    Comp: Fn(&CompCtx, Props) -> ReturnedTree,
+    Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     ParentCpState = (),
     ParentCpEvent = NoEvent,
 > {
@@ -148,9 +150,9 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props,
+        Props : Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
+        Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     >
     ComponentCaller2<
         ChildCpState,
@@ -176,9 +178,9 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props,
+        Props : Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
+        Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     > std::fmt::Debug
     for ComponentCaller2<
         ChildCpState,
@@ -204,9 +206,9 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props,
+        Props : Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
+        Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     > Component<ParentCpState, ParentCpEvent>
     for ComponentCaller2<
         ChildCpState,

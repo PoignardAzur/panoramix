@@ -1,12 +1,15 @@
 use panoramix::elements::{Button, ButtonPressed, Label};
-use panoramix::{make_row, Element, ElementExt, NoEvent, RootHandler};
+use panoramix::{make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
+use panoramix_derive::component;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct HelloBoxState {
     count: i32,
 }
 
-fn hello_box(state: &HelloBoxState, _props: ()) -> impl Element<HelloBoxState, NoEvent> {
+#[component]
+fn HelloBox(ctx: &CompCtx, _props: ()) -> impl Element<HelloBoxState, NoEvent> {
+    let state = ctx.use_local_state::<HelloBoxState>();
     make_row!(
         Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
             println!("Hello world - {}", state.count);
@@ -17,9 +20,7 @@ fn hello_box(state: &HelloBoxState, _props: ()) -> impl Element<HelloBoxState, N
 }
 
 fn main() -> Result<(), druid::PlatformError> {
-    let state = HelloBoxState { count: 0 };
-
-    RootHandler::new(&hello_box, state)
+    RootHandler::new(HelloBox::new(()))
         .with_tracing(true)
         .launch()
 }
