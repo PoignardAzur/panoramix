@@ -58,18 +58,27 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         panic!()
     };
 
+    let (local_state_ty, local_event_ty) = parse_return_ty(fn_output.clone());
+
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
 
     quote! {
         #[derive(Debug)]
-        pub struct #component_name(
-            #props_ty
-        );
+        pub struct #component_name;
 
         impl #component_name {
-            pub fn new(#props_arg) -> Self {
-                Self(#props_ident)
+            pub fn new<ParentCpState, ParentCpEvent>(#props_arg)
+                -> panoramix::elements::ComponentHolder<
+                    impl panoramix::elements::Component<
+                        ParentCpState, ParentCpEvent,
+                        LocalState=#local_state_ty,
+                        LocalEvent=#local_event_ty,
+                    >
+                > {
+                panoramix::elements::ComponentHolder(
+                    panoramix::elements::ComponentCaller2::prepare(&Self::render, #props_ident)
+                )
             }
 
             pub fn render(#ctx_arg, #props_arg) -> #fn_output {
@@ -87,4 +96,47 @@ fn get_arg_ident(pattern: syn::Pat) -> syn::Ident {
     } else {
         panic!("Argument must be an identifier pattern")
     }
+}
+
+fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
+    // Uses syn::TypeImplTrait
+    let impl_trait = if let syn::Type::ImplTrait(impl_trait) = return_ty {
+        impl_trait
+    } else {
+        panic!("Component must return impl Element")
+    };
+
+    let element_trait = if let syn::TypeParamBound::Trait(element_trait) =  impl_trait.bounds.first().unwrap() {
+        element_trait
+    } else {
+        panic!("Component must return impl Element")
+    };
+
+    let last_segment = element_trait.path.segments.last().unwrap();
+    let elements_ty_args = last_segment.arguments.clone();
+    assert!(last_segment.ident.to_string() == "Element");
+
+    // AngleBracketedGenericArguments
+    let elements_ty_args = if let syn::PathArguments::AngleBracketed(elements_ty_args) = elements_ty_args {
+        elements_ty_args.args
+    } else {
+        panic!("Component must return impl Element<LocalState, LocalEvent>")
+    };
+
+    assert!(elements_ty_args.len() == 2);
+    let local_state_ty = elements_ty_args.first().unwrap();
+    let local_event_ty = elements_ty_args.last().unwrap();
+
+    let local_state_ty = if let syn::GenericArgument::Type(local_state_ty) = local_state_ty {
+        local_state_ty
+    } else {
+        panic!("Component must return impl Element<LocalState, LocalEvent>")
+    };
+    let local_event_ty = if let syn::GenericArgument::Type(local_event_ty) = local_event_ty {
+        local_event_ty
+    } else {
+        panic!("Component must return impl Element<LocalState, LocalEvent>")
+    };
+
+    (local_state_ty.clone(), local_event_ty.clone())
 }

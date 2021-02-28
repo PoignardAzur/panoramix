@@ -9,6 +9,6 @@ fn EmptyComponent(_state: &(), _my_props: ()) -> impl Element<(), NoEvent> {
 }
 
 fn main() {
-    let element = EmptyComponent::new(());
+    let element = EmptyComponent::new::<(), NoEvent>(());
     println!("element = {:?}", element);
 }
