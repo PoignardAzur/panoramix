@@ -1,10 +1,10 @@
 use panoramix::elements::EmptyElement;
-use panoramix::{Element, NoEvent};
+use panoramix::{CompCtx, Element, NoEvent};
 
 use panoramix_derive::component;
 
 #[component]
-fn EmptyComponent(_state: &(), _my_props: ()) -> impl Element<(), NoEvent> {
+fn EmptyComponent(_ctx: &CompCtx, _my_props: ()) -> impl Element<(), NoEvent> {
     EmptyElement::new()
 }
 

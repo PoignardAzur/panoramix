@@ -1,6 +1,7 @@
-use panoramix::elements::{Button, ButtonPressed, ComponentCaller, ElementList, Label};
+use panoramix::elements::{Button, ButtonPressed, ElementList, Label};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{make_group, make_row, Element, ElementExt, NoEvent, RootHandler};
+use panoramix::{make_group, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
+use panoramix_derive::component;
 
 use druid::PlatformError;
 
@@ -24,13 +25,15 @@ struct AppState {
 }
 
 type RowEvent = ButtonPressed;
-struct RowProps {
+// TODO - private type leak?
+pub struct RowProps {
     list_item: ListItem,
     is_selected: bool,
 }
 
-fn list_row(state: &u16, props: RowProps) -> impl Element<u16, RowEvent> {
-    let age = *state;
+#[component]
+fn ListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
+    let age = ctx.use_local_state::<u16>();
     make_row!(
         Button::new("Select").map_event(|state: &mut u16, event| {
             *state += 1;
@@ -83,12 +86,12 @@ fn editable_list(state: &AppState, _props: ()) -> impl Element<AppState, NoEvent
                 is_selected: state.selected_row == Some(i),
             };
 
-            let comp_builder = ComponentCaller::prepare(list_row, row_props);
-            let comp_builder = comp_builder.on::<RowEvent, _>(move |state: &mut AppState, _| {
-                state.selected_row = Some(i);
-            });
+            let list_row =
+                ListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, _| {
+                    state.selected_row = Some(i);
+                });
 
-            (list_item.id.to_string(), comp_builder)
+            (list_item.id.to_string(), list_row)
         })
         .collect();
     let list_view = ElementList {

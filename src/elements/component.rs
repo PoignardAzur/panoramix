@@ -1,4 +1,4 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::element_tree::{CompCtx, Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ReconcileCtx;
@@ -7,15 +7,12 @@ use derivative::Derivative;
 use std::fmt::Debug;
 use tracing::instrument;
 
-// TODO - Note: If you find yourself trying to build a CtxHolder, you're probably using the API incorrectly.
-pub struct CtxHolder;
-
 pub trait Component<ParentCpState = (), ParentCpEvent = NoEvent>: Debug {
     type LocalState: Clone + Default + Debug + PartialEq;
     type LocalEvent;
     type Output: Element<Self::LocalState, Self::LocalEvent>;
 
-    fn call(self, ctx: &CtxHolder) -> Self::Output;
+    fn call(self, ctx: &CompCtx) -> Self::Output;
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
@@ -35,7 +32,7 @@ pub struct ComponentOutput<
 );
 
 impl<
-        LocalState: Clone + Default + Debug + PartialEq,
+        LocalState: Clone + Default + Debug + PartialEq + 'static,
         LocalEvent,
         ParentCpState,
         ParentCpEvent,
@@ -62,7 +59,11 @@ where
         self,
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
-        let element_tree = self.0.call(&CtxHolder);
+        // FIXME - clone
+        let ctx = CompCtx {
+            local_state: Box::new(prev_state.0.clone()),
+        };
+        let element_tree = self.0.call(&ctx);
         let (element, component_state) = element_tree.build(prev_state.1);
         (
             ComponentOutput(element, Default::default()),
@@ -127,7 +128,7 @@ pub struct ComponentCaller2<
     ChildCpEvent,
     Props,
     ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-    Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+    Comp: Fn(&CompCtx, Props) -> ReturnedTree,
     ParentCpState = (),
     ParentCpEvent = NoEvent,
 > {
@@ -149,7 +150,7 @@ impl<
         ChildCpEvent,
         Props,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
     >
     ComponentCaller2<
         ChildCpState,
@@ -177,7 +178,7 @@ impl<
         ChildCpEvent,
         Props,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
     > std::fmt::Debug
     for ComponentCaller2<
         ChildCpState,
@@ -205,7 +206,7 @@ impl<
         ChildCpEvent,
         Props,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
-        Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
+        Comp: Fn(&CompCtx, Props) -> ReturnedTree,
     > Component<ParentCpState, ParentCpEvent>
     for ComponentCaller2<
         ChildCpState,
@@ -221,8 +222,7 @@ impl<
     type LocalEvent = ChildCpEvent;
     type Output = ReturnedTree;
 
-    fn call(self, _ctx: &CtxHolder) -> Self::Output {
-        // TODO - ctx
-        (self.component)(&Default::default(), self.props)
+    fn call(self, ctx: &CompCtx) -> Self::Output {
+        (self.component)(&ctx, self.props)
     }
 }

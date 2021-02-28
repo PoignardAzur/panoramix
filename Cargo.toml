@@ -15,6 +15,8 @@ rev = "c6e5a5ed925fbf722af482e168ff1af44c926110"
 features = ["crochet"]
 
 [dependencies]
+panoramix-derive = { version = "0.0.1", path = "./panoramix-derive" }
+
 derivative = "2.1.3"
 either= "1.6.1"
 log = "0.4.11"

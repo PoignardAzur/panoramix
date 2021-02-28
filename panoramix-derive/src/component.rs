@@ -49,7 +49,6 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     } else {
         panic!("Argument cannot be self")
     };
-    let props_ty = props_arg.ty.clone();
     let props_ident = get_arg_ident(*props_arg.pat.clone());
 
     let fn_output = if let syn::ReturnType::Type(_, ty) = fn_output {

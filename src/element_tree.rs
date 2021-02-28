@@ -2,7 +2,18 @@ use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widget_sequence::WidgetSequence;
 
 use druid::{Env, EventCtx};
+use std::any::Any;
 use std::fmt::Debug;
+
+pub struct CompCtx {
+    pub(crate) local_state: Box<dyn Any>,
+}
+
+impl CompCtx {
+    pub fn use_local_state<T: 'static>(&self) -> &T {
+        self.local_state.downcast_ref::<T>().unwrap()
+    }
+}
 
 /// Context required by [VirtualDom.reconcile]
 pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {

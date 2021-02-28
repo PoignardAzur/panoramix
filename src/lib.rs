@@ -75,7 +75,9 @@ mod widget_sequence;
 pub mod elements;
 pub mod widgets;
 
-pub use element_tree::{Element, ElementExt, NoEvent};
+pub use panoramix_derive::*;
+
+pub use element_tree::{CompCtx, Element, ElementExt, NoEvent};
 
 pub use root_handler::{RootHandler, RootWidget};
 
