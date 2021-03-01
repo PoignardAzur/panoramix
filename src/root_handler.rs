@@ -20,7 +20,7 @@ pub struct RootWidget<
     RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
     ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
+    Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
 > {
     pub root_component: Comp,
     pub component_state: (RootCpState, ReturnedTree::AggregateChildrenState),
@@ -38,7 +38,7 @@ impl<
         RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
         ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
+        Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
     > RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
     pub fn new(root_component: ComponentHolder<Comp>) -> Self {
@@ -66,7 +66,10 @@ impl<
             let ctx = CompCtx {
                 local_state: Box::new(self.component_state.0.clone()),
             };
-            self.root_component.clone().call(&ctx).build(Default::default())
+            self.root_component
+                .clone()
+                .call(&ctx)
+                .build(Default::default())
         });
         self.component_state.1 = state;
 
@@ -131,7 +134,10 @@ impl<
             let ctx = CompCtx {
                 local_state: Box::new(self.component_state.0.clone()),
             };
-            self.root_component.clone().call(&ctx).build(std::mem::take(&mut self.component_state.1))
+            self.root_component
+                .clone()
+                .call(&ctx)
+                .build(std::mem::take(&mut self.component_state.1))
         });
         self.component_state.1 = state;
 
@@ -165,7 +171,7 @@ impl<
         RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
         ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
+        Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
     > Widget<DruidAppData> for RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
@@ -247,7 +253,7 @@ pub struct RootHandler<
     RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
     ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
+    Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
 > {
     pub root_widget: RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>,
     pub init_tracing: bool,
@@ -257,7 +263,7 @@ impl<
         RootCpState: 'static + Clone + Default + Debug + PartialEq,
         RootCpEvent: 'static,
         ReturnedTree: 'static + Element<RootCpState, RootCpEvent>,
-        Comp: 'static + Component<RootCpState, RootCpEvent, Output=ReturnedTree>,
+        Comp: 'static + Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
     > RootHandler<RootCpState, RootCpEvent, ReturnedTree, Comp>
 {
     pub fn new(root_component: ComponentHolder<Comp>) -> Self {

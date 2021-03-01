@@ -10,6 +10,7 @@ pub mod empty;
 pub mod flex;
 pub mod label;
 pub mod optional_element;
+pub mod textbox;
 pub mod with_event;
 pub mod with_mock_state;
 
@@ -22,5 +23,6 @@ pub use empty::*;
 pub use flex::*;
 pub use label::*;
 pub use optional_element::*;
+pub use textbox::*;
 pub use with_event::*;
 pub use with_mock_state::*;

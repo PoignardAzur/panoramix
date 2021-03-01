@@ -3,7 +3,7 @@ use panoramix::{make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
 use panoramix_derive::component;
 
 #[derive(Debug, Default, Clone, PartialEq)]
-struct HelloBoxState {
+pub struct HelloBoxState {
     count: i32,
 }
 

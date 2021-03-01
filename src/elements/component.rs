@@ -128,7 +128,7 @@ impl<
 pub struct ComponentCaller2<
     ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
-    Props : Clone,
+    Props: Clone,
     ReturnedTree: Element<ChildCpState, ChildCpEvent>,
     Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     ParentCpState = (),
@@ -150,7 +150,7 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props : Clone,
+        Props: Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     >
@@ -178,7 +178,7 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props : Clone,
+        Props: Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     > std::fmt::Debug
@@ -206,7 +206,7 @@ impl<
         ParentCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Props : Clone,
+        Props: Clone,
         ReturnedTree: Element<ChildCpState, ChildCpEvent>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     > Component<ParentCpState, ParentCpEvent>

@@ -30,6 +30,7 @@ pub struct DruidAppData(Arc<HashMap<Id, Action>>);
 pub enum Action {
     Clicked,
     FutureResolved,
+    TextChanged(String),
 }
 
 impl DruidAppData {
