@@ -87,9 +87,10 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for TextBoxData<CpState, CpE
     }
 
     #[instrument(name = "TextBox", skip(self, _other, widget, ctx))]
-    fn reconcile(&self, _other: &Self, widget: &mut Self::TargetWidgetSeq, ctx: &mut ReconcileCtx) {
+    fn reconcile(&self, _other: &Self, widget: &mut TextBoxWidget, ctx: &mut ReconcileCtx) {
         let text = &self.0;
         widget.text = text.clone();
+        // TODO - check diff with previous value
         widget.request_druid_update(ctx);
     }
 
@@ -101,7 +102,7 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for TextBoxData<CpState, CpE
         &self,
         _component_state: &mut CpState,
         _children_state: &mut Self::AggregateChildrenState,
-        widget: &mut Self::TargetWidgetSeq,
+        widget: &mut TextBoxWidget,
         cx: &mut GlobalEventCx,
     ) -> Option<TextChanged> {
         // FIXME - Rework event dispatching

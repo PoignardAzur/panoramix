@@ -49,6 +49,7 @@ impl FlexWidget for ButtonWidget {
     ) {
         self.pod.lifecycle(ctx, event, data, env);
     }
+
     fn update(
         &mut self,
         ctx: &mut UpdateCtx,

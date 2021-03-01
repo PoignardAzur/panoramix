@@ -230,11 +230,10 @@ impl<
 
         if let Some(widget) = &mut self.widget {
             size = widget.layout(ctx, bc, data, env);
-            widget.set_layout_rect(ctx, data, env, (Point::ZERO, size).into());
+            widget.set_origin(ctx, data, env, Point::ZERO);
         } else {
             size = self.default_widget.layout(ctx, bc, data, env);
-            self.default_widget
-                .set_layout_rect(ctx, data, env, (Point::ZERO, size).into());
+            self.default_widget.set_origin(ctx, data, env, Point::ZERO);
         }
 
         size

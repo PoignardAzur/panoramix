@@ -68,6 +68,7 @@ impl FlexWidget for TextBoxWidget {
     ) {
         self.pod.lifecycle(ctx, event, &mut self.text, env);
     }
+
     fn update(
         &mut self,
         ctx: &mut UpdateCtx,

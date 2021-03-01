@@ -23,6 +23,14 @@ impl<W: Widget<DruidAppData>> SingleWidget<W> {
         }
     }
 
+    pub fn widget(&self) -> &W {
+        self.pod.widget()
+    }
+
+    pub fn widget_mut(&mut self) -> &mut W {
+        self.pod.widget_mut()
+    }
+
     pub fn request_druid_update(&mut self, ctx: &mut ReconcileCtx) {
         self.pod
             .with_event_context(ctx.event_ctx, |_widget: &mut W, ctx: &mut EventCtx| {

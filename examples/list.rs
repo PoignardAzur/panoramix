@@ -1,4 +1,4 @@
-use panoramix::elements::{Button, ButtonPressed, ElementList, Label};
+use panoramix::elements::{Button, ButtonPressed, Checkbox, ElementList, Label, Toggled};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use panoramix::{make_group, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
 use panoramix_derive::component;
@@ -24,7 +24,7 @@ pub struct AppState {
     next_id: i32,
 }
 
-type RowEvent = ButtonPressed;
+type RowEvent = Toggled;
 // TODO - private type leak?
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct RowProps {
@@ -36,11 +36,10 @@ pub struct RowProps {
 fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
     let age = ctx.use_local_state::<u16>();
     make_row!(
-        Button::new("Select").map_event(|state: &mut u16, event| {
+        Checkbox::new("", props.is_selected).map_event(|state: &mut u16, event| {
             *state += 1;
             Some(event)
         }),
-        Label::new(if props.is_selected { " [*]" } else { " [ ]" }),
         Label::new(format!("{} - age={}", &props.list_item.text, age)),
         Label::new(format!("id={}", props.list_item.id)),
     )
@@ -88,8 +87,12 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEv
             is_selected: state.selected_row == Some(i),
         };
 
-        MyListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, _| {
-            state.selected_row = Some(i);
+        MyListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, event| {
+            if event.0 {
+                state.selected_row = Some(i);
+            } else {
+                state.selected_row = None;
+            }
         })
     });
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);

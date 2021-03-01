@@ -1,6 +1,7 @@
 //! GUI elements that can be built in a component.
 
 pub mod button;
+pub mod checkbox;
 pub mod component;
 pub mod component_caller;
 pub mod compute_diff;
@@ -15,6 +16,7 @@ pub mod with_event;
 pub mod with_mock_state;
 
 pub use button::*;
+pub use checkbox::*;
 pub use component::*;
 pub use component_caller::*;
 pub use element_list::*;
