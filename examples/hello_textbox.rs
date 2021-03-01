@@ -19,7 +19,7 @@ fn HelloComponent(ctx: &CompCtx, _props: ()) -> impl Element<HelloState, NoEvent
     };
 
     let textbox = TextBox::new(state.name.clone()).on::<TextChanged, _>(
-        move |state: &mut HelloState, event: TextChanged| {
+        |state: &mut HelloState, event: TextChanged| {
             state.name = event.0;
         },
     );

@@ -13,6 +13,8 @@ use tracing::{instrument, trace};
 // TextBox::new("Some fixed string")
 // In other words, enforce two-ways bindings
 
+// TODO - Add "validate on enter" feature
+
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct TextBox<CpState = (), CpEvent = NoEvent> {
