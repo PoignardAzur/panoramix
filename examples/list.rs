@@ -1,8 +1,6 @@
-use panoramix::elements::{Button, ButtonPressed, Checkbox, ElementList, Label, Toggled};
+use panoramix::elements::{Button, Checkbox, ElementList, Label, Toggled};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{
-    component, make_group, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler,
-};
+use panoramix::{component, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row, Tuple};
 
 use druid::PlatformError;
 
@@ -36,7 +34,7 @@ pub struct RowProps {
 #[component]
 fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
     let age = ctx.use_local_state::<u16>();
-    make_row!(
+    Row!(
         Checkbox::new("", props.is_selected).map_event(|state: &mut u16, event| {
             *state += 1;
             Some(event)
@@ -51,14 +49,14 @@ fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
 fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEvent> {
     let state = ctx.use_local_state::<AppState>();
 
-    let button_create = Button::new("Create").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+    let button_create = Button::new("Create").on_click(|state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),
             id: state.next_id,
         });
         state.next_id += 1;
     });
-    let button_insert = Button::new("Insert").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+    let button_insert = Button::new("Insert").on_click(|state: &mut AppState, _| {
         state.data.insert(
             0,
             ListItem {
@@ -68,13 +66,13 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEv
         );
         state.next_id += 1;
     });
-    let button_delete = Button::new("Delete").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+    let button_delete = Button::new("Delete").on_click(|state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data.remove(row as usize);
             state.selected_row = None;
         }
     });
-    let button_update = Button::new("Update").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+    let button_update = Button::new("Update").on_click(|state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data[row as usize].text = "updated".to_string();
         }
@@ -98,8 +96,8 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEv
     });
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);
 
-    make_group!(
-        make_row!(button_create, button_insert, button_delete, button_update)
+    Tuple!(
+        Row!(button_create, button_insert, button_delete, button_update)
             .with_flex_container_params(ROW_FLEX_PARAMS),
         list_view,
     )
@@ -118,7 +116,7 @@ fn main() -> Result<(), PlatformError> {
     };
 
     RootHandler::new(AwesomeEditableList::new(()))
-        .with_state(state)
+        .with_initial_state(state)
         .with_tracing(true)
         .launch()
 }

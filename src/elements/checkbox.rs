@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::widgets::flex::FlexParams;
 use crate::widgets::{CheckboxWidget, SingleCheckboxWidget};
 
@@ -57,6 +57,13 @@ impl<CpState, CpEvent> Checkbox<CpState, CpEvent> {
             flex: flex_params,
             ..self
         }
+    }
+
+    pub fn on_toggled(
+        self,
+        callback: impl Fn(&mut CpState, Toggled),
+    ) -> impl Element<CpState, CpEvent> {
+        self.on(callback)
     }
 }
 

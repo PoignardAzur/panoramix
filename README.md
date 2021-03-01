@@ -17,28 +17,21 @@ It aims to use **simple, idiomatic Rust**: Panoramix doesn't use unsafe code, ce
 Here is our "hello world" example:
 
 ```rust
-use panoramix::elements::{Button, ButtonPressed, Label};
-use panoramix::{make_row, Element, ElementExt, NoEvent, RootHandler};
+use panoramix::elements::{Button, Label};
+use panoramix::{component, Column, CompCtx, Element, NoEvent, RootHandler};
 
-#[derive(Debug, Default, Clone, PartialEq)]
-struct HelloBoxState {
-    count: i32,
-}
-
-fn hello_box(state: &HelloBoxState, _props: ()) -> impl Element<HelloBoxState, NoEvent> {
-    make_row!(
-        Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
-            println!("Hello world - {}", state.count);
-            state.count += 1;
-        }),
-        Label::new(format!("Hello count: {}", state.count)),
+#[component]
+fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element<(), NoEvent> {
+    Column!(
+        Label::new("Hello world!"),
+        Button::new("Say hello").on_click(|_, _| {
+            println!("Hello world");
+        })
     )
 }
 
 fn main() -> Result<(), druid::PlatformError> {
-    let state = HelloBoxState { count: 0 };
-
-    RootHandler::new(&hello_box, state)
+    RootHandler::new(HelloBox::new(()))
         .with_tracing(true)
         .launch()
 }

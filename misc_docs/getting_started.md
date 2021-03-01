@@ -14,8 +14,8 @@ It aims to use **simple, idiomatic Rust**: Panoramix doesn't use unsafe code, ce
 Here is our "hello world" example:
 
 ```rust
-use panoramix::elements::{Button, ButtonPressed, Label};
-use panoramix::{make_row, Element, ElementExt, NoEvent, RootHandler};
+use panoramix::elements::{Button, ButtonClick, Label};
+use panoramix::{Row, Element, ElementExt, NoEvent, RootHandler};
 
 #[derive(Debug, Default, Clone, PartialEq)]
 struct HelloBoxState {
@@ -23,8 +23,8 @@ struct HelloBoxState {
 }
 
 fn hello_box(state: &HelloBoxState, _props: ()) -> impl Element<HelloBoxState, NoEvent> {
-  make_row!(
-    Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut HelloBoxState, _| {
+  Row!(
+    Button::new("Say hello").on::<ButtonClick, _>(|state: &mut HelloBoxState, _| {
       println!("Hello world - {}", state.count);
       state.count += 1;
     }),
@@ -44,7 +44,7 @@ fn main() -> Result<(), druid::PlatformError> {
 To understand this example, let's define a few terms:
 
 - A **Widget** is the fundamental unit of GUI; for instance, a text field and a label are both widgets. You've probably seen the term if you've used other GUI frameworks.
-- An **Element** is a lightweight description of a Widget. In our example, [Button.new] and [Label.new] both return elements. The [make_row] macros take an arbittrary number of elements and returns a container element.
+- An **Element** is a lightweight description of a Widget. In our example, [Button.new] and [Label.new] both return elements. The [Row] macros take an arbittrary number of elements and returns a container element.
 - A **Component** is a user-written function that returns a tree of elements (or, more accurately, an arbitrary element that may or may not contain other elements). In our example, `hello_box` is a component.
 
 In Panoramix, you don't directly manipulate **widgets**; instead, you write **components** that return **elements**. The framework calls your components, gets a tree of elements, and builds a matching widget tree for you. When some event changes the application state, the framework calls your components again, gets a new element tree, and edits the widget tree accordingly.

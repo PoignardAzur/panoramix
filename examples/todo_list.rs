@@ -1,10 +1,6 @@
-use panoramix::elements::{
-    Button, ButtonPressed, Checkbox, ElementList, Label, TextBox, TextChanged, Toggled,
-};
+use panoramix::elements::{Button, Checkbox, ElementList, Label, TextBox, TextChanged, Toggled};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{
-    component, make_column, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler,
-};
+use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row};
 
 use druid::PlatformError;
 
@@ -39,7 +35,7 @@ fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<(), ItemEvent> {
         props.text.clone()
     };
 
-    make_row!(
+    Row!(
         Checkbox::new("", props.is_completed).bubble_up::<ItemEvent>(),
         Label::new(text),
     )
@@ -56,34 +52,33 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEv
         },
     );
     // TODO - Add "validate on enter" feature
-    let textbox_task_name = TextBox::new(state.task_name.clone()).on::<TextChanged, _>(
+    let textbox_task_name = TextBox::new(state.task_name.clone()).on_text_changed(
         |state: &mut AppState, event: TextChanged| {
             state.task_name = event.0;
         },
     );
 
-    let button_new_task =
-        Button::new("New task").on::<ButtonPressed, _>(|state: &mut AppState, _| {
-            if state.task_name == "" {
-                return;
-            }
+    let button_new_task = Button::new("New task").on_click(|state: &mut AppState, _| {
+        if state.task_name == "" {
+            return;
+        }
 
-            let new_task = TaskItem {
-                text: state.task_name.clone(),
-                is_completed: false,
-                id: state.next_id,
-            };
+        let new_task = TaskItem {
+            text: state.task_name.clone(),
+            is_completed: false,
+            id: state.next_id,
+        };
 
-            // If it's high priority, insert it at the beginning
-            if state.high_priority {
-                state.tasks.insert(0, new_task);
-            } else {
-                state.tasks.push(new_task);
-            }
+        // If it's high priority, insert it at the beginning
+        if state.high_priority {
+            state.tasks.insert(0, new_task);
+        } else {
+            state.tasks.push(new_task);
+        }
 
-            state.task_name = String::new();
-            state.next_id += 1;
-        });
+        state.task_name = String::new();
+        state.next_id += 1;
+    });
 
     // TODO - Find a syntax that looks more hierachical
     let list_keys = state.tasks.iter().map(|task_item| task_item.id.to_string());
@@ -95,15 +90,15 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEv
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);
 
     let button_delete =
-        Button::new("Delete completed tasks").on::<ButtonPressed, _>(|state: &mut AppState, _| {
+        Button::new("Delete completed tasks").on_click(|state: &mut AppState, _| {
             state.tasks = std::mem::take(&mut state.tasks)
                 .into_iter()
                 .filter(|task| !task.is_completed)
                 .collect();
         });
 
-    make_column!(
-        make_row!(checkbox_priority, textbox_task_name, button_new_task)
+    Column!(
+        Row!(checkbox_priority, textbox_task_name, button_new_task)
             .with_flex_container_params(ROW_FLEX_PARAMS),
         list_view,
         button_delete,
@@ -129,7 +124,7 @@ fn main() -> Result<(), PlatformError> {
     };
 
     RootHandler::new(AwesomeEditableList::new(()))
-        .with_state(state)
+        .with_initial_state(state)
         .with_tracing(true)
         .launch()
 }

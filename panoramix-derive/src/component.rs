@@ -98,6 +98,8 @@ fn get_arg_ident(pattern: syn::Pat) -> syn::Ident {
 }
 
 fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
+    // TODO - Handle return types `impl Element`, `impl Element<Event>`
+
     // Uses syn::TypeImplTrait
     let impl_trait = if let syn::Type::ImplTrait(impl_trait) = return_ty {
         impl_trait

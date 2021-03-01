@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::widgets::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
@@ -28,7 +28,7 @@ pub struct ButtonData<CpState = (), CpEvent = NoEvent> {
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct ButtonPressed;
+pub struct ButtonClick;
 
 //
 // --- IMPLS
@@ -51,10 +51,17 @@ impl<CpState, CpEvent> Button<CpState, CpEvent> {
             ..self
         }
     }
+
+    pub fn on_click(
+        self,
+        callback: impl Fn(&mut CpState, ButtonClick),
+    ) -> impl Element<CpState, CpEvent> {
+        self.on(callback)
+    }
 }
 
 impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
-    type Event = ButtonPressed;
+    type Event = ButtonClick;
     type AggregateChildrenState = ();
     type BuildOutput = ButtonData<CpState, CpEvent>;
 
@@ -72,7 +79,7 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
 }
 
 impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for ButtonData<CpState, CpEvent> {
-    type Event = ButtonPressed;
+    type Event = ButtonClick;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = ButtonWidget;
 
@@ -101,12 +108,12 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for ButtonData<CpState, CpEv
         _children_state: &mut Self::AggregateChildrenState,
         widget: &mut ButtonWidget,
         cx: &mut GlobalEventCx,
-    ) -> Option<ButtonPressed> {
+    ) -> Option<ButtonClick> {
         // FIXME - Rework event dispatching
         let id = widget.id;
         if let Some(Action::Clicked) = cx.app_data.dequeue_action(id) {
             trace!("Processed button press");
-            Some(ButtonPressed)
+            Some(ButtonClick)
         } else {
             None
         }

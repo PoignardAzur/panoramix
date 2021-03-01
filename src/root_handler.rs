@@ -52,7 +52,7 @@ impl<
         }
     }
 
-    pub fn with_state(self, root_state: RootCpState) -> Self {
+    pub fn with_initial_state(self, root_state: RootCpState) -> Self {
         RootWidget {
             component_state: (root_state, Default::default()),
             ..self
@@ -272,9 +272,9 @@ impl<
         }
     }
 
-    pub fn with_state(self, root_state: RootCpState) -> Self {
+    pub fn with_initial_state(self, root_state: RootCpState) -> Self {
         RootHandler {
-            root_widget: self.root_widget.with_state(root_state),
+            root_widget: self.root_widget.with_initial_state(root_state),
             ..self
         }
     }

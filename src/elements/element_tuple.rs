@@ -203,7 +203,7 @@ declare_stuff!{
 }
 
 #[macro_export]
-macro_rules! make_group {
+macro_rules! Tuple {
 
     ( $(,)? ) => {
         $crate::elements::EmptyElement::new()
@@ -451,7 +451,7 @@ mod tests {
 
     #[test]
     fn empty_tuple() {
-        let tuple = make_group!();
+        let tuple = Tuple!();
         let tuple_data = tuple.clone().build(Default::default());
 
         assert_debug_snapshot!(tuple);
@@ -462,7 +462,7 @@ mod tests {
 
     #[test]
     fn new_tuple_single_item() {
-        let tuple = make_group!(Label::new("Hello"));
+        let tuple = Tuple!(Label::new("Hello"));
         let tuple_data = tuple.clone().build(Default::default());
 
         assert_debug_snapshot!(tuple);
@@ -473,12 +473,12 @@ mod tests {
 
     #[test]
     fn new_tuple_multi_items() {
-        let tuple = make_group!(
+        let tuple = Tuple!(
             Label::new("Hello"),
             Label::new("Hello2"),
             Label::new("Hello3")
         );
-        let tuple_trailing_comma = make_group!(
+        let tuple_trailing_comma = Tuple!(
             Label::new("Hello"),
             Label::new("Hello2"),
             Label::new("Hello3"),

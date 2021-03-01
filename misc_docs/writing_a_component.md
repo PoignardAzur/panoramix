@@ -55,7 +55,7 @@ For instance, let's say we want our GUI to say hello to multiple people at the s
 
 ```rust
 fn hello_text(_state: &(), _props: ()) -> impl Element<(), NoEvent> {
-  make_group!(
+  Tuple!(
     Label::new(format!("Hello, Alice", props)),
     Label::new(format!("Hello, Bob", props)),
     Label::new(format!("Hello, Carol", props)),
@@ -64,7 +64,7 @@ fn hello_text(_state: &(), _props: ()) -> impl Element<(), NoEvent> {
 }
 ```
 
-(`make_group!()` is a macro similar to `vec![]`, that takes a tuple of elements of arbitrary types and returns an element that contains them all; the value returned by `make_group` always implements `Element`)
+(`Tuple!()` is a macro similar to `vec![]`, that takes a tuple of elements of arbitrary types and returns an element that contains them all; the value returned by `Tuple` always implements `Element`)
 
 However, this is a very brute-force approach; we'd rather reuse code. (TODO) What we do instead is:
 
@@ -74,7 +74,7 @@ fn hello_text(_state: &(), name: &str) -> impl Element<(), NoEvent> {
 }
 
 fn hello_everyone(_state: &(), _props: ()) -> impl Element<(), NoEvent> {
-  make_group!(
+  Tuple!(
     ComponentCaller::prepare(hello_text, "Alice"),
     ComponentCaller::prepare(hello_text, "Bob"),
     ComponentCaller::prepare(hello_text, "Carol"),
@@ -103,7 +103,7 @@ In the component body, we add a parameter to the format macro, and we add a butt
 
 ```rust
 fn hello_text(state: &u32, name: &str) -> impl Element<u32, NoEvent> {
-  make_group!(
+  Tuple!(
     Label::new(format!("Hello, {} - ", props, state)),
     Button::new("Say hello")
     // ...
@@ -117,9 +117,9 @@ To add a callback to our button, we use the trait `WidgetExt`, which has several
 
 ```rust
 fn hello_text(state: &u32, name: &str) -> impl Element<u32, NoEvent> {
-  make_group!(
+  Tuple!(
     Label::new(format!("Hello, {} - ", props, state)),
-    Button::new("Say hello").on::<ButtonPressed, _>(|state: &mut u32, _event: ButtonPressed| {
+    Button::new("Say hello").on::<ButtonClick, _>(|state: &mut u32, _event: ButtonClick| {
       state += 1;
     }),
   )

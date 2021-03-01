@@ -169,21 +169,21 @@ impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, 
 // TODO - Add keyword params
 
 #[macro_export]
-macro_rules! make_row {
+macro_rules! Row {
     ( $($arg:expr),* $(,)?) => {
         $crate::elements::Flex::new(
             $crate::widgets::flex::Axis::Horizontal,
-            $crate::make_group!($($arg,)*)
+            $crate::Tuple!($($arg,)*)
         )
     };
 }
 
 #[macro_export]
-macro_rules! make_column {
+macro_rules! Column {
     ( $($arg:expr),* $(,)?) => {
         $crate::elements::Flex::new(
             $crate::widgets::flex::Axis::Vertical,
-            $crate::make_group!($($arg,)*)
+            $crate::Tuple!($($arg,)*)
         )
     };
 }
@@ -198,8 +198,8 @@ mod tests {
 
     #[test]
     fn empty_rowcol() {
-        let row = make_row!();
-        let column = make_column!();
+        let row = Row!();
+        let column = Column!();
         let row_data = row.clone().build(Default::default());
         let column_data = column.clone().build(Default::default());
 
@@ -214,8 +214,8 @@ mod tests {
 
     #[test]
     fn new_rowcol_single_item() {
-        let row = make_row!(Label::new("Hello"));
-        let column = make_column!(Label::new("Greetings"));
+        let row = Row!(Label::new("Hello"));
+        let column = Column!(Label::new("Greetings"));
         let row_data = row.clone().build(Default::default());
         let column_data = column.clone().build(Default::default());
 
@@ -230,7 +230,7 @@ mod tests {
 
     #[test]
     fn new_row_multi_items() {
-        let row = make_row!(
+        let row = Row!(
             Label::new("Hello"),
             Label::new("Hello2"),
             Label::new("Hello3"),

@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::widgets::flex::FlexParams;
 use crate::widgets::TextBoxWidget;
 
@@ -56,6 +56,13 @@ impl<CpState, CpEvent> TextBox<CpState, CpEvent> {
             flex: flex_params,
             ..self
         }
+    }
+
+    pub fn on_text_changed(
+        self,
+        callback: impl Fn(&mut CpState, TextChanged),
+    ) -> impl Element<CpState, CpEvent> {
+        self.on(callback)
     }
 }
 

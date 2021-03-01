@@ -205,14 +205,14 @@ mod tests {
     use crate::element_tree::ElementExt;
     use crate::element_tree::NoEvent;
     use crate::elements::{Button, Label};
-    use crate::make_row;
+    use crate::Row;
 
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
     // TODO - add tracing, and detect when this function is called by tests
     fn my_component(state: &u16, props: i64) -> impl Element<u16, NoEvent> {
-        make_row!(
+        Row!(
             Button::new("Press me").map_event(|state: &mut u16, _| {
                 *state += 1;
                 None
