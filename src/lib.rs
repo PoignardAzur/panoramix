@@ -75,7 +75,7 @@ mod widget_sequence;
 pub mod elements;
 pub mod widgets;
 
-pub use panoramix_derive::*;
+pub use panoramix_derive::component;
 
 pub use element_tree::{CompCtx, Element, ElementExt, NoEvent};
 

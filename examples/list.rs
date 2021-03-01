@@ -1,7 +1,8 @@
 use panoramix::elements::{Button, ButtonPressed, Checkbox, ElementList, Label, Toggled};
 use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{make_group, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
-use panoramix_derive::component;
+use panoramix::{
+    component, make_group, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler,
+};
 
 use druid::PlatformError;
 

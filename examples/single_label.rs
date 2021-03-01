@@ -1,6 +1,5 @@
 use panoramix::elements::{Button, ButtonPressed, Label};
-use panoramix::{make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
-use panoramix_derive::component;
+use panoramix::{component, make_row, CompCtx, Element, ElementExt, NoEvent, RootHandler};
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct HelloBoxState {

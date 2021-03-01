@@ -1,6 +1,5 @@
 use panoramix::elements::{Label, TextBox, TextChanged};
-use panoramix::{make_column, CompCtx, Element, ElementExt, NoEvent, RootHandler};
-use panoramix_derive::component;
+use panoramix::{component, make_column, CompCtx, Element, ElementExt, NoEvent, RootHandler};
 
 use druid::PlatformError;
 
