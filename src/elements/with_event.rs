@@ -65,10 +65,10 @@ fn bubble_event_up<State, Event>(_state: &mut State, event: Event) -> Option<Eve
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithCallbackEvent<
-    CpState,
     CpEvent,
+    CpState,
     EventParam,
-    Child: Element<CpState, CpEvent>,
+    Child: Element<CpEvent, CpState>,
     Cb: Fn(&mut CpState, EventParam),
 > where
     Child::Event: ParentEvent<EventParam>,
@@ -87,11 +87,11 @@ pub struct WithCallbackEvent<
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithMapEvent<
-    CpState,
     CpEvent,
+    CpState,
     EventParam,
     EventReturn,
-    Child: Element<CpState, CpEvent>,
+    Child: Element<CpEvent, CpState>,
     Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
 > where
     Child::Event: ParentEvent<EventParam>,
@@ -112,7 +112,7 @@ pub struct WithMapEvent<
 
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
-pub struct WithBubbleEvent<CpState, CpEvent, Event, Child: Element<CpState, CpEvent>>
+pub struct WithBubbleEvent<CpEvent, CpState, Event, Child: Element<CpEvent, CpState>>
 where
     Child::Event: ParentEvent<Event>,
     CpEvent: ParentEvent<Event>,
@@ -129,12 +129,12 @@ where
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithEventTarget<
-    CpState,
     CpEvent,
+    CpState,
     EventParam,
     EventReturn,
     CbReturn: OptionOrUnit<EventReturn>,
-    Child: VirtualDom<CpState, CpEvent>,
+    Child: VirtualDom<CpEvent, CpState>,
     Cb: Fn(&mut CpState, EventParam) -> CbReturn,
 > where
     Child::Event: ParentEvent<EventParam>,
@@ -156,19 +156,19 @@ pub struct WithEventTarget<
 // ---
 
 impl<
-        CpState,
         CpEvent,
+        CpState,
         EventParam,
-        Child: Element<CpState, CpEvent>,
+        Child: Element<CpEvent, CpState>,
         Cb: Fn(&mut CpState, EventParam),
-    > Element<CpState, CpEvent> for WithCallbackEvent<CpState, CpEvent, EventParam, Child, Cb>
+    > Element<CpEvent, CpState> for WithCallbackEvent<CpEvent, CpState, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput =
-        WithEventTarget<CpState, CpEvent, EventParam, CpEvent, (), Child::BuildOutput, Cb>;
+        WithEventTarget<CpEvent, CpState, EventParam, CpEvent, (), Child::BuildOutput, Cb>;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
     fn build(
@@ -191,14 +191,14 @@ where
 }
 
 impl<
-        CpState,
         CpEvent,
+        CpState,
         EventParam,
         EventReturn,
-        Child: Element<CpState, CpEvent>,
+        Child: Element<CpEvent, CpState>,
         Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
-    > Element<CpState, CpEvent>
-    for WithMapEvent<CpState, CpEvent, EventParam, EventReturn, Child, Cb>
+    > Element<CpEvent, CpState>
+    for WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
     CpEvent: ParentEvent<EventReturn>,
@@ -206,8 +206,8 @@ where
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        CpState,
         CpEvent,
+        CpState,
         EventParam,
         EventReturn,
         Option<EventReturn>,
@@ -235,8 +235,8 @@ where
     }
 }
 
-impl<CpState, CpEvent, Event, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
-    for WithBubbleEvent<CpState, CpEvent, Event, Child>
+impl<CpEvent, CpState, Event, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
+    for WithBubbleEvent<CpEvent, CpState, Event, Child>
 where
     Child::Event: ParentEvent<Event>,
     CpEvent: ParentEvent<Event>,
@@ -244,8 +244,8 @@ where
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        CpState,
         CpEvent,
+        CpState,
         Event,
         Event,
         Option<Event>,
@@ -274,15 +274,15 @@ where
 }
 
 impl<
-        CpState,
         CpEvent,
+        CpState,
         EventParam,
         EventReturn,
         CbReturn: OptionOrUnit<EventReturn>,
-        Child: VirtualDom<CpState, CpEvent>,
+        Child: VirtualDom<CpEvent, CpState>,
         Cb: Fn(&mut CpState, EventParam) -> CbReturn,
-    > VirtualDom<CpState, CpEvent>
-    for WithEventTarget<CpState, CpEvent, EventParam, EventReturn, CbReturn, Child, Cb>
+    > VirtualDom<CpEvent, CpState>
+    for WithEventTarget<CpEvent, CpState, EventParam, EventReturn, CbReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
     CpEvent: ParentEvent<EventReturn>,

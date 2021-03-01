@@ -8,19 +8,19 @@ use druid::{widget, AppLauncher, PlatformError, Point, Widget, WidgetPod, Window
 use std::fmt::Debug;
 use tracing::{debug_span, info, instrument, trace};
 
-type WidgetSeqOf<RootCpState, RootCpEvent, ReturnedTree> = <<ReturnedTree as Element<
-    RootCpState,
+type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Element<
     RootCpEvent,
->>::BuildOutput as VirtualDom<RootCpState, RootCpEvent>>::TargetWidgetSeq;
+    RootCpState,
+>>::BuildOutput as VirtualDom<RootCpEvent, RootCpState>>::TargetWidgetSeq;
 
 // FIXME - RootComponent must be Clone to be able to clone the props
 // Not intuitive, find different abstraction?
 
 pub struct RootWidget<
-    RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
-    ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
+    RootCpState: Clone + Default + Debug + PartialEq + 'static,
+    ReturnedTree: Element<RootCpEvent, RootCpState>,
+    Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
 > {
     pub root_component: Comp,
     pub component_state: (RootCpState, ReturnedTree::AggregateChildrenState),
@@ -29,17 +29,17 @@ pub struct RootWidget<
     pub widget: Option<
         WidgetPod<
             DruidAppData,
-            flex::FlexWidget<WidgetSeqOf<RootCpState, RootCpEvent, ReturnedTree>>,
+            flex::FlexWidget<WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree>>,
         >,
     >,
 }
 
 impl<
-        RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
-        ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
-    > RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
+        RootCpState: Clone + Default + Debug + PartialEq + 'static,
+        ReturnedTree: Element<RootCpEvent, RootCpState>,
+        Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
+    > RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>
 {
     pub fn new(root_component: ComponentHolder<Comp>) -> Self {
         let default_widget = WidgetPod::new(widget::Flex::row());
@@ -168,11 +168,11 @@ impl<
 }
 
 impl<
-        RootCpState: Clone + Default + Debug + PartialEq + 'static,
         RootCpEvent,
-        ReturnedTree: Element<RootCpState, RootCpEvent>,
-        Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
-    > Widget<DruidAppData> for RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>
+        RootCpState: Clone + Default + Debug + PartialEq + 'static,
+        ReturnedTree: Element<RootCpEvent, RootCpState>,
+        Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
+    > Widget<DruidAppData> for RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Some(widget) = &mut self.widget {
@@ -249,21 +249,21 @@ impl<
 }
 
 pub struct RootHandler<
-    RootCpState: Clone + Default + Debug + PartialEq + 'static,
     RootCpEvent,
-    ReturnedTree: Element<RootCpState, RootCpEvent>,
-    Comp: Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
+    RootCpState: Clone + Default + Debug + PartialEq + 'static,
+    ReturnedTree: Element<RootCpEvent, RootCpState>,
+    Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
 > {
-    pub root_widget: RootWidget<RootCpState, RootCpEvent, ReturnedTree, Comp>,
+    pub root_widget: RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>,
     pub init_tracing: bool,
 }
 
 impl<
         RootCpState: 'static + Clone + Default + Debug + PartialEq,
         RootCpEvent: 'static,
-        ReturnedTree: 'static + Element<RootCpState, RootCpEvent>,
-        Comp: 'static + Component<RootCpState, RootCpEvent, Output = ReturnedTree>,
-    > RootHandler<RootCpState, RootCpEvent, ReturnedTree, Comp>
+        ReturnedTree: 'static + Element<RootCpEvent, RootCpState>,
+        Comp: 'static + Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
+    > RootHandler<RootCpEvent, RootCpState, ReturnedTree, Comp>
 {
     pub fn new(root_component: ComponentHolder<Comp>) -> Self {
         RootHandler {

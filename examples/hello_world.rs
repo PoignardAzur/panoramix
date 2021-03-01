@@ -2,7 +2,7 @@ use panoramix::elements::{Button, Label};
 use panoramix::{component, Column, CompCtx, Element, NoEvent, RootHandler};
 
 #[component]
-fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element<(), NoEvent> {
+fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, ()> {
     Column!(
         Label::new("Hello world!"),
         Button::new("Say hello").on_click(|_, _| {

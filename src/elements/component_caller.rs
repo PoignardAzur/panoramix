@@ -8,10 +8,10 @@ use std::fmt::Debug;
 use tracing::instrument;
 
 pub struct ComponentCaller<
-    ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
+    ChildCpState: Clone + Default + Debug + PartialEq,
     Props,
-    ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+    ReturnedTree: Element<ChildCpEvent, ChildCpState>,
     Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
     ParentCpState = (),
     ParentCpEvent = NoEvent,
@@ -28,9 +28,9 @@ pub struct ComponentCaller<
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = "Child: Default"))]
 pub struct ComponentCallerData<
-    ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
-    Child: VirtualDom<ChildCpState, ChildCpEvent>,
+    ChildCpState: Clone + Default + Debug + PartialEq,
+    Child: VirtualDom<ChildCpEvent, ChildCpState>,
     ParentCpState,
     ParentCpEvent,
 >(
@@ -42,22 +42,22 @@ pub struct ComponentCallerData<
 );
 
 impl<
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
         Props,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
     >
     ComponentCaller<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     pub fn prepare(component: Comp, props: Props) -> Self {
@@ -74,22 +74,22 @@ impl<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
         Props,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
     > std::fmt::Debug
     for ComponentCaller<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -101,32 +101,32 @@ impl<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
         Props,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Fn(&ChildCpState, Props) -> ReturnedTree,
-    > Element<ParentCpState, ParentCpEvent>
+    > Element<ParentCpEvent, ParentCpState>
     for ComponentCaller<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     type Event = ChildCpEvent;
     type AggregateChildrenState = (ChildCpState, ReturnedTree::AggregateChildrenState);
     type BuildOutput = ComponentCallerData<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         ReturnedTree::BuildOutput,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >;
 
     #[instrument(name = "Component", skip(self, prev_state))]
@@ -150,13 +150,13 @@ impl<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
         ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Child: VirtualDom<ChildCpState, ChildCpEvent>,
-    > VirtualDom<ParentCpState, ParentCpEvent>
-    for ComponentCallerData<ChildCpState, ChildCpEvent, Child, ParentCpState, ParentCpEvent>
+        Child: VirtualDom<ChildCpEvent, ChildCpState>,
+    > VirtualDom<ParentCpEvent, ParentCpState>
+    for ComponentCallerData<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
 {
     type Event = ChildCpEvent;
     type AggregateChildrenState = (ChildCpState, Child::AggregateChildrenState);
@@ -211,7 +211,7 @@ mod tests {
     use test_env_log::test;
 
     // TODO - add tracing, and detect when this function is called by tests
-    fn my_component(state: &u16, props: i64) -> impl Element<u16, NoEvent> {
+    fn my_component(state: &u16, props: i64) -> impl Element<NoEvent, u16> {
         Row!(
             Button::new("Press me").map_event(|state: &mut u16, _| {
                 *state += 1;

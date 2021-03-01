@@ -11,20 +11,20 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Button<CpState = (), CpEvent = NoEvent> {
+pub struct Button<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct ButtonData<CpState = (), CpEvent = NoEvent> {
+pub struct ButtonData<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -33,7 +33,7 @@ pub struct ButtonClick;
 //
 // --- IMPLS
 
-impl<CpState, CpEvent> Button<CpState, CpEvent> {
+impl<CpEvent, CpState> Button<CpEvent, CpState> {
     pub fn new(text: impl Into<String>) -> Self {
         Button {
             text: text.into(),
@@ -55,18 +55,18 @@ impl<CpState, CpEvent> Button<CpState, CpEvent> {
     pub fn on_click(
         self,
         callback: impl Fn(&mut CpState, ButtonClick),
-    ) -> impl Element<CpState, CpEvent> {
+    ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }
 }
 
-impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
+impl<CpEvent, CpState> Element<CpEvent, CpState> for Button<CpEvent, CpState> {
     type Event = ButtonClick;
     type AggregateChildrenState = ();
-    type BuildOutput = ButtonData<CpState, CpEvent>;
+    type BuildOutput = ButtonData<CpEvent, CpState>;
 
     #[instrument(name = "Button", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (ButtonData<CpState, CpEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (ButtonData<CpEvent, CpState>, ()) {
         (
             ButtonData {
                 text: self.text,
@@ -78,7 +78,7 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
     }
 }
 
-impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for ButtonData<CpState, CpEvent> {
+impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpState> {
     type Event = ButtonClick;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = ButtonWidget;

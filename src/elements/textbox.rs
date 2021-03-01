@@ -17,20 +17,20 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBox<CpState = (), CpEvent = NoEvent> {
+pub struct TextBox<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBoxData<CpState = (), CpEvent = NoEvent> {
+pub struct TextBoxData<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -39,7 +39,7 @@ pub struct TextChanged(pub String);
 //
 // --- IMPLS
 
-impl<CpState, CpEvent> TextBox<CpState, CpEvent> {
+impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
     pub fn new(text: impl Into<String>) -> Self {
         TextBox {
             text: text.into(),
@@ -61,18 +61,18 @@ impl<CpState, CpEvent> TextBox<CpState, CpEvent> {
     pub fn on_text_changed(
         self,
         callback: impl Fn(&mut CpState, TextChanged),
-    ) -> impl Element<CpState, CpEvent> {
+    ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }
 }
 
-impl<CpState, CpEvent> Element<CpState, CpEvent> for TextBox<CpState, CpEvent> {
+impl<CpEvent, CpState> Element<CpEvent, CpState> for TextBox<CpEvent, CpState> {
     type Event = TextChanged;
     type AggregateChildrenState = ();
-    type BuildOutput = TextBoxData<CpState, CpEvent>;
+    type BuildOutput = TextBoxData<CpEvent, CpState>;
 
     #[instrument(name = "TextBox", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (TextBoxData<CpState, CpEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (TextBoxData<CpEvent, CpState>, ()) {
         (
             TextBoxData {
                 text: self.text,
@@ -84,7 +84,7 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for TextBox<CpState, CpEvent> {
     }
 }
 
-impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for TextBoxData<CpState, CpEvent> {
+impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpState> {
     type Event = TextChanged;
     type AggregateChildrenState = ();
 

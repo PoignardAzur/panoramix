@@ -15,22 +15,22 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Checkbox<CpState = (), CpEvent = NoEvent> {
+pub struct Checkbox<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub value: bool,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct CheckboxData<CpState = (), CpEvent = NoEvent> {
+pub struct CheckboxData<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub value: bool,
     pub flex: FlexParams,
     #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -39,7 +39,7 @@ pub struct Toggled(pub bool);
 //
 // --- IMPLS
 
-impl<CpState, CpEvent> Checkbox<CpState, CpEvent> {
+impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
     pub fn new(text: impl Into<String>, value: bool) -> Self {
         Checkbox {
             text: text.into(),
@@ -62,18 +62,18 @@ impl<CpState, CpEvent> Checkbox<CpState, CpEvent> {
     pub fn on_toggled(
         self,
         callback: impl Fn(&mut CpState, Toggled),
-    ) -> impl Element<CpState, CpEvent> {
+    ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }
 }
 
-impl<CpState, CpEvent> Element<CpState, CpEvent> for Checkbox<CpState, CpEvent> {
+impl<CpEvent, CpState> Element<CpEvent, CpState> for Checkbox<CpEvent, CpState> {
     type Event = Toggled;
     type AggregateChildrenState = ();
-    type BuildOutput = CheckboxData<CpState, CpEvent>;
+    type BuildOutput = CheckboxData<CpEvent, CpState>;
 
     #[instrument(name = "Checkbox", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (CheckboxData<CpState, CpEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (CheckboxData<CpEvent, CpState>, ()) {
         (
             CheckboxData {
                 text: self.text,
@@ -86,7 +86,7 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Checkbox<CpState, CpEvent> 
     }
 }
 
-impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for CheckboxData<CpState, CpEvent> {
+impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, CpState> {
     type Event = Toggled;
     type AggregateChildrenState = ();
 

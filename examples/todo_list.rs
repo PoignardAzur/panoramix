@@ -28,7 +28,7 @@ pub struct AppState {
 type ItemEvent = Toggled;
 
 #[component]
-fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<(), ItemEvent> {
+fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
     let text = if props.is_completed {
         format!("{} (complete)", props.text)
     } else {
@@ -43,7 +43,7 @@ fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<(), ItemEvent> {
 }
 
 #[component]
-fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEvent> {
+fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
     let state = ctx.use_local_state::<AppState>();
 
     let checkbox_priority = Checkbox::new("High priority", state.high_priority).on(

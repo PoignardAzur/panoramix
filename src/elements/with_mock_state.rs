@@ -13,7 +13,7 @@ use derivative::Derivative;
     Default(bound = "Child: Default"),
     Clone(bound = "Child: Clone")
 )]
-pub struct WithMockState<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEvent>(
+pub struct WithMockState<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()>(
     pub Child,
     pub std::marker::PhantomData<CpState>,
     pub std::marker::PhantomData<CpEvent>,
@@ -25,7 +25,7 @@ pub struct WithMockState<Child: Element<CpState, CpEvent>, CpState = (), CpEvent
     Default(bound = "Child: Default"),
     Clone(bound = "Child: Clone")
 )]
-pub struct WithMockStateData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent = NoEvent>(
+pub struct WithMockStateData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()>(
     pub Child,
     pub std::marker::PhantomData<CpState>,
     pub std::marker::PhantomData<CpEvent>,
@@ -37,14 +37,14 @@ pub struct MockState(String);
 //
 // --- IMPLS
 
-impl<Child: Element<CpState, CpEvent>, CpState, CpEvent> WithMockState<Child, CpState, CpEvent> {
+impl<Child: Element<CpEvent, CpState>, CpEvent, CpState> WithMockState<Child, CpEvent, CpState> {
     pub fn new(child: Child) -> Self {
         WithMockState(child, Default::default(), Default::default())
     }
 }
 
-impl<Child: VirtualDom<CpState, CpEvent>, CpState, CpEvent>
-    WithMockStateData<Child, CpState, CpEvent>
+impl<Child: VirtualDom<CpEvent, CpState>, CpEvent, CpState>
+    WithMockStateData<Child, CpEvent, CpState>
 {
     pub fn new(child: Child) -> Self {
         WithMockStateData(child, Default::default(), Default::default())
@@ -63,12 +63,12 @@ impl Default for MockState {
     }
 }
 
-impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
-    for WithMockState<Child, CpState, CpEvent>
+impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
+    for WithMockState<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
-    type BuildOutput = WithMockStateData<Child::BuildOutput, CpState, CpEvent>;
+    type BuildOutput = WithMockStateData<Child::BuildOutput, CpEvent, CpState>;
 
     fn build(
         self,
@@ -80,8 +80,8 @@ impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEven
     }
 }
 
-impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
-    for WithMockStateData<Child, CpState, CpEvent>
+impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
+    for WithMockStateData<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);

@@ -23,14 +23,14 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
 }
 
 ///
-pub trait Element<CpState = (), CpEvent = NoEvent>: Debug {
+pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug {
     /// The type of event that
     type Event;
 
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
-        CpState,
         CpEvent,
+        CpState,
         Event = Self::Event,
         AggregateChildrenState = Self::AggregateChildrenState,
     >;
@@ -42,7 +42,7 @@ pub trait Element<CpState = (), CpEvent = NoEvent>: Debug {
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
-pub trait VirtualDom<CpState, CpEvent>: Debug {
+pub trait VirtualDom<CpEvent, CpState>: Debug {
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type TargetWidgetSeq: WidgetSequence;
 
@@ -92,18 +92,18 @@ pub enum NoEvent {}
 
 // Used in unit tests
 #[allow(dead_code)]
-pub(crate) fn assign_empty_state_type(_elem: &impl Element<(), NoEvent>) {}
+pub(crate) fn assign_empty_state_type(_elem: &impl Element<NoEvent, ()>) {}
 
 #[allow(dead_code)]
-pub(crate) fn assign_state_type<CpState, CpEvent, Elem: Element<CpState, CpEvent>>(_elem: &Elem) {}
+pub(crate) fn assign_state_type<CpEvent, CpState, Elem: Element<CpEvent, CpState>>(_elem: &Elem) {}
 
 use crate::elements::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
-pub trait ElementExt<CpState, CpEvent>: Element<CpState, CpEvent> + Sized {
+pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
     fn on<EventParam, Cb: Fn(&mut CpState, EventParam)>(
         self,
         callback: Cb,
-    ) -> WithCallbackEvent<CpState, CpEvent, EventParam, Self, Cb>
+    ) -> WithCallbackEvent<CpEvent, CpState, EventParam, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
     {
@@ -119,7 +119,7 @@ pub trait ElementExt<CpState, CpEvent>: Element<CpState, CpEvent> + Sized {
     fn map_event<EventParam, EventReturn, Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>>(
         self,
         callback: Cb,
-    ) -> WithMapEvent<CpState, CpEvent, EventParam, EventReturn, Self, Cb>
+    ) -> WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
         CpEvent: ParentEvent<EventReturn>,
@@ -134,7 +134,7 @@ pub trait ElementExt<CpState, CpEvent>: Element<CpState, CpEvent> + Sized {
         }
     }
 
-    fn bubble_up<Event>(self) -> WithBubbleEvent<CpState, CpEvent, Event, Self>
+    fn bubble_up<Event>(self) -> WithBubbleEvent<CpEvent, CpState, Event, Self>
     where
         Self::Event: ParentEvent<Event>,
         CpEvent: ParentEvent<Event>,
@@ -148,4 +148,4 @@ pub trait ElementExt<CpState, CpEvent>: Element<CpState, CpEvent> + Sized {
     }
 }
 
-impl<CpState, CpEvent, ET: Element<CpState, CpEvent>> ElementExt<CpState, CpEvent> for ET {}
+impl<CpEvent, CpState, ET: Element<CpEvent, CpState>> ElementExt<CpEvent, CpState> for ET {}

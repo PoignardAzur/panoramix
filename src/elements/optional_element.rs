@@ -7,7 +7,7 @@ use either::{Either, Left, Right};
 use tracing::{debug_span, info, instrument};
 use tracing_unwrap::OptionExt;
 
-impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
+impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
     for Option<Child>
 {
     type Event = NoEvent;
@@ -28,7 +28,7 @@ impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEven
     }
 }
 
-impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
+impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
     for Option<Child>
 {
     type Event = NoEvent;
@@ -94,9 +94,9 @@ impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, 
 impl<
         CpState,
         CpEvent,
-        ChildLeft: Element<CpState, CpEvent>,
-        ChildRight: Element<CpState, CpEvent>,
-    > Element<CpState, CpEvent> for Either<ChildLeft, ChildRight>
+        ChildLeft: Element<CpEvent, CpState>,
+        ChildRight: Element<CpEvent, CpState>,
+    > Element<CpEvent, CpState> for Either<ChildLeft, ChildRight>
 {
     type Event = NoEvent;
     type AggregateChildrenState =
@@ -126,9 +126,9 @@ impl<
 impl<
         CpState,
         CpEvent,
-        ChildLeft: VirtualDom<CpState, CpEvent>,
-        ChildRight: VirtualDom<CpState, CpEvent>,
-    > VirtualDom<CpState, CpEvent> for Either<ChildLeft, ChildRight>
+        ChildLeft: VirtualDom<CpEvent, CpState>,
+        ChildRight: VirtualDom<CpEvent, CpState>,
+    > VirtualDom<CpEvent, CpState> for Either<ChildLeft, ChildRight>
 {
     type Event = NoEvent;
     type AggregateChildrenState =

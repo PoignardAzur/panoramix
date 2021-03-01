@@ -8,35 +8,35 @@ use derivative::Derivative;
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElement<CpState = (), CpEvent = NoEvent>(
+pub struct EmptyElement<CpEvent = NoEvent, CpState = ()>(
     pub std::marker::PhantomData<CpState>,
     pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElementData<CpState = (), CpEvent = NoEvent>(
+pub struct EmptyElementData<CpEvent = NoEvent, CpState = ()>(
     pub std::marker::PhantomData<CpState>,
     pub std::marker::PhantomData<CpEvent>,
 );
 
-impl<CpState, CpEvent> EmptyElement<CpState, CpEvent> {
-    pub fn new() -> EmptyElement<CpState, CpEvent> {
+impl<CpEvent, CpState> EmptyElement<CpEvent, CpState> {
+    pub fn new() -> EmptyElement<CpEvent, CpState> {
         EmptyElement(Default::default(), Default::default())
     }
 }
 
-impl<CpState, CpEvent> Element<CpState, CpEvent> for EmptyElement<CpState, CpEvent> {
+impl<CpEvent, CpState> Element<CpEvent, CpState> for EmptyElement<CpEvent, CpState> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
-    type BuildOutput = EmptyElementData<CpState, CpEvent>;
+    type BuildOutput = EmptyElementData<CpEvent, CpState>;
 
-    fn build(self, _prev_state: ()) -> (EmptyElementData<CpState, CpEvent>, ()) {
+    fn build(self, _prev_state: ()) -> (EmptyElementData<CpEvent, CpState>, ()) {
         (EmptyElementData(Default::default(), Default::default()), ())
     }
 }
 
-impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for EmptyElementData<CpState, CpEvent> {
+impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for EmptyElementData<CpEvent, CpState> {
     type Event = NoEvent;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = EmptySequence;

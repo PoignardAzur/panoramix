@@ -15,20 +15,20 @@ use tracing::instrument;
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound=""))]
 pub struct ElementTupleData<
-    C0: VirtualDom<CpState, CpEvent>,
-    C1: VirtualDom<CpState, CpEvent>,
-    C2: VirtualDom<CpState, CpEvent>,
-    C3: VirtualDom<CpState, CpEvent>,
-    C4: VirtualDom<CpState, CpEvent>,
-    C5: VirtualDom<CpState, CpEvent>,
-    C6: VirtualDom<CpState, CpEvent>,
-    C7: VirtualDom<CpState, CpEvent>,
-    C8: VirtualDom<CpState, CpEvent>,
-    C9: VirtualDom<CpState, CpEvent>,
-    C10: VirtualDom<CpState, CpEvent>,
-    C11: VirtualDom<CpState, CpEvent>,
-    CpState = (),
+    C0: VirtualDom<CpEvent, CpState>,
+    C1: VirtualDom<CpEvent, CpState>,
+    C2: VirtualDom<CpEvent, CpState>,
+    C3: VirtualDom<CpEvent, CpState>,
+    C4: VirtualDom<CpEvent, CpState>,
+    C5: VirtualDom<CpEvent, CpState>,
+    C6: VirtualDom<CpEvent, CpState>,
+    C7: VirtualDom<CpEvent, CpState>,
+    C8: VirtualDom<CpEvent, CpState>,
+    C9: VirtualDom<CpEvent, CpState>,
+    C10: VirtualDom<CpEvent, CpState>,
+    C11: VirtualDom<CpEvent, CpState>,
     CpEvent = NoEvent,
+    CpState = (),
 >(
     pub C0,
     pub C1,
@@ -61,10 +61,10 @@ macro_rules! declare_stuff {
 #[derivative(Debug(bound=""))]
 pub struct $TupleName<
     $(
-        $Type: Element<CpState, CpEvent>,
+        $Type: Element<CpEvent, CpState>,
     )*
-    CpState = (),
     CpEvent = NoEvent,
+    CpState = (),
 >(
     $(
         pub $Type,
@@ -74,12 +74,12 @@ pub struct $TupleName<
 );
 
 impl<
-        CpState,
         CpEvent,
+        CpState,
         $(
-            $Type: Element<CpState, CpEvent>,
+            $Type: Element<CpEvent, CpState>,
         )*
-    > Element<CpState, CpEvent> for $TupleName<$($Type,)* CpState, CpEvent>
+    > Element<CpEvent, CpState> for $TupleName<$($Type,)* CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (
@@ -95,10 +95,10 @@ impl<
             $Type::BuildOutput,
         )*
         $(replace_ty!(($Remainder) >>>
-            EmptyElementData<CpState, CpEvent>
+            EmptyElementData<CpEvent, CpState>
         ),)*
-        CpState,
         CpEvent,
+        CpState,
     >;
 
     #[instrument(name = "Tuple", skip(self, prev_state))]
@@ -285,21 +285,21 @@ macro_rules! Tuple {
 }
 
 impl<
-        CpState,
         CpEvent,
-        C0: VirtualDom<CpState, CpEvent>,
-        C1: VirtualDom<CpState, CpEvent>,
-        C2: VirtualDom<CpState, CpEvent>,
-        C3: VirtualDom<CpState, CpEvent>,
-        C4: VirtualDom<CpState, CpEvent>,
-        C5: VirtualDom<CpState, CpEvent>,
-        C6: VirtualDom<CpState, CpEvent>,
-        C7: VirtualDom<CpState, CpEvent>,
-        C8: VirtualDom<CpState, CpEvent>,
-        C9: VirtualDom<CpState, CpEvent>,
-        C10: VirtualDom<CpState, CpEvent>,
-        C11: VirtualDom<CpState, CpEvent>,
-    > VirtualDom<CpState, CpEvent> for ElementTupleData<
+        CpState,
+        C0: VirtualDom<CpEvent, CpState>,
+        C1: VirtualDom<CpEvent, CpState>,
+        C2: VirtualDom<CpEvent, CpState>,
+        C3: VirtualDom<CpEvent, CpState>,
+        C4: VirtualDom<CpEvent, CpState>,
+        C5: VirtualDom<CpEvent, CpState>,
+        C6: VirtualDom<CpEvent, CpState>,
+        C7: VirtualDom<CpEvent, CpState>,
+        C8: VirtualDom<CpEvent, CpState>,
+        C9: VirtualDom<CpEvent, CpState>,
+        C10: VirtualDom<CpEvent, CpState>,
+        C11: VirtualDom<CpEvent, CpState>,
+    > VirtualDom<CpEvent, CpState> for ElementTupleData<
         C0,
         C1,
         C2,
@@ -312,8 +312,8 @@ impl<
         C9,
         C10,
         C11,
-        CpState,
         CpEvent,
+        CpState,
     >
 {
     type Event = NoEvent;

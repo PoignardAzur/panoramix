@@ -11,7 +11,7 @@ use tracing::instrument;
 
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct Flex<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
+pub struct Flex<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
@@ -22,7 +22,7 @@ pub struct Flex<Child: Element<CpState, CpEvent>, CpState = (), CpEvent = NoEven
 
 #[derive(Derivative, Clone, PartialEq)]
 #[derivative(Debug(bound = ""))]
-pub struct FlexData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent = NoEvent> {
+pub struct FlexData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
@@ -33,7 +33,7 @@ pub struct FlexData<Child: VirtualDom<CpState, CpEvent>, CpState = (), CpEvent =
 
 // ----
 
-impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Flex<Child, CpState, CpEvent> {
+impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Flex<Child, CpEvent, CpState> {
     pub fn new(axis: Axis, child: Child) -> Self {
         Flex {
             axis,
@@ -67,7 +67,7 @@ impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Flex<Child, CpState, Cp
     }
 }
 
-impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> FlexData<Child, CpState, CpEvent> {
+impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> FlexData<Child, CpEvent, CpState> {
     pub fn new(
         axis: Axis,
         child: Child,
@@ -87,12 +87,12 @@ impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> FlexData<Child, CpSt
 
 // ----
 
-impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEvent>
-    for Flex<Child, CpState, CpEvent>
+impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
+    for Flex<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = FlexData<Child::BuildOutput, CpState, CpEvent>;
+    type BuildOutput = FlexData<Child::BuildOutput, CpEvent, CpState>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
@@ -107,8 +107,8 @@ impl<CpState, CpEvent, Child: Element<CpState, CpEvent>> Element<CpState, CpEven
     }
 }
 
-impl<CpState, CpEvent, Child: VirtualDom<CpState, CpEvent>> VirtualDom<CpState, CpEvent>
-    for FlexData<Child, CpState, CpEvent>
+impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
+    for FlexData<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;

@@ -67,12 +67,12 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         pub struct #component_name;
 
         impl #component_name {
-            pub fn new<ParentCpState, ParentCpEvent>(#props_arg)
+            pub fn new<ParentCpEvent, ParentCpState>(#props_arg)
                 -> panoramix::elements::ComponentHolder<
                     impl panoramix::elements::Component<
-                        ParentCpState, ParentCpEvent,
-                        LocalState=#local_state_ty,
+                        ParentCpEvent, ParentCpState,
                         LocalEvent=#local_event_ty,
+                        LocalState=#local_state_ty,
                     >
                 > {
                 panoramix::elements::ComponentHolder(
@@ -121,7 +121,7 @@ fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
     let elements_ty_args = if let syn::PathArguments::AngleBracketed(elements_ty_args) = elements_ty_args {
         elements_ty_args.args
     } else {
-        panic!("Component must return impl Element<LocalState, LocalEvent>")
+        panic!("Component must return impl Element<LocalEvent, LocalState>")
     };
 
     assert!(elements_ty_args.len() == 2);
@@ -131,13 +131,13 @@ fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
     let local_state_ty = if let syn::GenericArgument::Type(local_state_ty) = local_state_ty {
         local_state_ty
     } else {
-        panic!("Component must return impl Element<LocalState, LocalEvent>")
+        panic!("Component must return impl Element<LocalEvent, LocalState>")
     };
     let local_event_ty = if let syn::GenericArgument::Type(local_event_ty) = local_event_ty {
         local_event_ty
     } else {
-        panic!("Component must return impl Element<LocalState, LocalEvent>")
+        panic!("Component must return impl Element<LocalEvent, LocalState>")
     };
 
-    (local_state_ty.clone(), local_event_ty.clone())
+    (local_event_ty.clone(), local_state_ty.clone())
 }

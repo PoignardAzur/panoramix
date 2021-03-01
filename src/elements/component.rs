@@ -7,10 +7,10 @@ use derivative::Derivative;
 use std::fmt::Debug;
 use tracing::instrument;
 
-pub trait Component<ParentCpState = (), ParentCpEvent = NoEvent>: Debug + Clone {
+pub trait Component<ParentCpEvent = NoEvent, ParentCpState = ()>: Debug + Clone {
     type LocalState: Clone + Default + Debug + PartialEq;
     type LocalEvent;
-    type Output: Element<Self::LocalState, Self::LocalEvent>;
+    type Output: Element<Self::LocalEvent, Self::LocalState>;
 
     fn call(self, ctx: &CompCtx) -> Self::Output;
 }
@@ -21,37 +21,37 @@ pub struct ComponentHolder<T>(pub T);
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = "Child: Default"))]
 pub struct ComponentOutput<
-    ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
-    Child: VirtualDom<ChildCpState, ChildCpEvent>,
-    ParentCpState,
+    ChildCpState: Clone + Default + Debug + PartialEq,
+    Child: VirtualDom<ChildCpEvent, ChildCpState>,
     ParentCpEvent,
+    ParentCpState,
 >(
     Child,
-    std::marker::PhantomData<(ParentCpState, ParentCpEvent, ChildCpState, ChildCpEvent)>,
+    std::marker::PhantomData<(ParentCpEvent, ParentCpState, ChildCpEvent, ChildCpState)>,
 );
 
 impl<
         LocalState: Clone + Default + Debug + PartialEq + 'static,
         LocalEvent,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
         T: Debug,
-    > Element<ParentCpState, ParentCpEvent> for ComponentHolder<T>
+    > Element<ParentCpEvent, ParentCpState> for ComponentHolder<T>
 where
-    T: Component<ParentCpState, ParentCpEvent, LocalState = LocalState, LocalEvent = LocalEvent>,
+    T: Component<ParentCpEvent, ParentCpState, LocalEvent = LocalEvent, LocalState = LocalState>,
 {
     type Event = LocalEvent;
     type AggregateChildrenState = (
         LocalState,
-        <T::Output as Element<LocalState, LocalEvent>>::AggregateChildrenState,
+        <T::Output as Element<LocalEvent, LocalState>>::AggregateChildrenState,
     );
     type BuildOutput = ComponentOutput<
-        LocalState,
         LocalEvent,
-        <T::Output as Element<LocalState, LocalEvent>>::BuildOutput,
-        ParentCpState,
+        LocalState,
+        <T::Output as Element<LocalEvent, LocalState>>::BuildOutput,
         ParentCpEvent,
+        ParentCpState,
     >;
 
     #[instrument(name = "Component", skip(self, prev_state))]
@@ -73,13 +73,13 @@ where
 }
 
 impl<
-        ChildCpState: Clone + Default + Debug + PartialEq,
         ChildCpEvent,
-        Child: VirtualDom<ChildCpState, ChildCpEvent>,
-        ParentCpState,
+        ChildCpState: Clone + Default + Debug + PartialEq,
+        Child: VirtualDom<ChildCpEvent, ChildCpState>,
         ParentCpEvent,
-    > VirtualDom<ParentCpState, ParentCpEvent>
-    for ComponentOutput<ChildCpState, ChildCpEvent, Child, ParentCpState, ParentCpEvent>
+        ParentCpState,
+    > VirtualDom<ParentCpEvent, ParentCpState>
+    for ComponentOutput<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
 {
     type Event = ChildCpEvent;
     type AggregateChildrenState = (ChildCpState, Child::AggregateChildrenState);
@@ -126,10 +126,10 @@ impl<
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""))]
 pub struct ComponentCaller2<
-    ChildCpState: Clone + Default + Debug + PartialEq,
     ChildCpEvent,
+    ChildCpState: Clone + Default + Debug + PartialEq,
     Props: Clone,
-    ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+    ReturnedTree: Element<ChildCpEvent, ChildCpState>,
     Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     ParentCpState = (),
     ParentCpEvent = NoEvent,
@@ -146,22 +146,22 @@ pub struct ComponentCaller2<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
-        ChildCpState: Clone + Default + Debug + PartialEq,
+        ParentCpState,
         ChildCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
         Props: Clone,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     >
     ComponentCaller2<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     pub fn prepare(component: Comp, props: Props) -> Self {
@@ -174,22 +174,22 @@ impl<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
-        ChildCpState: Clone + Default + Debug + PartialEq,
+        ParentCpState,
         ChildCpEvent,
+        ChildCpState: Clone + Default + Debug + PartialEq,
         Props: Clone,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
     > std::fmt::Debug
     for ComponentCaller2<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     // TODO
@@ -202,22 +202,22 @@ impl<
 }
 
 impl<
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
+        ChildCpEvent,
         ChildCpState: Clone + Default + Debug + PartialEq,
-        ChildCpEvent,
         Props: Clone,
-        ReturnedTree: Element<ChildCpState, ChildCpEvent>,
+        ReturnedTree: Element<ChildCpEvent, ChildCpState>,
         Comp: Clone + Fn(&CompCtx, Props) -> ReturnedTree,
-    > Component<ParentCpState, ParentCpEvent>
+    > Component<ParentCpEvent, ParentCpState>
     for ComponentCaller2<
-        ChildCpState,
         ChildCpEvent,
+        ChildCpState,
         Props,
         ReturnedTree,
         Comp,
-        ParentCpState,
         ParentCpEvent,
+        ParentCpState,
     >
 {
     type LocalState = ChildCpState;

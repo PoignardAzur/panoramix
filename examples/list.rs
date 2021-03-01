@@ -32,7 +32,7 @@ pub struct RowProps {
 }
 
 #[component]
-fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
+fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<RowEvent, u16> {
     let age = ctx.use_local_state::<u16>();
     Row!(
         Checkbox::new("", props.is_selected).map_event(|state: &mut u16, event| {
@@ -46,7 +46,7 @@ fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<u16, RowEvent> {
 }
 
 #[component]
-fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<AppState, NoEvent> {
+fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
     let state = ctx.use_local_state::<AppState>();
 
     let button_create = Button::new("Create").on_click(|state: &mut AppState, _| {
