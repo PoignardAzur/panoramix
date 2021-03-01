@@ -4,15 +4,13 @@ expression: tuple_data
 ---
 (
     ElementTupleData(
-        LabelData(
-            "Hello",
-            FlexParams {
+        LabelData {
+            text: "Hello",
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            PhantomData,
-            PhantomData,
-        ),
+        },
         EmptyElementData(
             PhantomData,
             PhantomData,

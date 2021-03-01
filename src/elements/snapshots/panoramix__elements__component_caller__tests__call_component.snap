@@ -7,26 +7,22 @@ ComponentCallerData(
         axis: Horizontal,
         child: ElementTupleData(
             WithEventTarget {
-                element: ButtonData(
-                    "Press me",
-                    FlexParams {
+                element: ButtonData {
+                    text: "Press me",
+                    flex: FlexParams {
                         flex: 1.0,
                         alignment: None,
                     },
-                    PhantomData,
-                    PhantomData,
-                ),
+                },
                 callback: &panoramix::elements::component_caller::tests::my_component::{{closure}},
             },
-            LabelData(
-                "Values: 999 16",
-                FlexParams {
+            LabelData {
+                text: "Values: 999 16",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
             EmptyElementData(
                 PhantomData,
                 PhantomData,

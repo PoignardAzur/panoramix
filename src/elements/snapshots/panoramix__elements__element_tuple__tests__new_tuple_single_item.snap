@@ -3,15 +3,13 @@ source: src/elements/element_tuple.rs
 expression: tuple
 ---
 ElementTuple_1(
-    Label(
-        "Hello",
-        FlexParams {
+    Label {
+        text: "Hello",
+        flex: FlexParams {
             flex: 1.0,
             alignment: None,
         },
-        PhantomData,
-        PhantomData,
-    ),
+    },
     PhantomData,
     PhantomData,
 )

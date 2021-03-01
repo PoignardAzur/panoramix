@@ -11,40 +11,42 @@ use tracing::instrument;
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Label<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct Label<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct LabelData<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct LabelData<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 //
 // --- IMPLS
 
 impl<CpState, CpEvent> Label<CpState, CpEvent> {
     pub fn new(text: impl Into<String>) -> Label<CpState, CpEvent> {
-        Label(
-            text.into(),
-            FlexParams {
+        Label {
+            text: text.into(),
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            Default::default(),
-            Default::default(),
-        )
+            _markers: Default::default(),
+        }
     }
 
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        Label(self.0, flex_params, Default::default(), Default::default())
+        Label {
+            flex: flex_params,
+            ..self
+        }
     }
 
     pub fn with_mock_state(self) -> super::WithMockState<Self, CpState, CpEvent> {
@@ -54,15 +56,14 @@ impl<CpState, CpEvent> Label<CpState, CpEvent> {
 
 impl<CpState, CpEvent> LabelData<CpState, CpEvent> {
     pub fn new(text: impl Into<String>) -> LabelData<CpState, CpEvent> {
-        LabelData(
-            text.into(),
-            FlexParams {
+        LabelData {
+            text: text.into(),
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            Default::default(),
-            Default::default(),
-        )
+            _markers: Default::default(),
+        }
     }
 
     pub fn with_mock_state(self) -> super::WithMockStateData<Self, CpState, CpEvent> {
@@ -78,7 +79,11 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Label<CpState, CpEvent> {
     #[instrument(name = "Label", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (LabelData<CpState, CpEvent>, ()) {
         (
-            LabelData(self.0, self.1, Default::default(), Default::default()),
+            LabelData {
+                text: self.text,
+                flex: self.flex,
+                _markers: Default::default(),
+            },
             (),
         )
     }
@@ -96,17 +101,14 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for LabelData<CpState, CpEve
 
     #[instrument(name = "Label", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
-        let text = &self.0;
-        let label = druid_w::Label::new(text.clone());
-        SingleWidget::new(label, self.1)
+        let label = druid_w::Label::new(self.text.clone());
+        SingleWidget::new(label, self.flex)
     }
 
     #[instrument(name = "Label", skip(self, other, widget, ctx))]
     fn reconcile(&self, other: &Self, widget: &mut Self::TargetWidgetSeq, ctx: &mut ReconcileCtx) {
-        let text = &self.0;
-        let prev_text = &other.0;
-        if text != prev_text {
-            widget.pod.widget_mut().set_text(text.clone());
+        if self.text != other.text {
+            widget.pod.widget_mut().set_text(self.text.clone());
             widget.request_druid_update(ctx);
         }
     }

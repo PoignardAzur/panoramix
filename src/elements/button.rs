@@ -11,21 +11,21 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Button<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct Button<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct ButtonData<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct ButtonData<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct ButtonPressed;
@@ -35,19 +35,21 @@ pub struct ButtonPressed;
 
 impl<CpState, CpEvent> Button<CpState, CpEvent> {
     pub fn new(text: impl Into<String>) -> Self {
-        Button(
-            text.into(),
-            FlexParams {
+        Button {
+            text: text.into(),
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            Default::default(),
-            Default::default(),
-        )
+            _markers: Default::default(),
+        }
     }
 
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        Button(self.0, flex_params, Default::default(), Default::default())
+        Button {
+            flex: flex_params,
+            ..self
+        }
     }
 }
 
@@ -59,7 +61,11 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Button<CpState, CpEvent> {
     #[instrument(name = "Button", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (ButtonData<CpState, CpEvent>, ()) {
         (
-            ButtonData(self.0, self.1, Default::default(), Default::default()),
+            ButtonData {
+                text: self.text,
+                flex: self.flex,
+                _markers: Default::default(),
+            },
             (),
         )
     }
@@ -77,14 +83,12 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for ButtonData<CpState, CpEv
 
     #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> ButtonWidget {
-        let text = &self.0;
-        ButtonWidget::new(text.clone(), self.1, Id::new())
+        ButtonWidget::new(self.text.clone(), self.flex, Id::new())
     }
 
     #[instrument(name = "Button", skip(self, _other, _widget, _ctx))]
     fn reconcile(&self, _other: &Self, _widget: &mut ButtonWidget, _ctx: &mut ReconcileCtx) {
-        let _text = &self.0;
-        //widget.set_text(text.clone());
+        //widget.set_text(self.text.clone());
     }
 
     #[instrument(
@@ -126,15 +130,14 @@ mod tests {
 
         assert_eq!(
             button_data,
-            ButtonData(
-                String::from("Hello"),
-                FlexParams {
+            ButtonData {
+                text: String::from("Hello"),
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                Default::default(),
-                Default::default(),
-            )
+                ..Default::default()
+            }
         );
 
         assign_empty_state_type(&button);

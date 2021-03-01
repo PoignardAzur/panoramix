@@ -6,15 +6,13 @@ expression: column_data
     FlexData {
         axis: Vertical,
         child: ElementTupleData(
-            LabelData(
-                "Greetings",
-                FlexParams {
+            LabelData {
+                text: "Greetings",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
             EmptyElementData(
                 PhantomData,
                 PhantomData,

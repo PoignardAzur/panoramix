@@ -15,21 +15,21 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBox<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct TextBox<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBoxData<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct TextBoxData<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct TextChanged(pub String);
@@ -39,19 +39,21 @@ pub struct TextChanged(pub String);
 
 impl<CpState, CpEvent> TextBox<CpState, CpEvent> {
     pub fn new(text: impl Into<String>) -> Self {
-        TextBox(
-            text.into(),
-            FlexParams {
+        TextBox {
+            text: text.into(),
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            Default::default(),
-            Default::default(),
-        )
+            _markers: Default::default(),
+        }
     }
 
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        TextBox(self.0, flex_params, Default::default(), Default::default())
+        TextBox {
+            flex: flex_params,
+            ..self
+        }
     }
 }
 
@@ -63,7 +65,11 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for TextBox<CpState, CpEvent> {
     #[instrument(name = "TextBox", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (TextBoxData<CpState, CpEvent>, ()) {
         (
-            TextBoxData(self.0, self.1, Default::default(), Default::default()),
+            TextBoxData {
+                text: self.text,
+                flex: self.flex,
+                _markers: Default::default(),
+            },
             (),
         )
     }
@@ -82,14 +88,12 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for TextBoxData<CpState, CpE
 
     #[instrument(name = "TextBox", skip(self))]
     fn init_tree(&self) -> TextBoxWidget {
-        let text = &self.0;
-        TextBoxWidget::new(text.clone(), self.1, Id::new())
+        TextBoxWidget::new(self.text.clone(), self.flex, Id::new())
     }
 
     #[instrument(name = "TextBox", skip(self, _other, widget, ctx))]
     fn reconcile(&self, _other: &Self, widget: &mut TextBoxWidget, ctx: &mut ReconcileCtx) {
-        let text = &self.0;
-        widget.text = text.clone();
+        widget.text = self.text.clone();
         // TODO - check diff with previous value
         widget.request_druid_update(ctx);
     }

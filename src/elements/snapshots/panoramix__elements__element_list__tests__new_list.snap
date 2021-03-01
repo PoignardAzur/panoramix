@@ -6,39 +6,33 @@ ElementList {
     children: [
         (
             "aaa",
-            Label(
-                "aaa",
-                FlexParams {
+            Label {
+                text: "aaa",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
         ),
         (
             "bbb",
-            Label(
-                "bbb",
-                FlexParams {
+            Label {
+                text: "bbb",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
         ),
         (
             "ccc",
-            Label(
-                "ccc",
-                FlexParams {
+            Label {
+                text: "ccc",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
         ),
     ],
     _comp_state: PhantomData,

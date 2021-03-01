@@ -6,33 +6,27 @@ expression: row_data
     FlexData {
         axis: Horizontal,
         child: ElementTupleData(
-            LabelData(
-                "Hello",
-                FlexParams {
+            LabelData {
+                text: "Hello",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
-            LabelData(
-                "Hello2",
-                FlexParams {
+            },
+            LabelData {
+                text: "Hello2",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
-            LabelData(
-                "Hello3",
-                FlexParams {
+            },
+            LabelData {
+                text: "Hello3",
+                flex: FlexParams {
                     flex: 1.0,
                     alignment: None,
                 },
-                PhantomData,
-                PhantomData,
-            ),
+            },
             EmptyElementData(
                 PhantomData,
                 PhantomData,

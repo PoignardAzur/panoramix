@@ -15,23 +15,23 @@ use tracing::{instrument, trace};
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Checkbox<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub bool,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct Checkbox<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub value: bool,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct CheckboxData<CpState = (), CpEvent = NoEvent>(
-    pub String,
-    pub bool,
-    pub FlexParams,
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
-);
+pub struct CheckboxData<CpState = (), CpEvent = NoEvent> {
+    pub text: String,
+    pub value: bool,
+    pub flex: FlexParams,
+    #[derivative(Debug = "ignore")]
+    pub _markers: std::marker::PhantomData<(CpState, CpEvent)>,
+}
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Toggled(pub bool);
@@ -41,26 +41,22 @@ pub struct Toggled(pub bool);
 
 impl<CpState, CpEvent> Checkbox<CpState, CpEvent> {
     pub fn new(text: impl Into<String>, value: bool) -> Self {
-        Checkbox(
-            text.into(),
+        Checkbox {
+            text: text.into(),
             value,
-            FlexParams {
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            Default::default(),
-            Default::default(),
-        )
+            _markers: Default::default(),
+        }
     }
 
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
-        Checkbox(
-            self.0,
-            self.1,
-            flex_params,
-            Default::default(),
-            Default::default(),
-        )
+        Checkbox {
+            flex: flex_params,
+            ..self
+        }
     }
 }
 
@@ -72,13 +68,12 @@ impl<CpState, CpEvent> Element<CpState, CpEvent> for Checkbox<CpState, CpEvent> 
     #[instrument(name = "Checkbox", skip(self, _prev_state))]
     fn build(self, _prev_state: ()) -> (CheckboxData<CpState, CpEvent>, ()) {
         (
-            CheckboxData(
-                self.0,
-                self.1,
-                self.2,
-                Default::default(),
-                Default::default(),
-            ),
+            CheckboxData {
+                text: self.text,
+                value: self.value,
+                flex: self.flex,
+                _markers: Default::default(),
+            },
             (),
         )
     }
@@ -97,21 +92,19 @@ impl<CpState, CpEvent> VirtualDom<CpState, CpEvent> for CheckboxData<CpState, Cp
 
     #[instrument(name = "Checkbox", skip(self))]
     fn init_tree(&self) -> SingleCheckboxWidget {
-        let text = &self.0;
-        let checkbox =
-            SingleCheckboxWidget::new(CheckboxWidget::new(text.clone(), self.1, Id::new()), self.2);
-        checkbox
+        SingleCheckboxWidget::new(
+            CheckboxWidget::new(self.text.clone(), self.value, Id::new()),
+            self.flex,
+        )
     }
 
     #[instrument(name = "Checkbox", skip(self, other, widget, ctx))]
     fn reconcile(&self, other: &Self, widget: &mut SingleCheckboxWidget, ctx: &mut ReconcileCtx) {
         let checkbox_widget = widget.widget_mut();
-        let text = &self.0;
-        let prev_text = &other.0;
-        if text != prev_text {
-            checkbox_widget.pod.widget_mut().set_text(text.clone());
+        if self.text != other.text {
+            checkbox_widget.pod.widget_mut().set_text(self.text.clone());
         }
-        checkbox_widget.value = self.1;
+        checkbox_widget.value = self.value;
         // TODO - check diff with previous value
         widget.request_druid_update(ctx);
         widget.widget_mut().request_druid_update(ctx);

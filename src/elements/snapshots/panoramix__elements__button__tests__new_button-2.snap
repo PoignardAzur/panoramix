@@ -2,12 +2,10 @@
 source: src/elements/button.rs
 expression: button_data
 ---
-ButtonData(
-    "Hello",
-    FlexParams {
+ButtonData {
+    text: "Hello",
+    flex: FlexParams {
         flex: 1.0,
         alignment: None,
     },
-    PhantomData,
-    PhantomData,
-)
+}

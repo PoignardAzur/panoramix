@@ -2,12 +2,10 @@
 source: src/elements/label.rs
 expression: label
 ---
-Label(
-    "Hello",
-    FlexParams {
+Label {
+    text: "Hello",
+    flex: FlexParams {
         flex: 1.0,
         alignment: None,
     },
-    PhantomData,
-    PhantomData,
-)
+}

@@ -5,15 +5,13 @@ expression: column
 Flex {
     axis: Vertical,
     child: ElementTuple_1(
-        Label(
-            "Greetings",
-            FlexParams {
+        Label {
+            text: "Greetings",
+            flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            PhantomData,
-            PhantomData,
-        ),
+        },
         PhantomData,
         PhantomData,
     ),
