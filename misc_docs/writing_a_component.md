@@ -1,5 +1,11 @@
 # Writing a component
 
+This is part 1 of a 3-parts tutorial:
+
+- **Writing a component**
+- [Event handling](./event_handling.md)
+- [Local state](./local_state.md)
+
 Components in Panoramix are plain old functions, that follow a specific format.
 
 While Panoramix performs some non-intuitive logic in the background, component themselves are very much non-magical. The function you write is the function than Panoramix execute, with no hidden codegen or side-effects.
@@ -13,126 +19,192 @@ Let's say we want to start with something simple: a component that takes a name,
 The basic declaration will look like this:
 
 ```rust
-fn hello_text(state: &StateType, props: PropsType) -> impl Element<StateType, EventType> {
-  todo!()
+use panoramix::{component, CompCtx, Element};
+
+#[component]
+fn HelloText(_ctx: &CompCtx, props: __PROPS_TYPE__) -> impl Element {
+    todo!()
 }
 ```
 
-For now, we're not using local state, so `StateType` can be `()`, and we're not raising events, so `EventType` can be `panoramix::NoEvent` (will eventually be `!`).
+(More complicated examples will add generic parameters to `Element`, but for now we're using their default values.)
 
-We want to pass a string, so `PropsType` can be `&str`.
+The `#[component]` attribute mostly just reads the function prototype, and generates a `struct HelloText` type from it with a few inherent methods. We'll come back to that later.
+
+A component's props are the arguments its uses to generate its GUI. In this case, we want to take a name, so we can replace `__PROPS_TYPE__` with `String`:
 
 ```rust
-fn hello_text(state: &(), props: &str) -> impl Element<(), NoEvent> {
-  todo!()
+#[component]
+fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
+    todo!()
 }
 ```
 
 Finally, we want to return a label that says hello:
 
 ```rust
-fn hello_text(_state: &(), name: &str) -> impl Element<(), NoEvent> {
-  Label::new(format!("Hello, {}", name))
+use panoramix::elements::Label;
+
+#[component]
+fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
+    Label::new(format!("Hello, {}", props))
 }
 ```
 
-If we want to test our component in a program, we can pass it to `panoramix::RootHandler` from our main function:
+If we want to test our component in a program, we have to pass it to `panoramix::RootHandler` from our main function.
+
+The `#[component]` attribute generates a `HelloText::new` constructor for our component, that takes its props as parameters and returns an element (see the attribute's documentatation for details).
+
+We can use it to generate an instance of our component that our application will display:
 
 ```rust
+use panoramix::RootHandler;
+
 fn main() -> Result<(), druid::PlatformError> {
-    RootHandler::new(&hello_text, "John Doe")
+    RootHandler::new(HelloBox::new("World".to_string()))
         .launch()
 }
 ```
 
 TODO - screenshot
 
+
 ## Composing components
 
-*Components* are called that way, because they're the unit of *composition* in our GUI.
+*Components* are called that way, because they're the unit of *composition* in a declarative GUI.
 
 For instance, let's say we want our GUI to say hello to multiple people at the same time. Maybe we want to say hello to Alice, Bob, Carol and Damian. We could copy-paste the above code multiple times:
 
 ```rust
-fn hello_text(_state: &(), _props: ()) -> impl Element<(), NoEvent> {
-  Tuple!(
-    Label::new(format!("Hello, Alice", props)),
-    Label::new(format!("Hello, Bob", props)),
-    Label::new(format!("Hello, Carol", props)),
-    Label::new(format!("Hello, Damian", props)),
-  )
+use panoramix::Column;
+
+#[component]
+fn HelloText(_ctx: &CompCtx, _props: ()) -> impl Element {
+    Column!(
+        Label::new(format!("Hello, Alice")),
+        Label::new(format!("Hello, Bob")),
+        Label::new(format!("Hello, Carol")),
+        Label::new(format!("Hello, Damian")),
+    )
 }
 ```
 
-(`Tuple!()` is a macro similar to `vec![]`, that takes a tuple of elements of arbitrary types and returns an element that contains them all; the value returned by `Tuple` always implements `Element`)
+(`Column!()` is a macro similar to `vec![]`, that takes a tuple of elements of arbitrary types and returns an element that contains them all; the value returned by `Column` always implements `Element`)
 
-However, this is a very brute-force approach; we'd rather reuse code. (TODO) What we do instead is:
+This is obviously the kind of pattern we want to abstract into function calls: we have a function parameter that changes (the name), and a function body that stays the same (the label). So what we do is build our component with different props each time, using the `HellowText::new` syntax we used earlier:
 
-```rust
-fn hello_text(_state: &(), name: &str) -> impl Element<(), NoEvent> {
-  Label::new(format!("Hello, {}", props))
-}
+But this is obviously a pattern where we want to compose code, not copy-paste it. This is where props become useful: because we have defined a component parameterized on a name, we can just build that component multiple times with different values.
 
-fn hello_everyone(_state: &(), _props: ()) -> impl Element<(), NoEvent> {
-  Tuple!(
-    ComponentCaller::prepare(hello_text, "Alice"),
-    ComponentCaller::prepare(hello_text, "Bob"),
-    ComponentCaller::prepare(hello_text, "Carol"),
-    ComponentCaller::prepare(hello_text, "Damian"),
-  )
-}
-```
 
-TODO - explain rationale
+## About magic
 
-## Event handling
+A high-level goal of Panoramix is to avoid magical DSLs where the code you write isn't the code that gets executed.
 
-The components we've written so far are static. They don't have state, they don't process any user interaction.
-
-Let's say that we want each of our "Hello, XXX" labels to have a button to say "hello" back. Moreover, we want our label to count the number of time the button has been pressed.
-
-To do that, we change the `State` type of our component to an integer, that can hold the number of times the button was pressed:
+As part of this, all elements we have built (with `Label::new` and `Column!` and `HelloText::new`) are simple PODs, with no hidden cells or `Arc<Mutex>`. More over, all elements are required to implement `Debug`, which means you can print the elements you're building at any point:
 
 ```rust
-fn hello_text(state: &u32, name: &str) -> impl Element<u32, NoEvent> {
-  // ...
+#[component]
+fn HelloText(_ctx: &CompCtx, _props: ()) -> impl Element {
+    let first_label = Label::new(format!("Hello, Alice"));
+    println!("first_label: {:#?}", first_label);
+
+    let column = Column!(
+        first_label,
+        Label::new(format!("Hello, Bob")),
+        Label::new(format!("Hello, Carol")),
+        Label::new(format!("Hello, Damian")),
+    );
+
+    println!("===");
+    println!("column: {:#?}", column);
+    column
 }
 ```
 
-In the component body, we add a parameter to the format macro, and we add a button:
+This should display something like:
 
-```rust
-fn hello_text(state: &u32, name: &str) -> impl Element<u32, NoEvent> {
-  Tuple!(
-    Label::new(format!("Hello, {} - ", props, state)),
-    Button::new("Say hello")
+```text
+first_label: Label {
+    text: "Hello, Alice",
+    flex: FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
+},
+===
+column: Flex {
+    axis: Vertical,
+    child: ElementTuple_4(
+        Label {
+            text: "Hello, Alice",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        Label {
+            text: "Hello, Bob",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        Label {
+            text: "Hello, Carol",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        Label {
+            text: "Hello, Damian",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+    ),
     // ...
-  )
 }
 ```
 
-While we've added a button, so far that button doesn't actually do anything.
 
-To add a callback to our button, we use the trait `WidgetExt`, which has several callback-based methods. We use `WidgetExt::on`, and pass it a callback which takes both a mutable reference to the local state, and the value of the triggering event (here, a button press):
+## ElementList
+
+TODO
+
+
+## Conclusion
+
+Our complete code looks like:
 
 ```rust
-fn hello_text(state: &u32, name: &str) -> impl Element<u32, NoEvent> {
-  Tuple!(
-    Label::new(format!("Hello, {} - ", props, state)),
-    Button::new("Say hello").on::<ButtonClick, _>(|state: &mut u32, _event: ButtonClick| {
-      state += 1;
-    }),
-  )
+use panoramix::{component, CompCtx, Element};
+use panoramix::elements::Label;
+use panoramix::RootHandler;
+use panoramix::Column;
+
+#[component]
+fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
+    Label::new(format!("Hello, {}", props))
+}
+
+#[component]
+fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
+    Column!(
+        HelloBox::new("Alice".to_string()),
+        HelloBox::new("Bob".to_string()),
+        HelloBox::new("Carol".to_string()),
+        HelloBox::new("Damian".to_string()),
+    )
+}
+
+fn main() -> Result<(), druid::PlatformError> {
+    RootHandler::new(HelloEveryone::new(()))
+        .launch()
 }
 ```
 
-Several things of note here:
+We managed to combine these different types seamlessly because `Column!` takes arbitrary elements as parameters, and `HelloBox::new` returns an element.
 
-- The callback takes a mutable reference on the `u32` state; which that state is conceptually the same as the one passed to hello_text, and mutating the first will affect the second, the *references* are completely different, and have disjoint lifetimes.
-- The `on` method uses the builder pattern: it takes an own `impl Element` as an input, and returns another `impl Element` as an output.
-
-TODO - note about not-having-magic and Debug
-
-TODO - note about template type resolution
-
-TODO - note about events and local state
+In [the next part](./event_handling.md), we will see how we can make our component react to user input.

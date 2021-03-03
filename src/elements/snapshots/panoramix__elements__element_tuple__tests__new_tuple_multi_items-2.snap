@@ -61,8 +61,6 @@ expression: tuple_data
             PhantomData,
             PhantomData,
         ),
-        PhantomData,
-        PhantomData,
     ),
     (
         (),

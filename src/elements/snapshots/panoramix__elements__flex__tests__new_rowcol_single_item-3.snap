@@ -57,8 +57,6 @@ expression: row_data
                 PhantomData,
                 PhantomData,
             ),
-            PhantomData,
-            PhantomData,
         ),
         flex: FlexParams {
             flex: 1.0,

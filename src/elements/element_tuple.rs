@@ -42,7 +42,9 @@ pub struct ElementTupleData<
     pub C9,
     pub C10,
     pub C11,
+    #[derivative(Debug = "ignore")]
     pub std::marker::PhantomData<CpState>,
+    #[derivative(Debug = "ignore")]
     pub std::marker::PhantomData<CpEvent>,
 );
 

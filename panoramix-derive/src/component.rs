@@ -57,7 +57,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         panic!()
     };
 
-    let (local_state_ty, local_event_ty) = parse_return_ty(fn_output.clone());
+    let (local_event_ty, local_state_ty) = parse_return_ty(fn_output.clone());
 
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
@@ -118,15 +118,25 @@ fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
     assert!(last_segment.ident.to_string() == "Element");
 
     // AngleBracketedGenericArguments
-    let elements_ty_args = if let syn::PathArguments::AngleBracketed(elements_ty_args) = elements_ty_args {
-        elements_ty_args.args
-    } else {
-        panic!("Component must return impl Element<LocalEvent, LocalState>")
+    let elements_ty_args: Vec<_> = match elements_ty_args {
+        syn::PathArguments::None => {
+            Vec::new()
+        }
+        syn::PathArguments::AngleBracketed(elements_ty_args) => {
+            elements_ty_args.args.into_iter().collect()
+        }
+        _ => {
+            panic!("Component must return impl Element<LocalState, LocalEvent>")
+        }
     };
 
-    assert!(elements_ty_args.len() == 2);
-    let local_state_ty = elements_ty_args.first().unwrap();
-    let local_event_ty = elements_ty_args.last().unwrap();
+    use syn::parse_quote;
+    let default_event_ty: syn::GenericArgument = parse_quote!( NoEvent );
+    let default_state_ty: syn::GenericArgument = parse_quote!( () );
+
+    assert!(elements_ty_args.len() <= 2);
+    let local_event_ty = elements_ty_args.get(0).cloned().unwrap_or(default_event_ty);
+    let local_state_ty = elements_ty_args.get(1).cloned().unwrap_or(default_state_ty);
 
     let local_state_ty = if let syn::GenericArgument::Type(local_state_ty) = local_state_ty {
         local_state_ty
