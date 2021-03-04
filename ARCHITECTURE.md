@@ -7,7 +7,7 @@ This document describes the high-level architecture of Panoramix.
 
 First off, let's make things clear:
 
-- This is an **internal** documentation, not intended for end users. If you want to use Panoramix as a dependency, look at the docs.rs doc; **TODO - add link**
+- This is an **internal** documentation, not intended for end users. If you want to use Panoramix as a dependency, look at the [crate documentation](https://docs.rs/panoramix/).
 - This is an **informal** documentation, loosely following the guidelines described in [matklad's post](https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html). The idea is to make this easy to update every few months, not exhaustively document every piece of code.
 - This documentation assumes you have some familiarity with Panoramix and have at least compiled a few examples.
 - This documentation is a little sparse and vague, by design. I strongly recommend reading it side by side with an open text editor, so you can read the code at the same time.

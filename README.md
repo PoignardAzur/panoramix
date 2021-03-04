@@ -37,7 +37,7 @@ fn main() -> Result<(), druid::PlatformError> {
 }
 ```
 
-See the documentation (**TODO**) for details, and the [Writing a new component](misc_docs/writing_a_component.md) tutorial.
+See [the documentation](https://docs.rs/panoramix/) for details, and the [Writing a new component](misc_docs/writing_a_component.md) tutorial.
 
 
 ## Contributing
@@ -94,4 +94,3 @@ See [ROADMAP.md](ROADMAP.md) for details.
 This crate has been almost entirely written by Olivier FAURE. Any other contributor will be added to [AUTHORS.md](AUTHORS.md).
 
 This project has been possible thanks to the extremely clean and approchable work of Raph Levien and Colin Rofls, as well as some mentoring on their part, and general interaction with the Druid community. In particular, Panoramix is inspired from [Crochet](https://github.com/raphlinus/crochet/).
-
