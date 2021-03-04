@@ -3,15 +3,15 @@ name = "panoramix"
 version = "0.0.1"
 license = "MIT"
 authors = ["Olivier FAURE <couteaubleu@gmail.com>"]
-description = "A prototype implementation of reactive UI in rust "
+description = "A prototype implementation of reactive UI in rust"
 repository = "https://github.com/PoignardAzur/panoramix"
 categories = ["gui"]
+keywords = ["gui", "toolkit", "reactive", "declarative", "druid"]
 readme = "README.md"
 edition = "2018"
 
 [dependencies.druid]
-git = "https://github.com/linebender/druid"
-rev = "c6e5a5ed925fbf722af482e168ff1af44c926110"
+version = "0.7.0"
 features = ["crochet"]
 
 [dependencies]

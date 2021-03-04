@@ -305,7 +305,7 @@ impl<
         }
 
         let widget = self.root_widget;
-        let main_window = WindowDesc::new(widget);
+        let main_window = WindowDesc::new(|| widget);
         let data = Default::default();
 
         AppLauncher::with_window(main_window).launch(data)
