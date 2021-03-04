@@ -2,7 +2,7 @@ use panoramix::elements::{Button, Checkbox, ElementList, Label, TextBox, TextCha
 use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row};
 
-use druid::PlatformError;
+use panoramix::PlatformError;
 
 const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
     cross_alignment: CrossAxisAlignment::Center,

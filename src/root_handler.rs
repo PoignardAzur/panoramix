@@ -5,9 +5,11 @@ use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
 
 use druid::widget::prelude::*;
-use druid::{widget, AppLauncher, PlatformError, Point, Widget, WidgetPod, WindowDesc};
+use druid::{widget, AppLauncher, Point, Widget, WidgetPod, WindowDesc};
 use std::fmt::Debug;
 use tracing::{debug_span, info, instrument, trace};
+
+pub use druid::PlatformError;
 
 type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Element<
     RootCpEvent,

@@ -137,7 +137,7 @@ fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
     )
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloEveryone::new(()))
         .launch()
 }

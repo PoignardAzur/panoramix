@@ -27,7 +27,7 @@ fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element {
     )
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloBox::new(()))
         .with_tracing(true)
         .launch()
@@ -62,7 +62,7 @@ fn MyRootComponent(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, Applicati
     # panoramix::elements::EmptyElement::new()
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     let initial_state = ApplicationState {
         // ...
     };

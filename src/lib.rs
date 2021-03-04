@@ -23,7 +23,7 @@
 //!     )
 //! }
 //!
-//! fn main() -> Result<(), druid::PlatformError> {
+//! fn main() -> Result<(), panoramix::PlatformError> {
 //!     RootHandler::new(HelloBox::new(()))
 //!         .with_tracing(true)
 //!         .launch()
@@ -58,7 +58,7 @@
 //!     # panoramix::elements::EmptyElement::new()
 //! }
 //!
-//! fn main() -> Result<(), druid::PlatformError> {
+//! fn main() -> Result<(), panoramix::PlatformError> {
 //!     let initial_state = ApplicationState {
 //!         // ...
 //!     };
@@ -86,7 +86,7 @@ pub use panoramix_derive::component;
 
 pub use element_tree::{CompCtx, Element, ElementExt, NoEvent};
 
-pub use root_handler::{RootHandler, RootWidget};
+pub use root_handler::{PlatformError, RootHandler, RootWidget};
 
 /// Traits and type used internally to compute the GUI
 pub mod backend {

@@ -11,7 +11,7 @@ fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element {
     )
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloBox::new(()))
         .with_tracing(true)
         .launch()

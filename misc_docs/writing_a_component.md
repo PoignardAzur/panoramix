@@ -60,7 +60,7 @@ We can use it to generate an instance of our component that our application will
 ```rust
 use panoramix::RootHandler;
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloBox::new("World".to_string()))
         .launch()
 }
@@ -118,7 +118,7 @@ fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
     )
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloEveryone::new(()))
         .launch()
 }
@@ -219,7 +219,7 @@ fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
     )
 }
 
-fn main() -> Result<(), druid::PlatformError> {
+fn main() -> Result<(), panoramix::PlatformError> {
     RootHandler::new(HelloEveryone::new(()))
         .launch()
 }
