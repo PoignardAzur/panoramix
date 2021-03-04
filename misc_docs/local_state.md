@@ -85,7 +85,7 @@ fn Counter(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, i32> {
 Note that, in this example, while `current_count` and `new_count` refer to the same value conceptually, their references are completely disjoint. By the time Panoramix calls the `on_click` callback, `current_count` and every other local we could have defined in our component have gone out of scope, which is why `on_click` provides a local state argument we can mutate.
 
 
-## Local state bounds
+## Local state and type inference
 
 TODO
 

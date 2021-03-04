@@ -17,6 +17,10 @@ impl CompCtx {
     pub fn use_local_state<T: 'static>(&self) -> &T {
         self.local_state.downcast_ref::<T>().unwrap()
     }
+
+    // TODO - add methods
+    // use_lifecycle
+    // get_vdom_context
 }
 
 /// Context required by [`VirtualDom::reconcile`]
