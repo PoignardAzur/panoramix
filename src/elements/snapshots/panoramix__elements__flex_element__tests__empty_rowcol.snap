@@ -1,17 +1,10 @@
 ---
-source: src/elements/flex.rs
-expression: column
+source: src/elements/flex_element.rs
+expression: row
 ---
 Flex {
-    axis: Vertical,
-    child: ElementTuple_1(
-        Label {
-            text: "Greetings",
-            flex: FlexParams {
-                flex: 1.0,
-                alignment: None,
-            },
-        },
+    axis: Horizontal,
+    child: EmptyElement(
         PhantomData,
         PhantomData,
     ),

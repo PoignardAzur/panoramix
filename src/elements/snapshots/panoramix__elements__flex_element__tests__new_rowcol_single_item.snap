@@ -1,10 +1,17 @@
 ---
-source: src/elements/flex.rs
+source: src/elements/flex_element.rs
 expression: row
 ---
 Flex {
     axis: Horizontal,
-    child: EmptyElement(
+    child: ElementTuple_1(
+        Label {
+            text: "Hello",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
         PhantomData,
         PhantomData,
     ),

@@ -6,6 +6,30 @@ use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 
+/// A placeholder element.
+///
+/// This does **not** represent a blank area or a zero-sized widget. Rather, this represents the *absence* of a widget. So, for instance:
+///
+/// ```no_compile
+/// Column!(
+///     Label::new("Hello world!"),
+///     EmptyElement::new(),
+/// )
+/// ```
+///
+/// is equivalent to:
+///
+/// ```no_compile
+/// Column!(
+///     Label::new("Hello world!"),
+/// )
+/// ```
+///
+/// in terms of layout computation and everything else.
+///
+/// ## Events
+///
+/// Doesn't emit events.
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
 pub struct EmptyElement<CpEvent = NoEvent, CpState = ()>(

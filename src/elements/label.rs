@@ -1,6 +1,6 @@
 use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::flex::FlexParams;
 use crate::glue::DruidAppData;
-use crate::widgets::flex::FlexParams;
 use crate::widgets::SingleWidget;
 
 use crate::element_tree::ReconcileCtx;
@@ -9,6 +9,11 @@ use druid::widget as druid_w;
 use derivative::Derivative;
 use tracing::instrument;
 
+/// A text label.
+///
+/// ## Events
+///
+/// Doesn't emit events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct Label<CpEvent = NoEvent, CpState = ()> {
@@ -31,6 +36,7 @@ pub struct LabelData<CpEvent = NoEvent, CpState = ()> {
 // --- IMPLS
 
 impl<CpEvent, CpState> Label<CpEvent, CpState> {
+    /// Build a text label.
     pub fn new(text: impl Into<String>) -> Label<CpEvent, CpState> {
         Label {
             text: text.into(),
@@ -42,6 +48,7 @@ impl<CpEvent, CpState> Label<CpEvent, CpState> {
         }
     }
 
+    /// Change the way the label's size is calculated
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
         Label {
             flex: flex_params,
@@ -49,6 +56,8 @@ impl<CpEvent, CpState> Label<CpEvent, CpState> {
         }
     }
 
+    // TODO
+    /// Used for unit tests.
     pub fn with_mock_state(self) -> super::WithMockState<Self, CpEvent, CpState> {
         super::WithMockState::new(self)
     }

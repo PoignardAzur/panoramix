@@ -1,5 +1,5 @@
 use panoramix::elements::{Button, Checkbox, ElementList, Label, Toggled};
-use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
+use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use panoramix::{component, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row, Tuple};
 
 use druid::PlatformError;
@@ -87,7 +87,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
         };
 
         MyListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, event| {
-            if event.0 {
+            if event.new_value {
                 state.selected_row = Some(i);
             } else {
                 state.selected_row = None;

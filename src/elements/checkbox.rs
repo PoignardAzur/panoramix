@@ -1,7 +1,7 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
-use crate::widgets::flex::FlexParams;
+use crate::flex::FlexParams;
 use crate::widgets::{CheckboxWidget, SingleCheckboxWidget};
 
 use crate::element_tree::ReconcileCtx;
@@ -13,6 +13,11 @@ use tracing::{instrument, trace};
 // Checkbox::new(false)
 // In other words, enforce two-ways bindings
 
+/// A checkbox with a text label.
+///
+/// ## Events
+///
+/// Emits [Toggled] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct Checkbox<CpEvent = NoEvent, CpState = ()> {
@@ -33,13 +38,21 @@ pub struct CheckboxData<CpEvent = NoEvent, CpState = ()> {
     pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
+/// Event emitted when a [Checkbox] is clicked.
+///
+/// Note: Might hold data like "mouse position" or "checkbox id" future versions.
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Toggled(pub bool);
+pub struct Toggled {
+    pub new_value: bool,
+}
 
 //
 // --- IMPLS
 
 impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
+    /// Build a checkbox with the given label.
+    ///
+    /// Use the [.on_toggled](Checkbox::on_toggled) method to provide a closure to be called when the box is toggled.
     pub fn new(text: impl Into<String>, value: bool) -> Self {
         Checkbox {
             text: text.into(),
@@ -52,6 +65,7 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
         }
     }
 
+    /// Change the way the checkbox's size is calculated
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
         Checkbox {
             flex: flex_params,
@@ -59,6 +73,7 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
         }
     }
 
+    /// Provide a closure to be called when this checkbox is toggled.
     pub fn on_toggled(
         self,
         callback: impl Fn(&mut CpState, Toggled),
@@ -133,7 +148,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, Cp
         if let Some(Action::Clicked) = cx.app_data.dequeue_action(id) {
             let new_value = widget.widget().value;
             trace!("Processed checkbox toggle: {}", new_value);
-            Some(Toggled(new_value))
+            Some(Toggled { new_value })
         } else {
             None
         }

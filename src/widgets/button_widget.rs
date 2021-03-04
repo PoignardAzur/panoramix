@@ -1,9 +1,9 @@
+use crate::flex::FlexParams;
 use crate::glue::Action;
 use crate::glue::DruidAppData;
 use crate::glue::Id;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
-use crate::widgets::flex::FlexParams;
 
 use druid::kurbo::{Rect, Size};
 use druid::widget::{Button, Click, ControllerHost};

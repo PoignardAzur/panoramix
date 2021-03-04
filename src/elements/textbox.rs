@@ -1,7 +1,7 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
-use crate::widgets::flex::FlexParams;
+use crate::flex::FlexParams;
 use crate::widgets::TextBoxWidget;
 
 use crate::element_tree::ReconcileCtx;
@@ -15,6 +15,11 @@ use tracing::{instrument, trace};
 
 // TODO - Add "validate on enter" feature
 
+/// A text-editing box.
+///
+/// ## Events
+///
+/// Emits [TextChanged] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct TextBox<CpEvent = NoEvent, CpState = ()> {
@@ -33,13 +38,21 @@ pub struct TextBoxData<CpEvent = NoEvent, CpState = ()> {
     pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
+/// Event emitted when text is entered or edited in a [TextBox].
+///
+/// Holds the new content of the box
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct TextChanged(pub String);
+pub struct TextChanged {
+    pub new_content: String,
+}
 
 //
 // --- IMPLS
 
 impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
+    /// Build a text box with the given content.
+    ///
+    /// Use the [.on_text_changed](TextBox::on_text_changed) method to provide a closure to be called when the box is edited.
     pub fn new(text: impl Into<String>) -> Self {
         TextBox {
             text: text.into(),
@@ -51,6 +64,7 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
         }
     }
 
+    /// Change the way the box's size is calculated
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
         TextBox {
             flex: flex_params,
@@ -58,6 +72,7 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
         }
     }
 
+    /// Provide a closure to be called when this box is edited.
     pub fn on_text_changed(
         self,
         callback: impl Fn(&mut CpState, TextChanged),
@@ -120,9 +135,9 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpS
     ) -> Option<TextChanged> {
         // FIXME - Rework event dispatching
         let id = widget.id;
-        if let Some(Action::TextChanged(new_text)) = cx.app_data.dequeue_action(id) {
+        if let Some(Action::TextChanged(new_content)) = cx.app_data.dequeue_action(id) {
             trace!("Processed text change");
-            Some(TextChanged(new_text))
+            Some(TextChanged { new_content })
         } else {
             None
         }

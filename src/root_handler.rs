@@ -1,7 +1,8 @@
 use crate::element_tree::{CompCtx, Element, ReconcileCtx, VirtualDom};
-use crate::elements::{Component, ComponentHolder};
+use crate::elements::component::{Component, ComponentHolder};
+use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
-use crate::widgets::flex;
+use crate::widgets::flex_widget;
 
 use druid::widget::prelude::*;
 use druid::{widget, AppLauncher, PlatformError, Point, Widget, WidgetPod, WindowDesc};
@@ -16,6 +17,9 @@ type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Ele
 // FIXME - RootComponent must be Clone to be able to clone the props
 // Not intuitive, find different abstraction?
 
+/// Implements [`druid::Widget`] from a component
+///
+/// You should probably use [`RootHandler`] directly instead.
 pub struct RootWidget<
     RootCpEvent,
     RootCpState: Clone + Default + Debug + PartialEq + 'static,
@@ -29,7 +33,7 @@ pub struct RootWidget<
     pub widget: Option<
         WidgetPod<
             DruidAppData,
-            flex::FlexWidget<WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree>>,
+            flex_widget::FlexWidget<WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree>>,
         >,
     >,
 }
@@ -52,6 +56,7 @@ impl<
         }
     }
 
+    /// Set the local state of the root component to a value other than default
     pub fn with_initial_state(self, root_state: RootCpState) -> Self {
         RootWidget {
             component_state: (root_state, Default::default()),
@@ -78,7 +83,7 @@ impl<
         let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
         // FIXME - Fix alignment to be consistent
         // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
-        let flex_widget = WidgetPod::new(flex::FlexWidget {
+        let flex_widget = WidgetPod::new(flex_widget::FlexWidget {
             direction: flex::Axis::Vertical,
             flex_params: flex::FlexContainerParams {
                 cross_alignment: flex::CrossAxisAlignment::Center,
@@ -248,6 +253,7 @@ impl<
     }
 }
 
+/// Creates a GUI application from a component
 pub struct RootHandler<
     RootCpEvent,
     RootCpState: Clone + Default + Debug + PartialEq + 'static,
@@ -265,6 +271,11 @@ impl<
         Comp: 'static + Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
     > RootHandler<RootCpEvent, RootCpState, ReturnedTree, Comp>
 {
+    /// Creates the data to start the application.
+    ///
+    /// The `root_component` parameter should be roughly `YourRootComponent::new(some_props)`.
+    ///
+    /// Call [`launch`](RootHandler::launch) to actually start the application.
     pub fn new(root_component: ComponentHolder<Comp>) -> Self {
         RootHandler {
             root_widget: RootWidget::new(root_component),
@@ -272,6 +283,7 @@ impl<
         }
     }
 
+    /// Set the local state of the root component to a value other than default
     pub fn with_initial_state(self, root_state: RootCpState) -> Self {
         RootHandler {
             root_widget: self.root_widget.with_initial_state(root_state),
@@ -286,6 +298,7 @@ impl<
         }
     }
 
+    /// Start the application.
     pub fn launch(self) -> Result<(), PlatformError> {
         if self.init_tracing {
             crate::glue::init_tracing();

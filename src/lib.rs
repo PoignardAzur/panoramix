@@ -33,8 +33,8 @@
 //! To understand this example, let's define a few terms:
 //!
 //! - A **Widget** is the fundamental unit of GUI; for instance, a text field and a label are both widgets. You've probably seen the term if you've used other GUI frameworks.
-//! - An **Element** is a lightweight description of a Widget. In our example, [Button::new](`elements::Button::new`) and [Label::new](`elements::Label::new`) both return elements. The [Column] macro is similar to `vec` - it takes an arbitrary number of elements and returns a container element.
-//!   - Some elements have builder methods. Eg: [Button::on_click](`elements::Button::on_click`).
+//! - An **Element** is a lightweight description of a Widget. In our example, [`Button::new`](elements::Button::new) and [`Label::new`](elements::Label::new) both return elements. The [`Column`] macro is similar to `vec` - it takes an arbitrary number of elements and returns a container element.
+//!   - Some elements have builder methods. Eg: [`Button::on_click`](elements::Button::on_click).
 //! - A **Component** is a user-written function that takes **Props** as parameters and returns a tree of elements (or, more accurately, an arbitrary element that may or may not contain other elements). In our example, `HelloBox` is a component. By convention, components always have a CamelCase name.
 //!
 //! In Panoramix, you don't directly manipulate **widgets**; instead, you write **components** that return **elements**. The framework calls your components, gets a tree of elements, and builds a matching widget tree for you. When some event changes the application state, the framework calls your components again, gets a new element tree, and edits the widget tree accordingly.
@@ -80,6 +80,8 @@ mod widget_sequence;
 pub mod elements;
 pub mod widgets;
 
+pub mod flex;
+
 pub use panoramix_derive::component;
 
 pub use element_tree::{CompCtx, Element, ElementExt, NoEvent};
@@ -92,10 +94,8 @@ pub mod backend {
     // to have a clean separation in the documentation between the items required to write
     // a GUI and the items required to create a GUI element.
 
-    pub use crate::glue::{Action, DruidAppData, GlobalEventCx, Id};
-
     pub use crate::element_tree::{ReconcileCtx, VirtualDom};
-
+    pub use crate::glue::{Action, DruidAppData, GlobalEventCx, Id};
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
 
     // TODO

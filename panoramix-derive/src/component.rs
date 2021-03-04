@@ -68,15 +68,15 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
 
         impl #component_name {
             pub fn new<ParentCpEvent, ParentCpState>(#props_arg)
-                -> panoramix::elements::ComponentHolder<
-                    impl panoramix::elements::Component<
+                -> panoramix::elements::component::ComponentHolder<
+                    impl panoramix::elements::component::Component<
                         ParentCpEvent, ParentCpState,
                         LocalEvent=#local_event_ty,
                         LocalState=#local_state_ty,
                     >
                 > {
-                panoramix::elements::ComponentHolder(
-                    panoramix::elements::ComponentCaller2::prepare(&Self::render, #props_ident)
+                panoramix::elements::component::ComponentHolder(
+                    panoramix::elements::component::ComponentCaller2::prepare(&Self::render, #props_ident)
                 )
             }
 

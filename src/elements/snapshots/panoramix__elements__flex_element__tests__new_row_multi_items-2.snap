@@ -1,5 +1,5 @@
 ---
-source: src/elements/flex.rs
+source: src/elements/flex_element.rs
 expression: row_data
 ---
 (
@@ -13,14 +13,20 @@ expression: row_data
                     alignment: None,
                 },
             },
-            EmptyElementData(
-                PhantomData,
-                PhantomData,
-            ),
-            EmptyElementData(
-                PhantomData,
-                PhantomData,
-            ),
+            LabelData {
+                text: "Hello2",
+                flex: FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
+            },
+            LabelData {
+                text: "Hello3",
+                flex: FlexParams {
+                    flex: 1.0,
+                    alignment: None,
+                },
+            },
             EmptyElementData(
                 PhantomData,
                 PhantomData,

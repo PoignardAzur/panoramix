@@ -1,9 +1,8 @@
 use crate::element_tree::ReconcileCtx;
 use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::flex::{Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, MainAxisAlignment};
 use crate::glue::GlobalEventCx;
-use crate::widgets::flex::{
-    Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, FlexWidget, MainAxisAlignment,
-};
+use crate::widgets::FlexWidget;
 use crate::widgets::SingleWidget;
 
 use derivative::Derivative;
@@ -168,21 +167,35 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
 // TODO - Add keyword params
 
+/// Builds a row of up to 12 Elements.
+///
+/// Returns [`Flex`].
+///
+/// ## Events
+///
+/// Returned element doesn't emit events.
 #[macro_export]
 macro_rules! Row {
     ( $($arg:expr),* $(,)?) => {
         $crate::elements::Flex::new(
-            $crate::widgets::flex::Axis::Horizontal,
+            $crate::flex::Axis::Horizontal,
             $crate::Tuple!($($arg,)*)
         )
     };
 }
 
+/// Builds a column of up to 12 Elements.
+///
+/// Returns [`Flex`].
+///
+/// ## Events
+///
+/// Returned element doesn't emit events.
 #[macro_export]
 macro_rules! Column {
     ( $($arg:expr),* $(,)?) => {
         $crate::elements::Flex::new(
-            $crate::widgets::flex::Axis::Vertical,
+            $crate::flex::Axis::Vertical,
             $crate::Tuple!($($arg,)*)
         )
     };

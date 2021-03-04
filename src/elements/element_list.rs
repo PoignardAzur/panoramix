@@ -12,6 +12,36 @@ use tracing::{debug_span, info, instrument};
 
 // TODO - Add arbitrary index types
 
+/// A list of elements of the same type.
+///
+/// ## Events
+///
+/// Doesn't emit events.
+///
+/// ## About keys
+///
+/// ElementList stores a Vec of `(String, Child)`, where the string must be a unique key.
+///
+/// Keys help Panoramix figure out element identity, and maintain widget persistence. For instance, if your element list before update looks like:
+///
+///``` text
+///[
+///    ("foo-1", MyComponent("foo")),
+///    ("foo-2", MyComponent("foo")),
+///    ("bar-3", MyComponent("bar")),
+///];
+///```
+///
+/// and your element list post-update looks like:
+///
+///``` text
+///[
+///    ("foo-1", MyComponent("foo")),
+///    ("bar-3", MyComponent("bar")),
+///];
+///```
+///
+/// Panoramix will figure out that the element at `foo-2` has been removed, and will remove it from the underlying widget tree, as well as perform any necessary cleanup.
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
 pub struct ElementList<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
@@ -31,6 +61,7 @@ pub struct ElementListData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEven
 // ----
 
 impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> ElementList<Child, CpEvent, CpState> {
+    /// Build a list by providing an iterator of `(Key, Element)` pairs.
     pub fn from_pairs(pairs: impl std::iter::IntoIterator<Item = (String, Child)>) -> Self {
         Self {
             children: pairs.into_iter().collect(),
@@ -39,6 +70,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> ElementList<Child, CpEv
         }
     }
 
+    /// Build a list by providing keys and elements as separate iterators.
     pub fn from_keys_elems(
         keys: impl std::iter::IntoIterator<Item = String>,
         elems: impl std::iter::IntoIterator<Item = Child>,

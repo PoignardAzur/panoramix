@@ -95,12 +95,43 @@ This is obviously the kind of pattern we want to abstract into function calls: w
 
 But this is obviously a pattern where we want to compose code, not copy-paste it. This is where props become useful: because we have defined a component parameterized on a name, we can just build that component multiple times with different values.
 
+Our complete code looks like:
+
+```rust
+use panoramix::{component, CompCtx, Element};
+use panoramix::elements::Label;
+use panoramix::RootHandler;
+use panoramix::Column;
+
+#[component]
+fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
+    Label::new(format!("Hello, {}", props))
+}
+
+#[component]
+fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
+    Column!(
+        HelloBox::new("Alice".to_string()),
+        HelloBox::new("Bob".to_string()),
+        HelloBox::new("Carol".to_string()),
+        HelloBox::new("Damian".to_string()),
+    )
+}
+
+fn main() -> Result<(), druid::PlatformError> {
+    RootHandler::new(HelloEveryone::new(()))
+        .launch()
+}
+```
+
+We managed to combine these different types seamlessly because `Column!` takes arbitrary elements as parameters, and `HelloBox::new` returns an element.
+
 
 ## About magic
 
 A high-level goal of Panoramix is to avoid magical DSLs where the code you write isn't the code that gets executed.
 
-As part of this, all elements we have built (with `Label::new` and `Column!` and `HelloText::new`) are simple PODs, with no hidden cells or `Arc<Mutex>`. More over, all elements are required to implement `Debug`, which means you can print the elements you're building at any point:
+As part of this, all elements we have built (with `Label::new` and `Column!` and `HelloText::new`) are simple PODs, with no hidden cells or `Arc<Mutex>`. More over, all elements (including components) are required to implement `Debug`, which means you can print the elements you're building at any point:
 
 ```rust
 #[component]
@@ -110,9 +141,9 @@ fn HelloText(_ctx: &CompCtx, _props: ()) -> impl Element {
 
     let column = Column!(
         first_label,
-        Label::new(format!("Hello, Bob")),
-        Label::new(format!("Hello, Carol")),
-        Label::new(format!("Hello, Damian")),
+        HelloBox::new("Bob".to_string()),
+        HelloBox::new("Carol".to_string()),
+        HelloBox::new("Damian".to_string()),
     );
 
     println!("===");
@@ -142,32 +173,21 @@ column: Flex {
                 alignment: None,
             },
         },
-        Label {
-            text: "Hello, Bob",
-            flex: FlexParams {
-                flex: 1.0,
-                alignment: None,
-            },
+        HelloBox {
+            props: "Hello, Bob",
         },
-        Label {
-            text: "Hello, Carol",
-            flex: FlexParams {
-                flex: 1.0,
-                alignment: None,
-            },
+        HelloBox {
+            props: "Hello, Carol",
         },
-        Label {
-            text: "Hello, Damian",
-            flex: FlexParams {
-                flex: 1.0,
-                alignment: None,
-            },
+        HelloBox {
+            props: "Hello, Damian",
         },
     ),
     // ...
 }
 ```
 
+You might notice that, at the time we return them, instances of `HelloBox` just contain props. That's because the actual function is called a bit later on.
 
 ## ElementList
 
@@ -204,7 +224,5 @@ fn main() -> Result<(), druid::PlatformError> {
         .launch()
 }
 ```
-
-We managed to combine these different types seamlessly because `Column!` takes arbitrary elements as parameters, and `HelloBox::new` returns an element.
 
 In [the next part](./event_handling.md), we will see how we can make our component react to user input.

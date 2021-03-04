@@ -1,7 +1,7 @@
 use crate::glue::{Action, GlobalEventCx, Id};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
-use crate::widgets::flex::FlexParams;
+use crate::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
 use crate::element_tree::ReconcileCtx;
@@ -9,6 +9,11 @@ use crate::element_tree::ReconcileCtx;
 use derivative::Derivative;
 use tracing::{instrument, trace};
 
+/// A button with a text label.
+///
+/// ## Events
+///
+/// Emits [ButtonClick] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
 pub struct Button<CpEvent = NoEvent, CpState = ()> {
@@ -27,6 +32,9 @@ pub struct ButtonData<CpEvent = NoEvent, CpState = ()> {
     pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
+/// Event emitted when a [Button] is clicked.
+///
+/// Note: Might hold data like "mouse position" or "button id" future versions.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct ButtonClick;
 
@@ -34,6 +42,9 @@ pub struct ButtonClick;
 // --- IMPLS
 
 impl<CpEvent, CpState> Button<CpEvent, CpState> {
+    /// Build a button with the given label.
+    ///
+    /// Use the [.on_click](Button::on_click) method to provide a closure to be called when the button is clicked.
     pub fn new(text: impl Into<String>) -> Self {
         Button {
             text: text.into(),
@@ -45,6 +56,7 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
         }
     }
 
+    /// Change the way the button's size is calculated
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
         Button {
             flex: flex_params,
@@ -52,6 +64,7 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
         }
     }
 
+    /// Provide a closure to be called when this button is clicked.
     pub fn on_click(
         self,
         callback: impl Fn(&mut CpState, ButtonClick),

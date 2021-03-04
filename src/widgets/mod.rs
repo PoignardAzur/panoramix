@@ -13,7 +13,7 @@ pub mod widget_tuple;
 pub use button_widget::*;
 pub use checkbox_widget::*;
 pub use empty_sequence::*;
-pub use flex_widget as flex;
+pub use flex_widget::*;
 pub use optional_widget::*;
 pub use single_widget::*;
 pub use textbox_widget::*;

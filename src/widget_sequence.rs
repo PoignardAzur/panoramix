@@ -1,7 +1,7 @@
 use druid::kurbo::{Rect, Size};
 
+use crate::flex::FlexParams;
 use crate::glue::DruidAppData;
-use crate::widgets::flex::FlexParams;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
 };

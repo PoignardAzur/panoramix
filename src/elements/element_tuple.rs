@@ -3,7 +3,7 @@
 #![rustfmt::skip]
 
 use crate::element_tree::{Element, VirtualDom, NoEvent};
-use crate::elements::EmptyElementData;
+use crate::elements::backend::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
 
@@ -204,6 +204,13 @@ declare_stuff!{
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
 }
 
+/// Builds a group of up to 12 Elements, without a specified layout.
+///
+/// Return value implements [`Element`](crate::Element) as well.
+///
+/// ## Events
+///
+/// Returned element doesn't emit events.
 #[macro_export]
 macro_rules! Tuple {
 
@@ -212,73 +219,73 @@ macro_rules! Tuple {
     };
 
     ( $e0:expr $(,)? ) => {
-        $crate::elements::ElementTuple_1(
+        $crate::elements::element_tuple::ElementTuple_1(
             $e0,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr $(,)? ) => {
-        $crate::elements::ElementTuple_2(
+        $crate::elements::element_tuple::ElementTuple_2(
             $e0, $e1,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr $(,)? ) => {
-        $crate::elements::ElementTuple_3(
+        $crate::elements::element_tuple::ElementTuple_3(
             $e0, $e1, $e2,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr $(,)? ) => {
-        $crate::elements::ElementTuple_4(
+        $crate::elements::element_tuple::ElementTuple_4(
             $e0, $e1, $e2, $e3,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr $(,)? ) => {
-        $crate::elements::ElementTuple_5(
+        $crate::elements::element_tuple::ElementTuple_5(
             $e0, $e1, $e2, $e3, $e4,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr $(,)? ) => {
-        $crate::elements::ElementTuple_6(
+        $crate::elements::element_tuple::ElementTuple_6(
             $e0, $e1, $e2, $e3, $e4, $e5,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr $(,)? ) => {
-        $crate::elements::ElementTuple_7(
+        $crate::elements::element_tuple::ElementTuple_7(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr $(,)? ) => {
-        $crate::elements::ElementTuple_8(
+        $crate::elements::element_tuple::ElementTuple_8(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr $(,)? ) => {
-        $crate::elements::ElementTuple_9(
+        $crate::elements::element_tuple::ElementTuple_9(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr $(,)? ) => {
-        $crate::elements::ElementTuple_10(
+        $crate::elements::element_tuple::ElementTuple_10(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9,
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr $(,)? ) => {
-        $crate::elements::ElementTuple_11(
+        $crate::elements::element_tuple::ElementTuple_11(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10
             Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr, $e11:expr $(,)? ) => {
-        $crate::elements::ElementTuple_12(
+        $crate::elements::element_tuple::ElementTuple_12(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10, $e11
             Default::default(), Default::default(),
         )

@@ -1,0 +1,43 @@
+---
+source: src/elements/flex_element.rs
+expression: row
+---
+Flex {
+    axis: Horizontal,
+    child: ElementTuple_3(
+        Label {
+            text: "Hello",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        Label {
+            text: "Hello2",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        Label {
+            text: "Hello3",
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+        },
+        PhantomData,
+        PhantomData,
+    ),
+    flex: FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
+    flex_container: FlexContainerParams {
+        cross_alignment: Center,
+        main_alignment: Start,
+        fill_major_axis: false,
+    },
+    _comp_state: PhantomData,
+    _comp_event: PhantomData,
+}

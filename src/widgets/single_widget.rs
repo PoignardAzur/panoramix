@@ -1,8 +1,8 @@
 use crate::element_tree::ReconcileCtx;
+use crate::flex::FlexParams;
 use crate::glue::DruidAppData;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
-use crate::widgets::flex::FlexParams;
 use druid::kurbo::{Rect, Size};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,

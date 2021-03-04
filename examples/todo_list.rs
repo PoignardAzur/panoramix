@@ -1,5 +1,5 @@
 use panoramix::elements::{Button, Checkbox, ElementList, Label, TextBox, TextChanged, Toggled};
-use panoramix::widgets::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
+use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row};
 
 use druid::PlatformError;
@@ -48,13 +48,13 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
 
     let checkbox_priority = Checkbox::new("High priority", state.high_priority).on(
         |state: &mut AppState, event: Toggled| {
-            state.high_priority = event.0;
+            state.high_priority = event.new_value;
         },
     );
     // TODO - Add "validate on enter" feature
     let textbox_task_name = TextBox::new(state.task_name.clone()).on_text_changed(
         |state: &mut AppState, event: TextChanged| {
-            state.task_name = event.0;
+            state.task_name = event.new_content;
         },
     );
 
@@ -84,7 +84,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
     let list_keys = state.tasks.iter().map(|task_item| task_item.id.to_string());
     let list_rows = state.tasks.iter().enumerate().map(|(i, task_item)| {
         TodoItem::new(task_item.clone()).on::<ItemEvent, _>(move |state: &mut AppState, event| {
-            state.tasks[i].is_completed = event.0;
+            state.tasks[i].is_completed = event.new_value;
         })
     });
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);
