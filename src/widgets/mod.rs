@@ -1,5 +1,6 @@
 //! Wrapper types around druid widgets.
 
+pub mod any_widget_seq;
 pub mod button_widget;
 pub mod checkbox_widget;
 pub mod empty_sequence;
@@ -10,6 +11,7 @@ pub mod textbox_widget;
 pub mod widget_list;
 pub mod widget_tuple;
 
+pub use any_widget_seq::*;
 pub use button_widget::*;
 pub use checkbox_widget::*;
 pub use empty_sequence::*;

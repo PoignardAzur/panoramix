@@ -99,7 +99,10 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
     // where instead of returning a vdom node, it returns
     // something along the lines of struct KeepEverythingAsItWas()
     // Ugh. I'm not explaining this well.
-    fn update_value(&mut self, other: Self) where Self: Sized {
+    fn update_value(&mut self, other: Self)
+    where
+        Self: Sized,
+    {
         *self = other;
     }
 

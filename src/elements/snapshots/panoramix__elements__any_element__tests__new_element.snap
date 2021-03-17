@@ -1,0 +1,11 @@
+---
+source: src/elements/any_element.rs
+expression: label
+---
+Label {
+    text: "Hello",
+    flex: FlexParams {
+        flex: 1.0,
+        alignment: None,
+    },
+}
