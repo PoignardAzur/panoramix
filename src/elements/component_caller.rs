@@ -162,11 +162,6 @@ impl<
     type AggregateChildrenState = (ChildCpState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
-    #[instrument(name = "Component", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        self.0.update_value(other.0);
-    }
-
     #[instrument(name = "Component", skip(self))]
     fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.0.init_tree()

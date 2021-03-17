@@ -96,11 +96,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
     type AggregateChildrenState = ();
     type TargetWidgetSeq = ButtonWidget;
 
-    #[instrument(name = "Button", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> ButtonWidget {
         ButtonWidget::new(self.text.clone(), self.flex, Id::new())

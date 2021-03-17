@@ -291,11 +291,6 @@ where
     type AggregateChildrenState = Child::AggregateChildrenState;
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
-    #[instrument(name = "WithEvent", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        self.element.update_value(other.element);
-    }
-
     #[instrument(name = "WithEvent", skip(self))]
     fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.element.init_tree()

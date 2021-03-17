@@ -163,9 +163,7 @@ impl<
                 &mut reconcile_ctx,
             );
         });
-        debug_span!("update_value").in_scope(|| {
-            prev_vdom.update_value(new_vdom);
-        });
+        *prev_vdom = new_vdom;
 
         ctx.request_update();
         ctx.request_paint();

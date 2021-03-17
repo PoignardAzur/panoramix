@@ -154,11 +154,6 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type TargetWidgetSeq = WidgetList<Child::TargetWidgetSeq>;
 
-    #[instrument(name = "List", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "List", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         WidgetList {

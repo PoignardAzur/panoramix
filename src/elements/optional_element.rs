@@ -35,11 +35,6 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type TargetWidgetSeq = Option<Child::TargetWidgetSeq>;
 
-    #[instrument(name = "Option", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Option", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         if let Some(child) = self {
@@ -134,11 +129,6 @@ impl<
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type TargetWidgetSeq = Either<ChildLeft::TargetWidgetSeq, ChildRight::TargetWidgetSeq>;
-
-    #[instrument(name = "Either", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
 
     #[instrument(name = "Either", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {

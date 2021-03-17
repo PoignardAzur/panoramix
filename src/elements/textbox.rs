@@ -105,11 +105,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpS
 
     type TargetWidgetSeq = TextBoxWidget;
 
-    #[instrument(name = "TextBox", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "TextBox", skip(self))]
     fn init_tree(&self) -> TextBoxWidget {
         TextBoxWidget::new(self.text.clone(), self.flex, Id::new())

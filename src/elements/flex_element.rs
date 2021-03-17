@@ -114,11 +114,6 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
     type TargetWidgetSeq = SingleWidget<FlexWidget<Child::TargetWidgetSeq>>;
 
-    #[instrument(name = "Flex", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Flex", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         let flex = FlexWidget {

@@ -65,8 +65,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for EmptyElementData<CpEvent
     type AggregateChildrenState = ();
     type TargetWidgetSeq = EmptySequence;
 
-    fn update_value(&mut self, _other: Self) {}
-
     fn init_tree(&self) -> EmptySequence {
         EmptySequence
     }

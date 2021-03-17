@@ -103,11 +103,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for LabelData<CpEvent, CpSta
     type AggregateChildrenState = ();
     type TargetWidgetSeq = SingleWidget<druid_w::Label<DruidAppData>>;
 
-    #[instrument(name = "Label", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Label", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         let label = druid_w::Label::new(self.text.clone());

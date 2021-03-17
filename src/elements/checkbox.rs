@@ -107,11 +107,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, Cp
 
     type TargetWidgetSeq = SingleCheckboxWidget;
 
-    #[instrument(name = "Checkbox", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Checkbox", skip(self))]
     fn init_tree(&self) -> SingleCheckboxWidget {
         SingleCheckboxWidget::new(

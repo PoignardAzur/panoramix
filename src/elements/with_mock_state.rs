@@ -87,10 +87,6 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
-    fn update_value(&mut self, other: Self) {
-        self.0.update_value(other.0);
-    }
-
     fn init_tree(&self) -> Child::TargetWidgetSeq {
         self.0.init_tree()
     }

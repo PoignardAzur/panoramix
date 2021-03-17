@@ -355,11 +355,6 @@ impl<
         C11::TargetWidgetSeq,
     >;
 
-    #[instrument(name = "Tuple", skip(self, other))]
-    fn update_value(&mut self, other: Self) {
-        *self = other;
-    }
-
     #[instrument(name = "Tuple", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
         WidgetTuple(
