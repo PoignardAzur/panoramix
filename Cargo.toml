@@ -11,6 +11,8 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies.druid]
+git = "https://github.com/linebender/druid"
+rev = "371dd0dc34689b78710e63a1bb34ecd5bc05d3cf"
 version = "0.7.0"
 features = ["crochet"]
 
