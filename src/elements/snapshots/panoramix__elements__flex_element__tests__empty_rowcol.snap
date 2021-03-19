@@ -4,10 +4,7 @@ expression: row
 ---
 Flex {
     axis: Horizontal,
-    child: EmptyElement(
-        PhantomData,
-        PhantomData,
-    ),
+    child: EmptyElement,
     flex: FlexParams {
         flex: 1.0,
         alignment: None,

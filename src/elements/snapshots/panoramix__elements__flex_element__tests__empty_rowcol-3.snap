@@ -5,10 +5,7 @@ expression: row_data
 (
     FlexData {
         axis: Horizontal,
-        child: EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
+        child: EmptyElementData,
         flex: FlexParams {
             flex: 1.0,
             alignment: None,

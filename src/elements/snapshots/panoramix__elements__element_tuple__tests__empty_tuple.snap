@@ -2,7 +2,4 @@
 source: src/elements/element_tuple.rs
 expression: tuple
 ---
-EmptyElement(
-    PhantomData,
-    PhantomData,
-)
+EmptyElement

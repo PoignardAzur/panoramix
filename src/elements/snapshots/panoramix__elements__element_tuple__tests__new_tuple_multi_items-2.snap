@@ -25,42 +25,15 @@ expression: tuple_data
                 alignment: None,
             },
         },
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
-        EmptyElementData(
-            PhantomData,
-            PhantomData,
-        ),
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
+        EmptyElementData,
     ),
     (
         (),
