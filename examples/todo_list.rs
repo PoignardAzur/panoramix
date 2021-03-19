@@ -11,14 +11,14 @@ const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
 };
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct TaskItem {
+struct TaskItem {
     text: String,
     is_completed: bool,
     id: i32,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct AppState {
+struct AppState {
     tasks: Vec<TaskItem>,
     high_priority: bool,
     task_name: String,
@@ -123,7 +123,7 @@ fn main() -> Result<(), PlatformError> {
         next_id,
     };
 
-    RootHandler::new(AwesomeEditableList::new(()))
+    RootHandler::new(AwesomeEditableList)
         .with_initial_state(state)
         .with_tracing(true)
         .launch()

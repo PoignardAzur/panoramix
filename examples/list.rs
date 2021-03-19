@@ -11,13 +11,13 @@ const ROW_FLEX_PARAMS: FlexContainerParams = FlexContainerParams {
 };
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct ListItem {
+struct ListItem {
     text: String,
     id: i32,
 }
 
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct AppState {
+struct AppState {
     data: Vec<ListItem>,
     selected_row: Option<usize>,
     next_id: i32,
@@ -26,7 +26,7 @@ pub struct AppState {
 type RowEvent = Toggled;
 // TODO - private type leak?
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct RowProps {
+struct RowProps {
     list_item: ListItem,
     is_selected: bool,
 }
@@ -115,7 +115,7 @@ fn main() -> Result<(), PlatformError> {
         next_id: 8,
     };
 
-    RootHandler::new(AwesomeEditableList::new(()))
+    RootHandler::new(AwesomeEditableList)
         .with_initial_state(state)
         .with_tracing(true)
         .launch()

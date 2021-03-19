@@ -2,6 +2,7 @@
 
 mod button;
 mod checkbox;
+mod component;
 mod element_list;
 mod empty;
 mod flex_element;
@@ -16,9 +17,6 @@ mod with_mock_state;
 #[doc(hidden)]
 pub use with_mock_state::*;
 
-pub mod component;
-#[doc(hidden)]
-pub mod component_caller;
 pub mod element_tuple;
 #[doc(hidden)]
 pub mod with_event;
@@ -27,6 +25,7 @@ mod compute_diff;
 
 pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
+pub use component::Component;
 pub use element_list::ElementList;
 pub use empty::EmptyElement;
 pub use flex_element::Flex;
@@ -37,7 +36,7 @@ pub use textbox::{TextBox, TextChanged};
 pub mod backend {
     pub use super::button::ButtonData;
     pub use super::checkbox::CheckboxData;
-    pub use super::component::ComponentOutput;
+    pub use super::component::{ComponentHolder, ComponentOutput};
     pub use super::element_list::ElementListData;
     pub use super::element_tuple::ElementTupleData;
     pub use super::empty::EmptyElementData;

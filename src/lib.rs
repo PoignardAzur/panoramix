@@ -24,7 +24,7 @@
 //! }
 //!
 //! fn main() -> Result<(), panoramix::PlatformError> {
-//!     RootHandler::new(HelloBox::new(()))
+//!     RootHandler::new(HelloBox)
 //!         .with_tracing(true)
 //!         .launch()
 //! }
@@ -63,7 +63,7 @@
 //!         // ...
 //!     };
 //!
-//!     RootHandler::new(MyRootComponent::new(()))
+//!     RootHandler::new(MyRootComponent)
 //!         .with_initial_state(initial_state)
 //!         .with_tracing(true)
 //!         .launch()

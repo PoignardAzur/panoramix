@@ -3,6 +3,7 @@ use quote::quote;
 use tracing::trace;
 
 pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
+    #![allow(non_snake_case)]
     assert!(attr.is_empty());
 
     // Types used:
@@ -12,7 +13,8 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
 
     // TODO
     // - fn_item.attr
-    // - fn_item.vis
+
+    let fn_visibility = fn_item.vis;
 
     let fn_constness = fn_item.sig.constness;
     let fn_asyncness = fn_item.sig.asyncness;
@@ -49,7 +51,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     } else {
         panic!("Argument cannot be self")
     };
-    let props_ident = get_arg_ident(*props_arg.pat.clone());
+    let props_ty = *props_arg.ty.clone();
 
     let fn_output = if let syn::ReturnType::Type(_, ty) = fn_output {
         *ty
@@ -62,31 +64,81 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
 
-    quote! {
-        #[derive(Debug)]
-        pub struct #component_name;
+    // TODO - only pub when input declaration is pub
 
-        impl #component_name {
-            pub fn new<ParentCpEvent, ParentCpState>(#props_arg)
-                -> panoramix::elements::component::ComponentHolder<
-                    impl panoramix::elements::component::Component<
-                        ParentCpEvent, ParentCpState,
-                        LocalEvent=#local_event_ty,
-                        LocalState=#local_state_ty,
-                    >
-                > {
-                panoramix::elements::component::ComponentHolder(
-                    panoramix::elements::component::ComponentCaller2::prepare(&Self::render, #props_ident)
-                )
+    let vis = fn_visibility;
+    let ComponentName = component_name;
+    let PropsType = props_ty;
+    let LocalEvent = local_event_ty;
+    let LocalState = local_state_ty;
+
+    quote! {
+        #[derive(Debug, Default, Clone, PartialEq, Hash)]
+        #vis struct #ComponentName;
+
+        impl #ComponentName {
+            #vis fn new<ParentCpEvent, ParentCpState>(
+                props: #PropsType,
+            ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=#LocalEvent> {
+                <Self as panoramix::elements::Component>::new(props)
             }
 
-            pub fn render(#ctx_arg, #props_arg) -> #fn_output {
+            #vis fn render(
+                #ctx_arg,
+                #props_arg,
+            ) -> #fn_output {
                 #fn_block
+            }
+        }
+
+        impl panoramix::elements::Component for #ComponentName {
+            type Props = #PropsType;
+            type LocalEvent = #LocalEvent;
+            type LocalState = #LocalState;
+
+            fn new<ParentCpEvent, ParentCpState>(
+                props: Self::Props,
+            ) -> panoramix::elements::backend::ComponentHolder<Self, ParentCpEvent, ParentCpState>
+            {
+                panoramix::elements::backend::ComponentHolder::new(#ComponentName, props)
+            }
+
+            fn name() -> &'static str {
+                "#ComponentName"
+            }
+
+            fn call_indirect<ParentCpEvent, ParentCpState>(
+                &self,
+                prev_state: (
+                    Self::LocalState,
+                    Option<panoramix::elements::any_element::AnyStateBox>,
+                ),
+                props: Self::Props,
+            ) -> (
+                panoramix::elements::backend::ComponentOutput<
+                    Self::LocalEvent,
+                    Self::LocalState,
+                    panoramix::elements::any_element::VirtualDomBox<Self::LocalEvent, Self::LocalState>,
+                    ParentCpEvent,
+                    ParentCpState,
+                >,
+                (
+                    Self::LocalState,
+                    Option<panoramix::elements::any_element::AnyStateBox>,
+                ),
+            ) {
+                panoramix::elements::backend::ComponentHolder::build_with(
+                    #ComponentName,
+                    &#ComponentName::render,
+                    prev_state,
+                    props,
+                )
             }
         }
     }
 }
 
+#[allow(dead_code)]
 fn get_arg_ident(pattern: syn::Pat) -> syn::Ident {
     trace!("pattern: {:?}", pattern);
 

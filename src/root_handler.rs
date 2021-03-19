@@ -1,12 +1,12 @@
-use crate::element_tree::{CompCtx, Element, ReconcileCtx, VirtualDom};
-use crate::elements::component::{Component, ComponentHolder};
+use crate::element_tree::{Element, NoEvent, ReconcileCtx, VirtualDom};
+use crate::elements::backend::ComponentHolder;
+use crate::elements::Component;
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
 
 use druid::widget::prelude::*;
 use druid::{widget, AppLauncher, Point, Widget, WidgetPod, WindowDesc};
-use std::fmt::Debug;
 use tracing::{debug_span, info, instrument, trace};
 
 pub use druid::PlatformError;
@@ -22,36 +22,22 @@ type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Ele
 /// Implements [`druid::Widget`] from a component
 ///
 /// You should probably use [`RootHandler`] directly instead.
-pub struct RootWidget<
-    RootCpEvent,
-    RootCpState: Clone + Default + Debug + PartialEq + 'static,
-    ReturnedTree: Element<RootCpEvent, RootCpState>,
-    Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
-> {
-    pub root_component: Comp,
-    pub component_state: (RootCpState, ReturnedTree::AggregateChildrenState),
-    pub vdom: Option<ReturnedTree::BuildOutput>,
+pub struct RootWidget<RootElem: Element<NoEvent, ()> + Clone + 'static> {
+    pub root_element: RootElem,
+    pub root_state: RootElem::AggregateChildrenState,
+    pub vdom: Option<RootElem::BuildOutput>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
     pub widget: Option<
-        WidgetPod<
-            DruidAppData,
-            flex_widget::FlexWidget<WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree>>,
-        >,
+        WidgetPod<DruidAppData, flex_widget::FlexWidget<WidgetSeqOf<NoEvent, (), RootElem>>>,
     >,
 }
 
-impl<
-        RootCpEvent,
-        RootCpState: Clone + Default + Debug + PartialEq + 'static,
-        ReturnedTree: Element<RootCpEvent, RootCpState>,
-        Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
-    > RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>
-{
-    pub fn new(root_component: ComponentHolder<Comp>) -> Self {
+impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>> {
+    pub fn new(_root_component: Comp) -> Self {
         let default_widget = WidgetPod::new(widget::Flex::row());
         RootWidget {
-            root_component: root_component.0,
-            component_state: Default::default(),
+            root_element: Comp::new(()),
+            root_state: Default::default(),
             vdom: None,
             default_widget,
             widget: None,
@@ -59,28 +45,22 @@ impl<
     }
 
     /// Set the local state of the root component to a value other than default
-    pub fn with_initial_state(self, root_state: RootCpState) -> Self {
+    pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
         RootWidget {
-            component_state: (root_state, Default::default()),
+            root_state: (comp_local_state, Default::default()),
             ..self
         }
     }
+}
 
+impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
     #[instrument(level = "debug", skip(self, ctx))]
     pub fn init(&mut self, ctx: &mut EventCtx) {
-        let (new_vdom, state) = debug_span!("build").in_scope(|| {
-            // FIXME - clone
-            let ctx = CompCtx {
-                local_state: Box::new(self.component_state.0.clone()),
-            };
-            self.root_component
-                .clone()
-                .call(&ctx)
-                .build(Default::default())
-        });
-        self.component_state.1 = state;
+        let (new_vdom, state) =
+            debug_span!("build").in_scope(|| self.root_element.clone().build(Default::default()));
+        self.root_state = state;
 
-        info!("Initial aggregate app state: {:?}", self.component_state);
+        info!("Initial aggregate app state: {:?}", self.root_state);
 
         let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
         // FIXME - Fix alignment to be consistent
@@ -102,51 +82,45 @@ impl<
     }
 
     #[instrument(level = "debug", skip(self, ctx, data, env))]
-    pub fn run(
-        &mut self,
-        ctx: &mut EventCtx,
-        data: &mut DruidAppData,
-        env: &Env,
-    ) -> Option<RootCpEvent> {
+    pub fn run(&mut self, ctx: &mut EventCtx, data: &mut DruidAppData, env: &Env) {
         // The high-level workflow is:
         // - Make a copy of the app state.
         // - Run events that can change app state.
         //  -> If app state is unchanged, return early.
         // - Generate new vdom from new app state.
         // - Reconcile new vdom with previous vdom.
-        let prev_component_state = self.component_state.clone();
+        let prev_root_state = self.root_state.clone();
 
-        let event = debug_span!("process_event").in_scope(|| {
+        debug_span!("process_event").in_scope(|| {
             let prev_vdom = self.vdom.as_mut().unwrap();
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
             let mut cx = GlobalEventCx::new(data);
 
-            prev_vdom.process_event(
-                &mut self.component_state.0,
-                &mut self.component_state.1,
+            // TODO - call prev_vdom.process_event() instead.
+            // We ignore the root event for now.
+            // This might change in cases where we want the user to control
+            // when RootWidget::run() is called.
+            let _ = prev_vdom.process_local_event(
+                &mut (),
+                &mut self.root_state,
                 &mut flex_widget.children_seq,
                 &mut cx,
-            )
+            );
         });
 
-        if self.component_state == prev_component_state {
+        if self.root_state == prev_root_state {
             trace!("State is unchanged. Skipping virtual DOM update.");
-            return event;
+            return;
         }
 
-        info!("New aggregate app state: {:?}", self.component_state);
+        info!("New aggregate app state: {:?}", self.root_state);
 
         let (new_vdom, state) = debug_span!("build").in_scope(|| {
-            // FIXME - clone
-            let ctx = CompCtx {
-                local_state: Box::new(self.component_state.0.clone()),
-            };
-            self.root_component
+            self.root_element
                 .clone()
-                .call(&ctx)
-                .build(std::mem::take(&mut self.component_state.1))
+                .build(std::mem::take(&mut self.root_state))
         });
-        self.component_state.1 = state;
+        self.root_state = state;
 
         let flex_widget = self.widget.as_mut().unwrap().widget_mut();
         let prev_vdom = self.vdom.as_mut().unwrap();
@@ -167,17 +141,11 @@ impl<
 
         ctx.request_update();
         ctx.request_paint();
-
-        event
     }
 }
 
-impl<
-        RootCpEvent,
-        RootCpState: Clone + Default + Debug + PartialEq + 'static,
-        ReturnedTree: Element<RootCpEvent, RootCpState>,
-        Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
-    > Widget<DruidAppData> for RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>
+impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
+    for RootWidget<RootElem>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Some(widget) = &mut self.widget {
@@ -189,10 +157,7 @@ impl<
         if self.vdom.is_none() {
             self.init(ctx);
         } else {
-            // We ignore the root event for now.
-            // This might change in cases where the
-            // user controls when RootWidget::run() is called.
-            let _ = self.run(ctx, data, env);
+            self.run(ctx, data, env);
         }
     }
 
@@ -254,29 +219,18 @@ impl<
 }
 
 /// Creates a GUI application from a component
-pub struct RootHandler<
-    RootCpEvent,
-    RootCpState: Clone + Default + Debug + PartialEq + 'static,
-    ReturnedTree: Element<RootCpEvent, RootCpState>,
-    Comp: Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
-> {
-    pub root_widget: RootWidget<RootCpEvent, RootCpState, ReturnedTree, Comp>,
+pub struct RootHandler<RootElem: Element<NoEvent, ()> + Clone + 'static> {
+    pub root_widget: RootWidget<RootElem>,
     pub init_tracing: bool,
 }
 
-impl<
-        RootCpState: 'static + Clone + Default + Debug + PartialEq,
-        RootCpEvent: 'static,
-        ReturnedTree: 'static + Element<RootCpEvent, RootCpState>,
-        Comp: 'static + Component<RootCpEvent, RootCpState, Output = ReturnedTree>,
-    > RootHandler<RootCpEvent, RootCpState, ReturnedTree, Comp>
-{
+impl<Comp: Component<Props = ()>> RootHandler<ComponentHolder<Comp, NoEvent, ()>> {
     /// Creates the data to start the application.
     ///
     /// The `root_component` parameter should be roughly `YourRootComponent::new(some_props)`.
     ///
     /// Call [`launch`](RootHandler::launch) to actually start the application.
-    pub fn new(root_component: ComponentHolder<Comp>) -> Self {
+    pub fn new(root_component: Comp) -> Self {
         RootHandler {
             root_widget: RootWidget::new(root_component),
             init_tracing: false,
@@ -284,13 +238,15 @@ impl<
     }
 
     /// Set the local state of the root component to a value other than default
-    pub fn with_initial_state(self, root_state: RootCpState) -> Self {
+    pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
         RootHandler {
-            root_widget: self.root_widget.with_initial_state(root_state),
+            root_widget: self.root_widget.with_initial_state(comp_local_state),
             ..self
         }
     }
+}
 
+impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootHandler<RootElem> {
     pub fn with_tracing(self, init_tracing: bool) -> Self {
         RootHandler {
             init_tracing,
