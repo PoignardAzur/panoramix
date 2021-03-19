@@ -116,7 +116,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState>
     ) {
         let (local_state, children_state) = prev_state;
         let ctx = CompCtx {
-            local_state: Box::new(local_state.clone()),
+            local_state: &local_state,
         };
 
         let element_tree = ElementBox::new(comp_fn(&ctx, props));

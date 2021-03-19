@@ -6,15 +6,15 @@ use std::any::Any;
 use std::fmt::Debug;
 
 /// Context type passed to all components when building them.
-pub struct CompCtx {
-    pub(crate) local_state: Box<dyn Any>,
+pub struct CompCtx<'a> {
+    pub(crate) local_state: &'a dyn Any,
 }
 
-impl CompCtx {
+impl<'a> CompCtx<'a> {
     /// Returns the local state of the current component instance.
     ///
     /// Panics if the generic type doesn't match the component's local state type.
-    pub fn use_local_state<T: 'static>(&self) -> &T {
+    pub fn use_local_state<T: 'static>(&self) -> &'a T {
         self.local_state.downcast_ref::<T>().unwrap()
     }
 
