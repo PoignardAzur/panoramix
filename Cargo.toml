@@ -17,7 +17,7 @@ version = "0.7.0"
 features = ["crochet"]
 
 [dependencies]
-panoramix-derive = { version = "0.0.1", path = "./panoramix-derive" }
+panoramix-derive = { version = "0.0.2", path = "./panoramix-derive" }
 
 derivative = "2.1.3"
 either= "1.6.1"
