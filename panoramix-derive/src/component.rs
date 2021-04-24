@@ -67,7 +67,8 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     // TODO - only pub when input declaration is pub
 
     let vis = fn_visibility;
-    let ComponentName = component_name;
+    let ComponentName = component_name.clone();
+    let ComponentName_literal = proc_macro2::Literal::string(&component_name.to_string());
     let PropsType = props_ty;
     let LocalEvent = local_event_ty;
     let LocalState = local_state_ty;
@@ -104,7 +105,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             }
 
             fn name() -> &'static str {
-                "#ComponentName"
+                #ComponentName_literal
             }
 
             fn call_indirect<ParentCpEvent, ParentCpState>(
