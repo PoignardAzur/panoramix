@@ -1,5 +1,4 @@
 #![allow(unused_attributes)]
-#![rustfmt::skip]
 
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
@@ -33,33 +32,19 @@ pub struct WidgetTuple<
 );
 
 impl<
-    WS0: WidgetSequence,
-    WS1: WidgetSequence,
-    WS2: WidgetSequence,
-    WS3: WidgetSequence,
-    WS4: WidgetSequence,
-    WS5: WidgetSequence,
-    WS6: WidgetSequence,
-    WS7: WidgetSequence,
-    WS8: WidgetSequence,
-    WS9: WidgetSequence,
-    WS10: WidgetSequence,
-    WS11: WidgetSequence,
->
-    WidgetSequence for WidgetTuple<
-        WS0,
-        WS1,
-        WS2,
-        WS3,
-        WS4,
-        WS5,
-        WS6,
-        WS7,
-        WS8,
-        WS9,
-        WS10,
-        WS11,
-    >
+        WS0: WidgetSequence,
+        WS1: WidgetSequence,
+        WS2: WidgetSequence,
+        WS3: WidgetSequence,
+        WS4: WidgetSequence,
+        WS5: WidgetSequence,
+        WS6: WidgetSequence,
+        WS7: WidgetSequence,
+        WS8: WidgetSequence,
+        WS9: WidgetSequence,
+        WS10: WidgetSequence,
+        WS11: WidgetSequence,
+    > WidgetSequence for WidgetTuple<WS0, WS1, WS2, WS3, WS4, WS5, WS6, WS7, WS8, WS9, WS10, WS11>
 {
     fn widgets(&mut self) -> Vec<&mut dyn FlexWidget> {
         let mut all_widgets = Vec::new();

@@ -1,8 +1,7 @@
 #![allow(unused_attributes)]
 #![allow(non_camel_case_types)]
-#![rustfmt::skip]
 
-use crate::element_tree::{Element, VirtualDom, NoEvent};
+use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::elements::backend::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
@@ -13,7 +12,7 @@ use derivative::Derivative;
 use tracing::instrument;
 
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound=""))]
+#[derivative(Debug(bound = ""))]
 pub struct ElementTupleData<
     C0: VirtualDom<CpEvent, CpState>,
     C1: VirtualDom<CpEvent, CpState>,
@@ -42,18 +41,20 @@ pub struct ElementTupleData<
     pub C9,
     pub C10,
     pub C11,
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpEvent>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
 );
 
 macro_rules! replace_ty {
-    ($_t:tt >>> $sub:ty) => {$sub};
+    ($_t:tt >>> $sub:ty) => {
+        $sub
+    };
 }
 
 macro_rules! replace_expr {
-    ($_t:tt >>> $sub:expr) => {$sub};
+    ($_t:tt >>> $sub:expr) => {
+        $sub
+    };
 }
 
 macro_rules! declare_stuff {
@@ -132,73 +133,73 @@ impl<
     };
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_1;
     T0; __, __, __, __, __, __, __, __, __, __, __ ;
     0
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_2;
     T0, T1; __, __, __, __, __, __, __, __, __, __ ;
     0, 1
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_3;
     T0, T1, T2; __, __, __, __, __, __, __, __, __ ;
     0, 1, 2
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_4;
     T0, T1, T2, T3; __, __, __, __, __, __, __, __ ;
     0, 1, 2, 3
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_5;
     T0, T1, T2, T3, T4; __, __, __, __, __, __, __ ;
     0, 1, 2, 3, 4
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_6;
     T0, T1, T2, T3, T4, T5; __, __, __, __, __, __ ;
     0, 1, 2, 3, 4, 5
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_7;
     T0, T1, T2, T3, T4, T5, T6; __, __, __, __, __ ;
     0, 1, 2, 3, 4, 5, 6
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_8;
     T0, T1, T2, T3, T4, T5, T6, T7; __, __, __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_9;
     T0, T1, T2, T3, T4, T5, T6, T7, T8; __, __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_10;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9; __, __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_11;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10; __ ;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 }
 
-declare_stuff!{
+declare_stuff! {
     ElementTuple_12;
     T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ;;
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
@@ -308,22 +309,8 @@ impl<
         C9: VirtualDom<CpEvent, CpState>,
         C10: VirtualDom<CpEvent, CpState>,
         C11: VirtualDom<CpEvent, CpState>,
-    > VirtualDom<CpEvent, CpState> for ElementTupleData<
-        C0,
-        C1,
-        C2,
-        C3,
-        C4,
-        C5,
-        C6,
-        C7,
-        C8,
-        C9,
-        C10,
-        C11,
-        CpEvent,
-        CpState,
-    >
+    > VirtualDom<CpEvent, CpState>
+    for ElementTupleData<C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, CpEvent, CpState>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (
@@ -380,20 +367,21 @@ impl<
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-            self.0.reconcile(&other.0, &mut widget_seq.0, ctx);
-            self.1.reconcile(&other.1, &mut widget_seq.1, ctx);
-            self.2.reconcile(&other.2, &mut widget_seq.2, ctx);
-            self.3.reconcile(&other.3, &mut widget_seq.3, ctx);
-            self.4.reconcile(&other.4, &mut widget_seq.4, ctx);
-            self.5.reconcile(&other.5, &mut widget_seq.5, ctx);
-            self.6.reconcile(&other.6, &mut widget_seq.6, ctx);
-            self.7.reconcile(&other.7, &mut widget_seq.7, ctx);
-            self.8.reconcile(&other.8, &mut widget_seq.8, ctx);
-            self.9.reconcile(&other.9, &mut widget_seq.9, ctx);
-            self.10.reconcile(&other.10, &mut widget_seq.10, ctx);
-            self.11.reconcile(&other.11, &mut widget_seq.11, ctx);
+        self.0.reconcile(&other.0, &mut widget_seq.0, ctx);
+        self.1.reconcile(&other.1, &mut widget_seq.1, ctx);
+        self.2.reconcile(&other.2, &mut widget_seq.2, ctx);
+        self.3.reconcile(&other.3, &mut widget_seq.3, ctx);
+        self.4.reconcile(&other.4, &mut widget_seq.4, ctx);
+        self.5.reconcile(&other.5, &mut widget_seq.5, ctx);
+        self.6.reconcile(&other.6, &mut widget_seq.6, ctx);
+        self.7.reconcile(&other.7, &mut widget_seq.7, ctx);
+        self.8.reconcile(&other.8, &mut widget_seq.8, ctx);
+        self.9.reconcile(&other.9, &mut widget_seq.9, ctx);
+        self.10.reconcile(&other.10, &mut widget_seq.10, ctx);
+        self.11.reconcile(&other.11, &mut widget_seq.11, ctx);
     }
 
+    #[rustfmt::skip]
     #[instrument(name = "Tuple", skip(self, component_state, children_state, widget_seq, cx))]
     fn process_event(
         &self,
@@ -448,8 +436,8 @@ impl<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::elements::label::Label;
     use crate::element_tree::assign_empty_state_type;
+    use crate::elements::label::Label;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
@@ -496,7 +484,6 @@ mod tests {
 
         assign_empty_state_type(&tuple);
     }
-
 
     // TODO
     // - Add constructor

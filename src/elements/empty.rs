@@ -33,19 +33,15 @@ use derivative::Derivative;
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
 pub struct EmptyElement<CpEvent = NoEvent, CpState = ()>(
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpEvent>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
 );
 
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""))]
 pub struct EmptyElementData<CpEvent = NoEvent, CpState = ()>(
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")]
-    pub std::marker::PhantomData<CpEvent>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
+    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
 );
 
 impl<CpEvent, CpState> EmptyElement<CpEvent, CpState> {
