@@ -11,7 +11,9 @@ impl<Child: WidgetSequence> WidgetSequence for Option<Child> {
     }
 
     fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget> {
-        self.iter_mut().flat_map(|child| child.widgets_mut()).collect()
+        self.iter_mut()
+            .flat_map(|child| child.widgets_mut())
+            .collect()
     }
 }
 

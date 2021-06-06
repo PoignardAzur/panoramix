@@ -1,5 +1,6 @@
 use crate::element_tree::ReconcileCtx;
 use crate::flex::FlexParams;
+use crate::glue::DebugState;
 use crate::glue::DruidAppData;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
@@ -93,6 +94,10 @@ impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
         self.pod.paint(ctx, data, env);
+    }
+
+    fn debug_state(&self, data: &DruidAppData) -> DebugState {
+        self.pod.widget().debug_state(data)
     }
 }
 

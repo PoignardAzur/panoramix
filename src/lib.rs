@@ -77,6 +77,8 @@ mod glue;
 mod root_handler;
 mod widget_sequence;
 
+pub mod test_harness;
+
 pub mod elements;
 pub mod widgets;
 

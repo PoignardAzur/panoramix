@@ -6,6 +6,8 @@ use druid::Data;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+pub use druid::debug_state::DebugState;
+
 pub struct GlobalEventCx<'a> {
     pub app_data: &'a mut DruidAppData,
 }

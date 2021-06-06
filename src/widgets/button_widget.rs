@@ -5,11 +5,12 @@ use crate::glue::Id;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
+use crate::glue::DebugState;
 use druid::kurbo::{Rect, Size};
 use druid::widget::{Button, Click, ControllerHost};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    WidgetPod,
+    Widget, WidgetPod,
 };
 
 pub struct ButtonWidget {
@@ -84,6 +85,10 @@ impl FlexWidget for ButtonWidget {
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
         self.pod.paint(ctx, data, env);
+    }
+
+    fn debug_state(&self, data: &DruidAppData) -> DebugState {
+        self.pod.widget().debug_state(data)
     }
 }
 

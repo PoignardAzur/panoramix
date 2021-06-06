@@ -1,0 +1,12 @@
+---
+source: src/elements/label.rs
+expression: label_state
+
+---
+RootWidget(
+    Column(
+        Label(
+            "Hello",
+        ),
+    ),
+)

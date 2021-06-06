@@ -1,0 +1,12 @@
+---
+source: src/elements/label.rs
+expression: label_state_2
+
+---
+RootWidget(
+    Column(
+        Label(
+            "World",
+        ),
+    ),
+)

@@ -138,6 +138,21 @@ mod tests {
         assign_empty_state_type(&label);
     }
 
-    // TODO
-    // - Widget test
+    #[test]
+    fn test_label_widget() {
+        use crate::test_harness::Harness;
+
+        let label = Label::new("Hello");
+
+        Harness::run_test_window(label, |harness| {
+            let label_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(label_state);
+
+            let new_label = Label::new("World");
+            harness.update_root_element(new_label);
+
+            let label_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(label_state_2);
+        });
+    }
 }

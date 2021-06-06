@@ -6,6 +6,7 @@
 use druid::kurbo::common::FloatExt;
 use druid::kurbo::{Point, Rect, Size};
 
+use crate::glue::DebugState;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
     Widget,
@@ -185,6 +186,26 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
         for child in self.children_seq.widgets_mut() {
             child.paint(ctx, data, env);
+        }
+    }
+
+    fn debug_state(&self, data: &DruidAppData) -> DebugState {
+        let children_state = self
+            .children_seq
+            .widgets()
+            .iter()
+            .map(|child| child.debug_state(data))
+            .collect();
+
+        let name = match self.direction {
+            Axis::Horizontal => "Row",
+            Axis::Vertical => "Column",
+        };
+
+        DebugState {
+            display_name: name.to_string(),
+            children: children_state,
+            ..Default::default()
         }
     }
 }

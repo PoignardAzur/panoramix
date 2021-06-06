@@ -4,6 +4,7 @@ use crate::glue::DruidAppData;
 use crate::glue::Id;
 use crate::widgets::SingleWidget;
 
+use crate::glue::DebugState;
 use druid::widget::Checkbox;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Point,
@@ -94,6 +95,10 @@ impl Widget<DruidAppData> for CheckboxWidget {
 
     fn paint(&mut self, ctx: &mut PaintCtx, _data: &DruidAppData, env: &Env) {
         self.pod.paint(ctx, &mut self.value, env);
+    }
+
+    fn debug_state(&self, _data: &DruidAppData) -> DebugState {
+        self.pod.widget().debug_state(&self.value)
     }
 }
 

@@ -5,6 +5,7 @@ use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
 
+use crate::glue::DebugState;
 use druid::widget::prelude::*;
 use druid::{widget, AppLauncher, Point, Widget, WidgetPod, WindowDesc};
 use tracing::{debug_span, info, instrument, trace};
@@ -34,12 +35,11 @@ pub struct RootWidget<RootElem: Element<NoEvent, ()> + Clone + 'static> {
 
 impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>> {
     pub fn new(_root_component: Comp) -> Self {
-        let default_widget = WidgetPod::new(widget::Flex::row());
         RootWidget {
             root_element: Comp::new(()),
             root_state: Default::default(),
             vdom: None,
-            default_widget,
+            default_widget: WidgetPod::new(widget::Flex::row()),
             widget: None,
         }
     }
@@ -49,6 +49,18 @@ impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>>
         RootWidget {
             root_state: (comp_local_state, Default::default()),
             ..self
+        }
+    }
+}
+
+impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
+    pub fn from_element(elem: RootElem) -> Self {
+        RootWidget {
+            root_element: elem,
+            root_state: Default::default(),
+            vdom: None,
+            default_widget: WidgetPod::new(widget::Flex::row()),
+            widget: None,
         }
     }
 }
@@ -82,13 +94,20 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
     }
 
     #[instrument(level = "debug", skip(self, ctx, data, env))]
-    pub fn run(&mut self, ctx: &mut EventCtx, data: &mut DruidAppData, env: &Env) {
+    pub fn run(
+        &mut self,
+        ctx: &mut EventCtx,
+        data: &mut DruidAppData,
+        env: &Env,
+        force_update: bool,
+    ) {
         // The high-level workflow is:
         // - Make a copy of the app state.
         // - Run events that can change app state.
         //  -> If app state is unchanged, return early.
         // - Generate new vdom from new app state.
         // - Reconcile new vdom with previous vdom.
+
         let prev_root_state = self.root_state.clone();
 
         debug_span!("process_event").in_scope(|| {
@@ -108,7 +127,7 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
             );
         });
 
-        if self.root_state == prev_root_state {
+        if !force_update && self.root_state == prev_root_state {
             trace!("State is unchanged. Skipping virtual DOM update.");
             return;
         }
@@ -148,6 +167,15 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
     for RootWidget<RootElem>
 {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
+        let mut force_update = false;
+
+        if let Event::Command(command) = event {
+            let selector = druid::Selector::new("update_root_element");
+            if let Some(new_root) = command.get::<RootElem>(selector) {
+                self.root_element = new_root.clone();
+                force_update = true;
+            }
+        };
         if let Some(widget) = &mut self.widget {
             widget.event(ctx, event, data, env);
         } else {
@@ -157,7 +185,7 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
         if self.vdom.is_none() {
             self.init(ctx);
         } else {
-            self.run(ctx, data, env);
+            self.run(ctx, data, env, force_update);
         }
     }
 
@@ -214,6 +242,20 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
             widget.paint(ctx, data, env);
         } else {
             self.default_widget.paint(ctx, data, env);
+        }
+    }
+
+    fn debug_state(&self, data: &DruidAppData) -> DebugState {
+        let child: &dyn Widget<_> = if let Some(widget) = &self.widget {
+            widget.widget()
+        } else {
+            self.default_widget.widget()
+        };
+
+        DebugState {
+            display_name: self.short_type_name().to_string(),
+            children: vec![child.debug_state(data)],
+            ..Default::default()
         }
     }
 }

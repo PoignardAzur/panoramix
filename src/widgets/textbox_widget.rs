@@ -6,11 +6,12 @@ use crate::glue::Id;
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
+use crate::glue::DebugState;
 use druid::kurbo::{Rect, Size};
 use druid::widget::TextBox;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    WidgetPod,
+    Widget, WidgetPod,
 };
 
 use tracing::trace;
@@ -109,6 +110,10 @@ impl FlexWidget for TextBoxWidget {
 
     fn paint(&mut self, ctx: &mut PaintCtx, _data: &DruidAppData, env: &Env) {
         self.pod.paint(ctx, &mut self.text, env);
+    }
+
+    fn debug_state(&self, _data: &DruidAppData) -> DebugState {
+        self.pod.widget().debug_state(&self.text)
     }
 }
 

@@ -1,6 +1,7 @@
 use druid::kurbo::{Rect, Size};
 
 use crate::flex::FlexParams;
+use crate::glue::DebugState;
 use crate::glue::DruidAppData;
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
@@ -45,4 +46,5 @@ pub trait FlexWidget {
     fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect);
     fn layout_rect(&self) -> Rect;
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env);
+    fn debug_state(&self, data: &DruidAppData) -> DebugState;
 }
