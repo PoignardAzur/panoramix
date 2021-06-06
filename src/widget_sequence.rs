@@ -10,7 +10,8 @@ pub trait WidgetSequence {
     // TODO - This is horribly inefficient. We'd like to have
     //     -> impl Iterator<&mut dyn FlexWidget>
     // instead, but this would require both GATs and trait-method existential types to be stable
-    fn widgets(&mut self) -> Vec<&mut dyn FlexWidget>;
+    fn widgets(&self) -> Vec<&dyn FlexWidget>;
+    fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget>;
 }
 
 // Essentially a boilerplate trait for SingleWidget

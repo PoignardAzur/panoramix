@@ -6,10 +6,17 @@ pub struct WidgetList<Child: WidgetSequence> {
 }
 
 impl<Child: WidgetSequence> WidgetSequence for WidgetList<Child> {
-    fn widgets(&mut self) -> Vec<&mut dyn FlexWidget> {
+    fn widgets(&self) -> Vec<&dyn FlexWidget> {
+        self.children
+            .iter()
+            .flat_map(|child| child.widgets())
+            .collect()
+    }
+
+    fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget> {
         self.children
             .iter_mut()
-            .flat_map(|child| child.widgets())
+            .flat_map(|child| child.widgets_mut())
             .collect()
     }
 }

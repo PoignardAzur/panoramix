@@ -97,7 +97,11 @@ impl<W: Widget<DruidAppData>> FlexWidget for SingleWidget<W> {
 }
 
 impl<W: Widget<DruidAppData>> WidgetSequence for SingleWidget<W> {
-    fn widgets(&mut self) -> Vec<&mut dyn FlexWidget> {
+    fn widgets(&self) -> Vec<&dyn FlexWidget> {
+        vec![self]
+    }
+
+    fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget> {
         vec![self]
     }
 }

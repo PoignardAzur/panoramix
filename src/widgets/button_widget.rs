@@ -88,7 +88,11 @@ impl FlexWidget for ButtonWidget {
 }
 
 impl WidgetSequence for ButtonWidget {
-    fn widgets(&mut self) -> Vec<&mut dyn FlexWidget> {
+    fn widgets(&self) -> Vec<&dyn FlexWidget> {
+        vec![self]
+    }
+
+    fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget> {
         vec![self]
     }
 }

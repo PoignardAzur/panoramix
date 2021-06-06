@@ -29,7 +29,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
         // FIXME
         ctx.children_changed();
 
-        for child in self.children_seq.widgets() {
+        for child in self.children_seq.widgets_mut() {
             child.event(ctx, event, data, env);
         }
     }
@@ -41,7 +41,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
         data: &DruidAppData,
         env: &Env,
     ) {
-        for child in self.children_seq.widgets() {
+        for child in self.children_seq.widgets_mut() {
             child.lifecycle(ctx, event, data, env);
         }
     }
@@ -53,7 +53,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
         data: &DruidAppData,
         env: &Env,
     ) {
-        for child in self.children_seq.widgets() {
+        for child in self.children_seq.widgets_mut() {
             child.update(ctx, old_data, data, env);
         }
     }
@@ -73,7 +73,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
         // Measure non-flex children.
         let mut major_non_flex = 0.0;
         let mut minor = self.direction.minor(bc.min());
-        let mut child_widgets = self.children_seq.widgets();
+        let mut child_widgets = self.children_seq.widgets_mut();
         for child in &mut child_widgets {
             if child.flex_params().flex == 0.0 {
                 let child_bc = self
@@ -183,7 +183,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for FlexWidget<Children> {
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
-        for child in self.children_seq.widgets() {
+        for child in self.children_seq.widgets_mut() {
             child.paint(ctx, data, env);
         }
     }
