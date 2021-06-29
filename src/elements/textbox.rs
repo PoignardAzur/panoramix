@@ -1,4 +1,4 @@
-use crate::glue::{Action, GlobalEventCx, Id};
+use crate::glue::{Action, GlobalEventCx};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
@@ -107,7 +107,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpS
 
     #[instrument(name = "TextBox", skip(self))]
     fn init_tree(&self) -> TextBoxWidget {
-        TextBoxWidget::new(self.text.clone(), self.flex, Id::new())
+        TextBoxWidget::new(self.text.clone(), self.flex)
     }
 
     #[instrument(name = "TextBox", skip(self, _other, widget, ctx))]
@@ -129,7 +129,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpS
         cx: &mut GlobalEventCx,
     ) -> Option<TextChanged> {
         // FIXME - Rework event dispatching
-        let id = widget.id;
+        let id = widget.id();
         if let Some(Action::TextChanged(new_content)) = cx.app_data.dequeue_action(id) {
             trace!("Processed text change");
             Some(TextChanged { new_content })

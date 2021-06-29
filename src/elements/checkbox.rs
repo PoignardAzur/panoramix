@@ -1,4 +1,4 @@
-use crate::glue::{Action, GlobalEventCx, Id};
+use crate::glue::{Action, GlobalEventCx};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
@@ -110,7 +110,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, Cp
     #[instrument(name = "Checkbox", skip(self))]
     fn init_tree(&self) -> SingleCheckboxWidget {
         SingleCheckboxWidget::new(
-            CheckboxWidget::new(self.text.clone(), self.value, Id::new()),
+            CheckboxWidget::new(self.text.clone(), self.value),
             self.flex,
         )
     }
@@ -139,7 +139,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, Cp
         cx: &mut GlobalEventCx,
     ) -> Option<Toggled> {
         // FIXME - Rework event dispatching
-        let id = widget.widget().id;
+        let id = widget.widget().id();
         if let Some(Action::Clicked) = cx.app_data.dequeue_action(id) {
             let new_value = widget.widget().value;
             trace!("Processed checkbox toggle: {}", new_value);

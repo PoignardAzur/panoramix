@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub use druid::debug_state::DebugState;
+pub use druid::WidgetId;
 
 pub struct GlobalEventCx<'a> {
     pub app_data: &'a mut DruidAppData,
@@ -25,7 +26,7 @@ impl<'a> GlobalEventCx<'a> {
 /// It should probably be a vec of actions, but we can refine
 /// later. For button clicks it doesn't matter.
 #[derive(Clone, Data, Default)]
-pub struct DruidAppData(Arc<HashMap<Id, Action>>);
+pub struct DruidAppData(Arc<HashMap<WidgetId, Action>>);
 
 /// Actions that can be produced by widgets,
 #[derive(Clone)]
@@ -36,11 +37,11 @@ pub enum Action {
 }
 
 impl DruidAppData {
-    pub(crate) fn queue_action(&mut self, id: Id, action: Action) {
+    pub(crate) fn queue_action(&mut self, id: WidgetId, action: Action) {
         Arc::make_mut(&mut self.0).insert(id, action);
     }
 
-    pub(crate) fn dequeue_action(&mut self, id: Id) -> Option<Action> {
+    pub(crate) fn dequeue_action(&mut self, id: WidgetId) -> Option<Action> {
         if self.0.contains_key(&id) {
             Arc::make_mut(&mut self.0).remove(&id)
         } else {
@@ -49,28 +50,8 @@ impl DruidAppData {
     }
 
     /// Report whether the id has a non-empty action queue.
-    pub(crate) fn has_action(&self, id: Id) -> bool {
+    pub(crate) fn has_action(&self, id: WidgetId) -> bool {
         self.0.contains_key(&id)
-    }
-}
-
-// ---
-
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-static ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
-
-/// An identifier for an element.
-///
-/// It's a bit heavy-handed to have this id as well as widget
-/// id in Druid; likely the two concepts should be unified. But
-#[derive(Clone, Copy, Debug, PartialOrd, PartialEq, Ord, Eq, Hash)]
-pub struct Id(usize);
-
-impl Id {
-    /// Allocate a new unique id.
-    pub fn new() -> Id {
-        Id(ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::glue::{Action, GlobalEventCx, Id};
+use crate::glue::{Action, GlobalEventCx};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
@@ -98,7 +98,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
 
     #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> ButtonWidget {
-        ButtonWidget::new(self.text.clone(), self.flex, Id::new())
+        ButtonWidget::new(self.text.clone(), self.flex)
     }
 
     #[instrument(name = "Button", skip(self, _other, _widget, _ctx))]
@@ -118,7 +118,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
         cx: &mut GlobalEventCx,
     ) -> Option<ButtonClick> {
         // FIXME - Rework event dispatching
-        let id = widget.id;
+        let id = widget.id();
         if let Some(Action::Clicked) = cx.app_data.dequeue_action(id) {
             trace!("Processed button press");
             Some(ButtonClick)

@@ -1,7 +1,5 @@
 use crate::flex::FlexParams;
-use crate::glue::Action;
-use crate::glue::DruidAppData;
-use crate::glue::Id;
+use crate::glue::{Action, DruidAppData, WidgetId};
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
@@ -16,19 +14,22 @@ use druid::{
 pub struct ButtonWidget {
     pub pod: WidgetPod<DruidAppData, ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
     pub flex: FlexParams,
-    pub id: Id,
 }
 
 impl ButtonWidget {
-    pub fn new(text: String, flex: FlexParams, id: Id) -> Self {
-        let button = Button::new(text)
-            .on_click(move |_, data: &mut DruidAppData, _| data.queue_action(id, Action::Clicked));
+    pub fn new(text: String, flex: FlexParams) -> Self {
+        let button = Button::new(text).on_click(move |ctx, data: &mut DruidAppData, _| {
+            data.queue_action(ctx.widget_id(), Action::Clicked)
+        });
 
         ButtonWidget {
             pod: WidgetPod::new(button),
             flex,
-            id,
         }
+    }
+
+    pub fn id(&self) -> WidgetId {
+        self.pod.id()
     }
 }
 

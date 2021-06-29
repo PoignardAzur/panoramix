@@ -1,7 +1,5 @@
 use crate::element_tree::ReconcileCtx;
-use crate::glue::Action;
-use crate::glue::DruidAppData;
-use crate::glue::Id;
+use crate::glue::{Action, DruidAppData, WidgetId};
 use crate::widgets::SingleWidget;
 
 use crate::glue::DebugState;
@@ -20,19 +18,21 @@ use tracing::trace;
 pub struct CheckboxWidget {
     pub value: bool,
     pub pod: WidgetPod<bool, Checkbox>,
-    pub id: Id,
 }
 
 impl CheckboxWidget {
-    pub fn new(text: String, value: bool, id: Id) -> Self {
+    pub fn new(text: String, value: bool) -> Self {
         // TODO - handle label in a more idiomatic way
         let checkbox = Checkbox::new(text);
 
         CheckboxWidget {
             value,
             pod: WidgetPod::new(checkbox),
-            id,
         }
+    }
+
+    pub fn id(&self) -> WidgetId {
+        self.pod.id()
     }
 
     // TODO - merge with SingleWidget::request_druid_update ?
@@ -51,8 +51,8 @@ impl Widget<DruidAppData> for CheckboxWidget {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Event::MouseUp(_) = event {
             if ctx.is_hot() {
-                trace!("Checkbox {:?} value changed: {}", self.id, self.value);
-                data.queue_action(self.id, Action::Clicked);
+                trace!("Checkbox {:?} value changed: {}", self.id(), self.value);
+                data.queue_action(self.id(), Action::Clicked);
             }
         }
         if let Event::MouseDown(_) = event {

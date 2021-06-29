@@ -1,8 +1,6 @@
 use crate::element_tree::ReconcileCtx;
 use crate::flex::FlexParams;
-use crate::glue::Action;
-use crate::glue::DruidAppData;
-use crate::glue::Id;
+use crate::glue::{Action, DruidAppData, WidgetId};
 use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
@@ -20,19 +18,21 @@ pub struct TextBoxWidget {
     pub text: String,
     pub pod: WidgetPod<String, TextBox<String>>,
     pub flex: FlexParams,
-    pub id: Id,
 }
 
 impl TextBoxWidget {
-    pub fn new(text: String, flex: FlexParams, id: Id) -> Self {
+    pub fn new(text: String, flex: FlexParams) -> Self {
         let textbox = TextBox::new();
 
         TextBoxWidget {
             text,
             pod: WidgetPod::new(textbox),
             flex,
-            id,
         }
+    }
+
+    pub fn id(&self) -> WidgetId {
+        self.pod.id()
     }
 
     // TODO - merge with SingleWidget::request_druid_update ?
@@ -54,8 +54,8 @@ impl FlexWidget for TextBoxWidget {
 
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         if let Event::KeyUp(_) = event {
-            trace!("TextBox {:?} content changed: {}", self.id, self.text);
-            data.queue_action(self.id, Action::TextChanged(self.text.clone()));
+            trace!("TextBox {:?} content changed: {}", self.id(), self.text);
+            data.queue_action(self.id(), Action::TextChanged(self.text.clone()));
         }
         self.pod.event(ctx, event, &mut self.text, env);
     }
