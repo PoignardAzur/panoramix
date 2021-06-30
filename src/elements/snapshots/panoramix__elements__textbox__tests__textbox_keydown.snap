@@ -1,0 +1,14 @@
+---
+source: src/elements/textbox.rs
+expression: harness.get_root_debug_state()
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            TextBox(
+                "Hello",
+            ),
+        ),
+    ),
+)

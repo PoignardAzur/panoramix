@@ -1,0 +1,8 @@
+---
+source: src/elements/button.rs
+expression: click_event
+
+---
+Ok(
+    ButtonClick,
+)

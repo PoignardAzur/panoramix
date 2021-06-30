@@ -6,44 +6,44 @@ use crate::widget_sequence::WidgetSequence;
 
 use crate::glue::DebugState;
 use druid::kurbo::{Rect, Size};
-use druid::widget::TextBox;
+use druid::widget::{IdentityWrapper, TextBox};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    Widget, WidgetPod,
+    Widget, WidgetExt, WidgetPod,
 };
 
 use tracing::trace;
 
 pub struct TextBoxWidget {
     pub text: String,
-    pub pod: WidgetPod<String, TextBox<String>>,
+    pub pod: WidgetPod<String, IdentityWrapper<TextBox<String>>>,
     pub flex: FlexParams,
+    id: WidgetId,
 }
 
 impl TextBoxWidget {
-    pub fn new(text: String, flex: FlexParams) -> Self {
-        let textbox = TextBox::new();
+    pub fn new(text: String, flex: FlexParams, id: WidgetId) -> Self {
+        let textbox = TextBox::new().with_id(id);
 
         TextBoxWidget {
             text,
             pod: WidgetPod::new(textbox),
             flex,
+            id,
         }
     }
 
     pub fn id(&self) -> WidgetId {
-        self.pod.id()
+        self.id
     }
 
     // TODO - merge with SingleWidget::request_druid_update ?
     pub fn request_druid_update(&mut self, ctx: &mut ReconcileCtx) {
-        self.pod.with_event_context(
-            ctx.event_ctx,
-            |_widget: &mut TextBox<String>, ctx: &mut EventCtx| {
+        self.pod
+            .with_event_context(ctx.event_ctx, |_widget, ctx: &mut EventCtx| {
                 trace!("request_druid_update: {:?}", ctx.widget_id());
                 ctx.request_update();
-            },
-        );
+            });
     }
 }
 

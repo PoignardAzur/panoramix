@@ -5,31 +5,36 @@ use crate::widget_sequence::WidgetSequence;
 
 use crate::glue::DebugState;
 use druid::kurbo::{Rect, Size};
-use druid::widget::{Button, Click, ControllerHost};
+use druid::widget::{Button, Click, ControllerHost, IdentityWrapper};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
-    Widget, WidgetPod,
+    Widget, WidgetExt, WidgetPod,
 };
 
 pub struct ButtonWidget {
-    pub pod: WidgetPod<DruidAppData, ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
+    pub pod: WidgetPod<
+        DruidAppData,
+        IdentityWrapper<ControllerHost<Button<DruidAppData>, Click<DruidAppData>>>,
+    >,
     pub flex: FlexParams,
+    id: WidgetId,
 }
 
 impl ButtonWidget {
-    pub fn new(text: String, flex: FlexParams) -> Self {
-        let button = Button::new(text).on_click(move |ctx, data: &mut DruidAppData, _| {
-            data.queue_action(ctx.widget_id(), Action::Clicked)
-        });
+    pub fn new(text: String, flex: FlexParams, id: WidgetId) -> Self {
+        let button = Button::new(text)
+            .on_click(move |_, data: &mut DruidAppData, _| data.queue_action(id, Action::Clicked))
+            .with_id(id);
 
         ButtonWidget {
             pod: WidgetPod::new(button),
             flex,
+            id,
         }
     }
 
     pub fn id(&self) -> WidgetId {
-        self.pod.id()
+        self.id
     }
 }
 

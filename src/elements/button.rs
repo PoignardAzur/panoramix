@@ -1,4 +1,4 @@
-use crate::glue::{Action, GlobalEventCx};
+use crate::glue::{Action, GlobalEventCx, WidgetId};
 
 use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
@@ -19,6 +19,7 @@ use tracing::{instrument, trace};
 pub struct Button<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
+    pub reserved_widget_id: Option<WidgetId>,
     #[derivative(Debug = "ignore")]
     pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
@@ -28,6 +29,7 @@ pub struct Button<CpEvent = NoEvent, CpState = ()> {
 pub struct ButtonData<CpEvent = NoEvent, CpState = ()> {
     pub text: String,
     pub flex: FlexParams,
+    pub reserved_widget_id: Option<WidgetId>,
     #[derivative(Debug = "ignore")]
     pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
@@ -52,6 +54,7 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
                 flex: 1.0,
                 alignment: None,
             },
+            reserved_widget_id: None,
             _markers: Default::default(),
         }
     }
@@ -60,6 +63,15 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
     pub fn with_flex_params(self, flex_params: FlexParams) -> Self {
         Button {
             flex: flex_params,
+            ..self
+        }
+    }
+
+    // TODO - doc
+    // For unit tests only
+    pub fn with_reserved_id(self, widget_id: WidgetId) -> Self {
+        Button {
+            reserved_widget_id: Some(widget_id),
             ..self
         }
     }
@@ -84,6 +96,7 @@ impl<CpEvent, CpState> Element<CpEvent, CpState> for Button<CpEvent, CpState> {
             ButtonData {
                 text: self.text,
                 flex: self.flex,
+                reserved_widget_id: self.reserved_widget_id,
                 _markers: Default::default(),
             },
             (),
@@ -98,7 +111,8 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
 
     #[instrument(name = "Button", skip(self))]
     fn init_tree(&self) -> ButtonWidget {
-        ButtonWidget::new(self.text.clone(), self.flex)
+        let id = self.reserved_widget_id.unwrap_or_else(WidgetId::next);
+        ButtonWidget::new(self.text.clone(), self.flex, id)
     }
 
     #[instrument(name = "Button", skip(self, _other, _widget, _ctx))]
@@ -132,6 +146,7 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
 mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
+    use crate::test_harness::Harness;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
@@ -158,8 +173,39 @@ mod tests {
         assign_empty_state_type(&button);
     }
 
-    // TODO
-    // - Id test (??)
-    // - Event test
-    // - Widget test
+    #[test]
+    fn test_button_widget() {
+        // TODO - We use Tuple! because RootWidget currently wants a root element with no event
+        use crate::Tuple;
+        let button = Tuple!(Button::new("Hello"));
+
+        Harness::run_test_window(button, |harness| {
+            let button_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(button_state);
+
+            // TODO - Test reconcile() method (currently doesn't work)
+        });
+    }
+
+    #[test]
+    fn test_button_press() {
+        use crate::elements::event_logger::EventLogger;
+        use std::sync::mpsc::channel;
+
+        let (event_sender, event_receiver) = channel();
+        let button_id = WidgetId::reserved(1);
+        let button = EventLogger::new(
+            event_sender,
+            Button::new("Hello").with_reserved_id(button_id),
+        );
+
+        Harness::run_test_window(button, |harness| {
+            assert_debug_snapshot!(harness.get_root_debug_state());
+
+            harness.mouse_click_on(button_id);
+
+            let click_event = event_receiver.try_recv();
+            assert_debug_snapshot!(click_event);
+        });
+    }
 }

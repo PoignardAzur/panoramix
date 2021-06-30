@@ -3,10 +3,10 @@ use crate::glue::{Action, DruidAppData, WidgetId};
 use crate::widgets::SingleWidget;
 
 use crate::glue::DebugState;
-use druid::widget::Checkbox;
+use druid::widget::{Checkbox, IdentityWrapper};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Point,
-    Size, UpdateCtx, Widget, WidgetPod,
+    Size, UpdateCtx, Widget, WidgetExt, WidgetPod,
 };
 
 use tracing::trace;
@@ -17,33 +17,33 @@ use tracing::trace;
 
 pub struct CheckboxWidget {
     pub value: bool,
-    pub pod: WidgetPod<bool, Checkbox>,
+    pub pod: WidgetPod<bool, IdentityWrapper<Checkbox>>,
+    id: WidgetId,
 }
 
 impl CheckboxWidget {
-    pub fn new(text: String, value: bool) -> Self {
+    pub fn new(text: String, value: bool, id: WidgetId) -> Self {
         // TODO - handle label in a more idiomatic way
-        let checkbox = Checkbox::new(text);
+        let checkbox = Checkbox::new(text).with_id(id);
 
         CheckboxWidget {
             value,
             pod: WidgetPod::new(checkbox),
+            id,
         }
     }
 
     pub fn id(&self) -> WidgetId {
-        self.pod.id()
+        self.id
     }
 
     // TODO - merge with SingleWidget::request_druid_update ?
     pub fn request_druid_update(&mut self, ctx: &mut ReconcileCtx) {
-        self.pod.with_event_context(
-            ctx.event_ctx,
-            |_widget: &mut Checkbox, ctx: &mut EventCtx| {
+        self.pod
+            .with_event_context(ctx.event_ctx, |_widget, ctx: &mut EventCtx| {
                 trace!("request_druid_update: {:?}", ctx.widget_id());
                 ctx.request_update();
-            },
-        );
+            });
     }
 }
 

@@ -1,0 +1,14 @@
+---
+source: src/elements/textbox.rs
+expression: textbox_state
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            TextBox(
+                "Hello",
+            ),
+        ),
+    ),
+)

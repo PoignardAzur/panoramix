@@ -1,0 +1,14 @@
+---
+source: src/elements/checkbox.rs
+expression: checkbox_state_2
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            Checkbox(
+                "[X] Hello",
+            ),
+        ),
+    ),
+)

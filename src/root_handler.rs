@@ -17,9 +17,6 @@ type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Ele
     RootCpState,
 >>::BuildOutput as VirtualDom<RootCpEvent, RootCpState>>::TargetWidgetSeq;
 
-// FIXME - RootComponent must be Clone to be able to clone the props
-// Not intuitive, find different abstraction?
-
 /// Implements [`druid::Widget`] from a component
 ///
 /// You should probably use [`RootHandler`] directly instead.

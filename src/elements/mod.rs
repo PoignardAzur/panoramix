@@ -18,6 +18,7 @@ mod with_mock_state;
 pub use with_mock_state::*;
 
 pub mod element_tuple;
+pub mod event_logger;
 #[doc(hidden)]
 pub mod with_event;
 

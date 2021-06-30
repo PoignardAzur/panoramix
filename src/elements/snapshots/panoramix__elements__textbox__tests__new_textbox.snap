@@ -1,9 +1,9 @@
 ---
-source: src/elements/button.rs
-expression: button_data
+source: src/elements/textbox.rs
+expression: textbox
 
 ---
-ButtonData {
+TextBox {
     text: "Hello",
     flex: FlexParams {
         flex: 1.0,

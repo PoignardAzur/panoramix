@@ -1,6 +1,7 @@
 ---
 source: src/elements/button.rs
 expression: button
+
 ---
 Button {
     text: "Hello",
@@ -8,4 +9,5 @@ Button {
         flex: 1.0,
         alignment: None,
     },
+    reserved_widget_id: None,
 }

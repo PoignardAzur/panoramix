@@ -1,0 +1,16 @@
+---
+source: src/elements/button.rs
+expression: harness.get_root_debug_state()
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            ControllerHost(
+                Button(
+                    "Hello",
+                ),
+            ),
+        ),
+    ),
+)

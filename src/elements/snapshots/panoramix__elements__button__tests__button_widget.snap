@@ -1,0 +1,16 @@
+---
+source: src/elements/button.rs
+expression: button_state
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            ControllerHost(
+                Button(
+                    "Hello",
+                ),
+            ),
+        ),
+    ),
+)
