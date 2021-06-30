@@ -116,7 +116,6 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
     );
 
     // TODO - Rename methods
-    #[allow(unused_variables)]
     fn process_event(
         &self,
         component_state: &mut CpState,
@@ -124,10 +123,10 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<CpEvent> {
+        #![allow(unused_variables)]
         None
     }
 
-    #[allow(unused_variables)]
     fn process_local_event(
         &self,
         component_state: &mut CpState,
@@ -135,6 +134,7 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
+        #![allow(unused_variables)]
         None
     }
 }
