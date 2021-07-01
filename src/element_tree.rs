@@ -129,7 +129,6 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
 
     fn process_local_event(
         &self,
-        component_state: &mut CpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

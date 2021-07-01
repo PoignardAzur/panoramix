@@ -93,37 +93,21 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
     #[instrument(
         name = "EventLogger",
-        skip(self, component_state, children_state, widget_seq, cx)
+        skip(self, _component_state, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        _component_state: &mut CpState,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<CpEvent> {
-        let local_event =
-            self.child
-                .process_local_event(component_state, children_state, widget_seq, cx);
+        let local_event = self
+            .child
+            .process_local_event(children_state, widget_seq, cx);
         if let Some(local_event) = local_event {
             let _ = self.event_queue.send(local_event);
         }
-        None
-    }
-
-    // FIXME
-    #[instrument(
-        name = "EventLogger",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
-    fn process_local_event(
-        &self,
-        component_state: &mut CpState,
-        children_state: &mut Child::AggregateChildrenState,
-        widget_seq: &mut Self::TargetWidgetSeq,
-        cx: &mut GlobalEventCx,
-    ) -> Option<NoEvent> {
-        self.process_event(component_state, children_state, widget_seq, cx);
         None
     }
 }

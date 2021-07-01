@@ -140,13 +140,9 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, Cp
         widget.widget_mut().request_druid_update(ctx);
     }
 
-    #[instrument(
-        name = "Checkbox",
-        skip(self, _component_state, _children_state, widget, cx)
-    )]
+    #[instrument(name = "Checkbox", skip(self, _children_state, widget, cx))]
     fn process_local_event(
         &self,
-        _component_state: &mut CpState,
         _children_state: &mut Self::AggregateChildrenState,
         widget: &mut SingleCheckboxWidget,
         cx: &mut GlobalEventCx,

@@ -112,11 +112,10 @@ impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
             let flex_widget = self.widget.as_mut().unwrap().widget_mut();
             let mut cx = GlobalEventCx::new(data);
 
-            // TODO - call prev_vdom.process_event() instead.
             // We ignore the root event for now.
             // This might change in cases where we want the user to control
             // when RootWidget::run() is called.
-            let _ = prev_vdom.process_local_event(
+            let _ = prev_vdom.process_event(
                 &mut (),
                 &mut self.root_state,
                 &mut flex_widget.children_seq,

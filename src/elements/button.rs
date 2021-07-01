@@ -120,13 +120,9 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpSt
         //widget.set_text(self.text.clone());
     }
 
-    #[instrument(
-        name = "Button",
-        skip(self, _component_state, _children_state, widget, cx)
-    )]
+    #[instrument(name = "Button", skip(self, _children_state, widget, cx))]
     fn process_local_event(
         &self,
-        _component_state: &mut CpState,
         _children_state: &mut Self::AggregateChildrenState,
         widget: &mut ButtonWidget,
         cx: &mut GlobalEventCx,

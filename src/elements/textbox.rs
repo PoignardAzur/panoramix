@@ -129,13 +129,9 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpS
         widget.request_druid_update(ctx);
     }
 
-    #[instrument(
-        name = "TextBox",
-        skip(self, _component_state, _children_state, widget, cx)
-    )]
+    #[instrument(name = "TextBox", skip(self, _children_state, widget, cx))]
     fn process_local_event(
         &self,
-        _component_state: &mut CpState,
         _children_state: &mut Self::AggregateChildrenState,
         widget: &mut TextBoxWidget,
         cx: &mut GlobalEventCx,

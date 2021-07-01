@@ -324,16 +324,9 @@ where
                 .on(|MouseEnter| ...)
                 .on(|MouseLeave| ...)
         */
-        let event = self
+        let local_event = self
             .element
-            .process_event(component_state, children_state, widget_seq, cx);
-        if let Some(event) = event {
-            trace!("Returned child event");
-            return Some(event);
-        }
-        let local_event =
-            self.element
-                .process_local_event(component_state, children_state, widget_seq, cx);
+            .process_local_event(children_state, widget_seq, cx);
         if let Some(local_event) = local_event.map(ParentEvent::into_child_event).flatten() {
             trace!("Processing callback for local event");
             let event = (self.callback)(component_state, local_event)

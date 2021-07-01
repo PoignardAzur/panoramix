@@ -186,13 +186,23 @@ impl<
 
     fn process_local_event(
         &self,
-        _component_state: &mut ParentCpState,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
         self.child
             .process_event(&mut children_state.0, &mut children_state.1, widget_seq, cx)
+    }
+
+    fn process_event(
+        &self,
+        _component_state: &mut ParentCpState,
+        children_state: &mut Self::AggregateChildrenState,
+        widget_seq: &mut Self::TargetWidgetSeq,
+        cx: &mut GlobalEventCx,
+    ) -> Option<ParentCpEvent> {
+        self.process_local_event(children_state, widget_seq, cx);
+        None
     }
 }
 
