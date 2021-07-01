@@ -9,8 +9,8 @@ use std::sync::mpsc::Sender;
 use tracing::instrument;
 
 // PartialEq?
-#[derive(Derivative, Clone)]
-#[derivative(Debug(bound = ""))]
+#[derive(Derivative)]
+#[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct EventLogger<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub child: Child,
     pub event_queue: Sender<Child::Event>,
@@ -19,8 +19,8 @@ pub struct EventLogger<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpSt
 }
 
 // PartialEq?
-#[derive(Derivative, Clone)]
-#[derivative(Debug(bound = ""))]
+#[derive(Derivative)]
+#[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
 pub struct EventLoggerData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub child: Child,
     pub event_queue: Sender<Child::Event>,

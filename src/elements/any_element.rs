@@ -81,7 +81,7 @@ impl PartialEq for AnyStateBox {
 // --- ELEMENT ---
 
 #[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Default(bound = "Child: Default"), Clone(bound = "Child: Clone"))]
+#[derivative(Default(bound = "Child: Default"), Clone(bound = ""))]
 struct ErasedElement<Child: Element<CpEvent, CpState>, CpEvent, CpState> {
     child: Option<Child>,
     _markers: std::marker::PhantomData<(CpState, CpEvent)>,
@@ -100,6 +100,8 @@ trait AnyElement<CpEvent, CpState>: Any + Debug {
         println!("{:#?}", std::any::type_name::<Self>());
     }
 
+    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState>>;
+
     fn build(
         &mut self,
         prev_state: Option<AnyStateBox>,
@@ -112,6 +114,10 @@ trait AnyElement<CpEvent, CpState>: Any + Debug {
 impl<Child: Element<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'static>
     AnyElement<CpEvent, CpState> for ErasedElement<Child, CpEvent, CpState>
 {
+    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState>> {
+        Box::new(self.clone())
+    }
+
     fn build(
         &mut self,
         prev_state: Option<AnyStateBox>,
@@ -169,6 +175,15 @@ impl<CpEvent: 'static, CpState: 'static> ElementBox<CpEvent, CpState> {
 impl<CpEvent, CpState> Debug for ElementBox<CpEvent, CpState> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         self.child.fmt(f)
+    }
+}
+
+impl<CpEvent, CpState> Clone for ElementBox<CpEvent, CpState> {
+    fn clone(&self) -> Self {
+        ElementBox {
+            child: self.child.dyn_clone(),
+            _markers: Default::default(),
+        }
     }
 }
 

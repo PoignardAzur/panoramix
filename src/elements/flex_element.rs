@@ -8,8 +8,8 @@ use crate::widgets::SingleWidget;
 use derivative::Derivative;
 use tracing::instrument;
 
-#[derive(Derivative, Clone, PartialEq)]
-#[derivative(Debug(bound = ""))]
+#[derive(Derivative, PartialEq)]
+#[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct Flex<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub axis: Axis,
     pub child: Child,
@@ -19,8 +19,8 @@ pub struct Flex<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = (
     pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
-#[derive(Derivative, Clone, PartialEq)]
-#[derivative(Debug(bound = ""))]
+#[derive(Derivative, PartialEq)]
+#[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
 pub struct FlexData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
     pub axis: Axis,
     pub child: Child,

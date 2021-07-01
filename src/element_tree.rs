@@ -66,7 +66,7 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
 ///
 /// The flip side of this is that constructing an element and not returning it (eg doing `let x = Button::new("...");` and then not using `x`) will lead to a compile error, because the compiler can't infer what `CpEvent` and `CpState` should be.
 ///
-pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug {
+pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
     /// The type of events this element can raise.
     ///
     /// This is the type that [`ElementExt::on`], [`ElementExt::map_event`] and [`ElementExt::bubble_up`] can take. It's different from the `CpEvent` generic parameter, which is the event the parent component emits.
@@ -156,7 +156,7 @@ use crate::elements::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEven
 
 /// Helper methods that can be called on all elements.
 pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
-    fn on<EventParam, Cb: Fn(&mut CpState, EventParam)>(
+    fn on<EventParam, Cb: Fn(&mut CpState, EventParam) + Clone>(
         self,
         callback: Cb,
     ) -> WithCallbackEvent<CpEvent, CpState, EventParam, Self, Cb>
@@ -172,7 +172,11 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
         }
     }
 
-    fn map_event<EventParam, EventReturn, Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>>(
+    fn map_event<
+        EventParam,
+        EventReturn,
+        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
+    >(
         self,
         callback: Cb,
     ) -> WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Self, Cb>

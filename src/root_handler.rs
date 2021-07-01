@@ -20,7 +20,7 @@ type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Ele
 /// Implements [`druid::Widget`] from a component
 ///
 /// You should probably use [`RootHandler`] directly instead.
-pub struct RootWidget<RootElem: Element<NoEvent, ()> + Clone + 'static> {
+pub struct RootWidget<RootElem: Element<NoEvent, ()> + 'static> {
     pub root_element: RootElem,
     pub root_state: RootElem::AggregateChildrenState,
     pub vdom: Option<RootElem::BuildOutput>,
@@ -50,7 +50,7 @@ impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>>
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
+impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
     pub fn from_element(elem: RootElem) -> Self {
         RootWidget {
             root_element: elem,
@@ -62,7 +62,7 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
+impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
     #[instrument(level = "debug", skip(self, ctx))]
     pub fn init(&mut self, ctx: &mut EventCtx) {
         let (new_vdom, state) =
@@ -160,9 +160,7 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
-    for RootWidget<RootElem>
-{
+impl<RootElem: Element<NoEvent, ()> + 'static> Widget<DruidAppData> for RootWidget<RootElem> {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         let mut force_update = false;
 
@@ -258,7 +256,7 @@ impl<RootElem: Element<NoEvent, ()> + Clone + 'static> Widget<DruidAppData>
 }
 
 /// Creates a GUI application from a component
-pub struct RootHandler<RootElem: Element<NoEvent, ()> + Clone + 'static> {
+pub struct RootHandler<RootElem: Element<NoEvent, ()> + 'static> {
     pub root_widget: RootWidget<RootElem>,
     pub init_tracing: bool,
 }
@@ -285,7 +283,7 @@ impl<Comp: Component<Props = ()>> RootHandler<ComponentHolder<Comp, NoEvent, ()>
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + Clone + 'static> RootHandler<RootElem> {
+impl<RootElem: Element<NoEvent, ()> + 'static> RootHandler<RootElem> {
     pub fn with_tracing(self, init_tracing: bool) -> Self {
         RootHandler {
             init_tracing,

@@ -79,7 +79,7 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
     /// Provide a closure to be called when this button is clicked.
     pub fn on_click(
         self,
-        callback: impl Fn(&mut CpState, ButtonClick),
+        callback: impl Fn(&mut CpState, ButtonClick) + Clone,
     ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }

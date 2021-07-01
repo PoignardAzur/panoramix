@@ -20,13 +20,13 @@ use druid::widget as druid_w;
 use derivative::Derivative;
 use tracing::instrument;
 
-pub struct Harness<'a, 'b, RootElem: Element + Clone + Any> {
+pub struct Harness<'a, 'b, RootElem: Element + Any> {
     pub druid_harness: &'a mut DruidHarness<'b, DruidAppData>,
     pub mouse_state: MouseEvent,
     pub _markers: std::marker::PhantomData<RootElem>,
 }
 
-impl<RootElem: 'static + Element + Clone> Harness<'_, '_, RootElem> {
+impl<RootElem: 'static + Element> Harness<'_, '_, RootElem> {
     pub fn run_test_window(
         element: RootElem,
         callback: impl FnMut(&mut Harness<'_, '_, RootElem>),

@@ -60,8 +60,8 @@ macro_rules! replace_expr {
 macro_rules! declare_stuff {
     ( $TupleName:ident ; $( $Type:ident ),* ; $( $Remainder:ident ),* ; $( $index:tt ),* ) => {
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound=""))]
+#[derive(Derivative, Default, PartialEq, Eq, Hash)]
+#[derivative(Clone(bound=""), Debug(bound=""))]
 pub struct $TupleName<
     $(
         $Type: Element<CpEvent, CpState>,

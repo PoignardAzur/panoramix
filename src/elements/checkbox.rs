@@ -86,7 +86,7 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
     /// Provide a closure to be called when this checkbox is toggled.
     pub fn on_toggled(
         self,
-        callback: impl Fn(&mut CpState, Toggled),
+        callback: impl Fn(&mut CpState, Toggled) + Clone,
     ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }

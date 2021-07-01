@@ -85,7 +85,7 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
     /// Provide a closure to be called when this box is edited.
     pub fn on_text_changed(
         self,
-        callback: impl Fn(&mut CpState, TextChanged),
+        callback: impl Fn(&mut CpState, TextChanged) + Clone,
     ) -> impl Element<CpEvent, CpState> {
         self.on(callback)
     }

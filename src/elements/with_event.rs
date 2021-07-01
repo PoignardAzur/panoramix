@@ -63,13 +63,13 @@ fn bubble_event_up<State, Event>(_state: &mut State, event: Event) -> Option<Eve
 // ---
 
 #[derive(Derivative)]
-#[derivative(Debug(bound = ""))]
+#[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithCallbackEvent<
     CpEvent,
     CpState,
     EventParam,
     Child: Element<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam),
+    Cb: Fn(&mut CpState, EventParam) + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
 {
@@ -85,14 +85,14 @@ pub struct WithCallbackEvent<
 }
 
 #[derive(Derivative)]
-#[derivative(Debug(bound = ""))]
+#[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithMapEvent<
     CpEvent,
     CpState,
     EventParam,
     EventReturn,
     Child: Element<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
+    Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
     CpEvent: ParentEvent<EventReturn>,
@@ -111,7 +111,7 @@ pub struct WithMapEvent<
 }
 
 #[derive(Derivative)]
-#[derivative(Debug(bound = ""))]
+#[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithBubbleEvent<CpEvent, CpState, Event, Child: Element<CpEvent, CpState>>
 where
     Child::Event: ParentEvent<Event>,
@@ -135,7 +135,7 @@ pub struct WithEventTarget<
     EventReturn,
     CbReturn: OptionOrUnit<EventReturn>,
     Child: VirtualDom<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam) -> CbReturn,
+    Cb: Fn(&mut CpState, EventParam) -> CbReturn + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
     CpEvent: ParentEvent<EventReturn>,
@@ -160,7 +160,7 @@ impl<
         CpState,
         EventParam,
         Child: Element<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam),
+        Cb: Fn(&mut CpState, EventParam) + Clone,
     > Element<CpEvent, CpState> for WithCallbackEvent<CpEvent, CpState, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
@@ -196,7 +196,7 @@ impl<
         EventParam,
         EventReturn,
         Child: Element<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn>,
+        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
     > Element<CpEvent, CpState>
     for WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Child, Cb>
 where
@@ -280,7 +280,7 @@ impl<
         EventReturn,
         CbReturn: OptionOrUnit<EventReturn>,
         Child: VirtualDom<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam) -> CbReturn,
+        Cb: Fn(&mut CpState, EventParam) -> CbReturn + Clone,
     > VirtualDom<CpEvent, CpState>
     for WithEventTarget<CpEvent, CpState, EventParam, EventReturn, CbReturn, Child, Cb>
 where
