@@ -271,5 +271,4 @@ mod tests {
     }
 
     // TODO - Widget tests
-
 }

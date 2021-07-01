@@ -198,7 +198,7 @@ mod tests {
     }
 
     #[test]
-    fn test_checkbox_widget() {
+    fn checkbox_widget() {
         // TODO - We use Tuple! because RootWidget currently wants a root element with no event
         use crate::Tuple;
         let checkbox = Tuple!(Checkbox::new("Hello", false));
@@ -219,7 +219,7 @@ mod tests {
 
     // FIXME - Test currently doesn't work; checkbox doesn't emit events
     #[allow(dead_code)]
-    fn test_checkbox_press() {
+    fn checkbox_press() {
         use crate::elements::event_logger::EventLogger;
         use std::sync::mpsc::channel;
 

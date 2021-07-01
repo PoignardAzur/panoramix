@@ -174,7 +174,7 @@ mod tests {
     }
 
     #[test]
-    fn test_button_widget() {
+    fn button_widget() {
         // TODO - We use Tuple! because RootWidget currently wants a root element with no event
         use crate::Tuple;
         let button = Tuple!(Button::new("Hello"));
@@ -188,7 +188,7 @@ mod tests {
     }
 
     #[test]
-    fn test_button_press() {
+    fn button_press() {
         use crate::elements::event_logger::EventLogger;
         use std::sync::mpsc::channel;
 

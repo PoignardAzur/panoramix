@@ -1,6 +1,7 @@
 ---
 source: src/elements/element_tuple.rs
 expression: tuple
+
 ---
 ElementTuple_3(
     Label {

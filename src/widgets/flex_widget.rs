@@ -12,10 +12,8 @@ use druid::{
     Widget,
 };
 
+use crate::flex::{Axis, CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
 use crate::widget_sequence::WidgetSequence;
-
-// TODO
-use crate::flex::*;
 
 /// A container Druid widget, copy-pasted from Druid with some modifications
 pub struct FlexWidget<Children: WidgetSequence> {

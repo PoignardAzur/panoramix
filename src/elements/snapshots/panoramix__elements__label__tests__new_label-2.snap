@@ -1,6 +1,7 @@
 ---
 source: src/elements/label.rs
 expression: label_data
+
 ---
 LabelData {
     text: "Hello",

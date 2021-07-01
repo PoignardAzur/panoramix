@@ -185,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn test_textbox_widget() {
+    fn textbox_widget() {
         // TODO - We use Tuple! because RootWidget currently wants a root element with no event
         use crate::Tuple;
         let textbox = Tuple!(TextBox::new("Hello"));
@@ -203,7 +203,7 @@ mod tests {
     }
 
     #[test]
-    fn test_textbox_keydown() {
+    fn textbox_keydown() {
         use crate::elements::event_logger::EventLogger;
         use std::sync::mpsc::channel;
 
