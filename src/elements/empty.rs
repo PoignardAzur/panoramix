@@ -85,11 +85,12 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for EmptyElementData<CpEvent
 #[cfg(test)]
 mod tests {
     use super::*;
+    use insta::assert_debug_snapshot;
     use test_env_log::test;
 
     #[test]
     fn new_empty() {
-        let empty = EmptyElement::<()>::new();
+        let empty = EmptyElement::<NoEvent, ()>::new();
         let (empty_data, _) = empty.clone().build(());
         assert_eq!(empty, EmptyElement(Default::default(), Default::default()));
         assert_eq!(
@@ -98,6 +99,15 @@ mod tests {
         );
     }
 
-    // TODO
-    // - Widget test
+    #[test]
+    fn empty_widget() {
+        use crate::test_harness::Harness;
+
+        let empty = EmptyElement::new();
+
+        Harness::run_test_window(empty, |harness| {
+            let widget_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(widget_state);
+        });
+    }
 }

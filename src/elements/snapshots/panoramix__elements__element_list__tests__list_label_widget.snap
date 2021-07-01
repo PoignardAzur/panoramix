@@ -1,0 +1,18 @@
+---
+source: src/elements/element_list.rs
+expression: list_state
+
+---
+RootWidget(
+    Column(
+        Label(
+            "aaa",
+        ),
+        Label(
+            "bbb",
+        ),
+        Label(
+            "ccc",
+        ),
+    ),
+)

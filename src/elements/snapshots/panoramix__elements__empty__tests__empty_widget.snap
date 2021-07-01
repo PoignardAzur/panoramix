@@ -1,0 +1,8 @@
+---
+source: src/elements/empty.rs
+expression: widget_state
+
+---
+RootWidget(
+    Column,
+)

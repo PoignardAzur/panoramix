@@ -1,0 +1,18 @@
+---
+source: src/elements/element_tuple.rs
+expression: tuple_state_2
+
+---
+RootWidget(
+    Column(
+        Label(
+            "World",
+        ),
+        Label(
+            "World2",
+        ),
+        Label(
+            "World3",
+        ),
+    ),
+)

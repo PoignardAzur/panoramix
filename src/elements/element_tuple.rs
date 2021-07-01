@@ -485,8 +485,29 @@ mod tests {
         assign_empty_state_type(&tuple);
     }
 
-    // TODO
-    // - Add constructor
-    // - Widget test
-    // - Event test
+    #[test]
+    fn label_tuple_widget() {
+        use crate::test_harness::Harness;
+
+        let tuple = Tuple!(
+            Label::new("Hello"),
+            Label::new("Hello2"),
+            Label::new("Hello3"),
+        );
+
+        Harness::run_test_window(tuple, |harness| {
+            let tuple_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(tuple_state);
+
+            let new_tuple = Tuple!(
+                Label::new("World"),
+                Label::new("World2"),
+                Label::new("World3"),
+            );
+            harness.update_root_element(new_tuple);
+
+            let tuple_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(tuple_state_2);
+        });
+    }
 }

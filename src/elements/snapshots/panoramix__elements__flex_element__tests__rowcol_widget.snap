@@ -1,0 +1,33 @@
+---
+source: src/elements/flex_element.rs
+expression: column_state
+
+---
+RootWidget(
+    Column(
+        Column(
+            Row(
+                Label(
+                    "Hello1",
+                ),
+                Label(
+                    "Hello2",
+                ),
+            ),
+            Row(
+                Label(
+                    "Hello3",
+                ),
+                Label(
+                    "Hello4",
+                ),
+            ),
+            Label(
+                "Hello5",
+            ),
+            Label(
+                "Hello6",
+            ),
+        ),
+    ),
+)

@@ -364,7 +364,8 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for VirtualDomBox<CpEvent, C
 mod tests {
     use super::*;
     use crate::element_tree::assign_empty_state_type;
-    use crate::elements::label::Label;
+    use crate::elements::{Button, Label};
+    use crate::test_harness::Harness;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
@@ -389,7 +390,42 @@ mod tests {
         // TODO - check state
     }
 
-    // TODO
-    // - Event test
-    // - Widget test
+    #[test]
+    fn boxed_label_widget() {
+        let label = ElementBox::new(Label::new("Hello"));
+
+        Harness::run_test_window(label, |harness| {
+            let label_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(label_state);
+
+            let new_label = ElementBox::new(Label::new("World"));
+            harness.update_root_element(new_label);
+
+            let label_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(label_state_2);
+        });
+    }
+
+    #[test]
+    fn boxed_button_press() {
+        use crate::elements::event_logger::EventLogger;
+        use crate::glue::WidgetId;
+        use std::sync::mpsc::channel;
+
+        let (event_sender, event_receiver) = channel();
+        let button_id = WidgetId::reserved(1);
+        let button = EventLogger::new(
+            event_sender,
+            Button::new("Hello").with_reserved_id(button_id),
+        );
+
+        Harness::run_test_window(button, |harness| {
+            assert_debug_snapshot!(harness.get_root_debug_state());
+
+            harness.mouse_click_on(button_id);
+
+            let click_event = event_receiver.try_recv();
+            assert_debug_snapshot!(click_event);
+        });
+    }
 }

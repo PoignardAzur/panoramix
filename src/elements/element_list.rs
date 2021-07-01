@@ -367,8 +367,30 @@ mod tests {
         );
     }
 
-    // TODO
-    // - Add constructor
-    // - Widget test
-    // - Event test
+    #[test]
+    fn list_label_widget() {
+        use crate::test_harness::Harness;
+        let list = new_label_list(&["aaa", "bbb", "ccc"]);
+
+        Harness::run_test_window(list.clone(), |harness| {
+            let list_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(list_state);
+
+            let mut new_list = list.clone();
+            new_list.children[0].1 = Label::new("AAA");
+            new_list
+                .children
+                .insert(1, (String::from("ddd"), Label::new("DDD")));
+            harness.update_root_element(new_list);
+
+            let list_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(list_state_2);
+
+            let empty_list = new_label_list(&[]);
+            harness.update_root_element(empty_list);
+
+            let empty_list_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(empty_list_state);
+        });
+    }
 }

@@ -1,0 +1,8 @@
+---
+source: src/elements/element_list.rs
+expression: empty_list_state
+
+---
+RootWidget(
+    Column,
+)

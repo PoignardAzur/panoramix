@@ -1,0 +1,33 @@
+---
+source: src/elements/flex_element.rs
+expression: column_state_2
+
+---
+RootWidget(
+    Column(
+        Column(
+            Row(
+                Label(
+                    "World1",
+                ),
+                Label(
+                    "World2",
+                ),
+            ),
+            Row(
+                Label(
+                    "World3",
+                ),
+                Label(
+                    "World4",
+                ),
+            ),
+            Label(
+                "World5",
+            ),
+            Label(
+                "World6",
+            ),
+        ),
+    ),
+)

@@ -251,8 +251,34 @@ mod tests {
         assign_empty_state_type(&row);
     }
 
+    #[test]
+    fn rowcol_widget() {
+        use crate::test_harness::Harness;
+
+        let old_column = Column!(
+            Row!(Label::new("Hello1"), Label::new("Hello2"),),
+            Row!(Label::new("Hello3"), Label::new("Hello4"),),
+            Label::new("Hello5"),
+            Label::new("Hello6"),
+        );
+        let new_column = Column!(
+            Row!(Label::new("World1"), Label::new("World2"),),
+            Row!(Label::new("World3"), Label::new("World4"),),
+            Label::new("World5"),
+            Label::new("World6"),
+        );
+
+        Harness::run_test_window(old_column, |harness| {
+            let column_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(column_state);
+
+            harness.update_root_element(new_column.clone());
+
+            let column_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(column_state_2);
+        });
+    }
+
     // TODO
-    // - Id test (??)
-    // - Event test
-    // - Widget test
+    // - Test that layout is calculated properly
 }

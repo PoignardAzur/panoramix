@@ -1,0 +1,15 @@
+---
+source: src/elements/optional_element.rs
+expression: either_elem
+
+---
+Right(
+    Button {
+        text: "World",
+        flex: FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
+        reserved_widget_id: None,
+    },
+)

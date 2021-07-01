@@ -1,0 +1,14 @@
+---
+source: src/elements/optional_element.rs
+expression: option_label
+
+---
+Some(
+    Label {
+        text: "Hello",
+        flex: FlexParams {
+            flex: 1.0,
+            alignment: None,
+        },
+    },
+)

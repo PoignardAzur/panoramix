@@ -212,3 +212,64 @@ impl<
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::element_tree::assign_empty_state_type;
+    use crate::elements::button::{Button, ButtonData};
+    use crate::elements::label::{Label, LabelData};
+    use crate::flex::FlexParams;
+    use insta::assert_debug_snapshot;
+    use test_env_log::test;
+
+    #[test]
+    fn new_option() {
+        let mut option_label = Some(Label::new("Hello"));
+        let (option_label_data, _) = option_label.clone().build(None);
+
+        assert_debug_snapshot!(option_label);
+        assert_debug_snapshot!(option_label_data);
+        assert_eq!(option_label_data, Some(LabelData::new("Hello")));
+
+        assign_empty_state_type(&option_label);
+
+        option_label = None;
+        let (option_label_data, _) = option_label.clone().build(None);
+
+        assert_debug_snapshot!(option_label);
+        assert_debug_snapshot!(option_label_data);
+        assert_eq!(option_label_data, None);
+    }
+
+    #[test]
+    fn new_either() {
+        let mut either_elem = Left(Label::new("Hello"));
+        let (either_elem_data, _) = either_elem.clone().build(None);
+
+        assert_debug_snapshot!(either_elem);
+        assert_debug_snapshot!(either_elem_data);
+        assert_eq!(either_elem_data, Left(LabelData::new("Hello")));
+
+        let button_data = ButtonData {
+            text: String::from("World"),
+            flex: FlexParams {
+                flex: 1.0,
+                alignment: None,
+            },
+            ..Default::default()
+        };
+
+        either_elem = Right(Button::new("World"));
+        let (either_elem_data, _) = either_elem.clone().build(None);
+
+        assert_debug_snapshot!(either_elem);
+        assert_debug_snapshot!(either_elem_data);
+        assert_eq!(either_elem_data, Right(button_data));
+
+        assign_empty_state_type(&either_elem);
+    }
+
+    // TODO - Widget tests
+
+}
