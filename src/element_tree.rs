@@ -30,6 +30,11 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
     pub env: &'c Env,
 }
 
+pub struct ProcessEventCtx<'e, 's, ComponentEvent, ComponentState> {
+    pub event_queue: &'e mut Vec<ComponentEvent>,
+    pub state: &'s mut ComponentState,
+}
+
 /// The trait implemented by all GUI elements.
 ///
 /// Every type you use to explicitly create a GUI in Panoramix ([`Button`](crate::elements::Button), [`TextBox`](crate::elements::TextBox), any user-made component) implements Element. You usually don't need to worry about this trait unless you want to implement your own custom element.
@@ -118,13 +123,12 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
     // TODO - Rename methods
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         #![allow(unused_variables)]
-        None
     }
 
     fn process_local_event(

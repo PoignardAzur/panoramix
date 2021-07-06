@@ -1,6 +1,7 @@
 use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
@@ -308,15 +309,19 @@ where
 
     #[instrument(
         name = "WithEvent",
-        skip(self, component_state, children_state, widget_seq, cx)
+        skip(self, comp_ctx, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
+        // First, recursively handle all child events
+        self.element
+            .process_event(comp_ctx, children_state, widget_seq, cx);
+
         // FIXME - Handle chains of callbacks eg
         /*
             Button(...)
@@ -324,20 +329,21 @@ where
                 .on(|MouseEnter| ...)
                 .on(|MouseLeave| ...)
         */
+
         let local_event = self
             .element
             .process_local_event(children_state, widget_seq, cx);
         if let Some(local_event) = local_event.map(ParentEvent::into_child_event).flatten() {
             trace!("Processing callback for local event");
-            let event = (self.callback)(component_state, local_event)
+            let event = (self.callback)(comp_ctx.state, local_event)
                 .to_option()
                 .map(CpEvent::from_child_event);
-            if event.is_some() {
+            if let Some(event) = event {
+                // TODO - Log event
                 trace!("Callback returned event");
+                comp_ctx.event_queue.push(event);
             }
-            return event;
         }
-        None
     }
 }
 

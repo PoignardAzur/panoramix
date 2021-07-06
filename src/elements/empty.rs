@@ -1,5 +1,4 @@
 use crate::element_tree::{Element, NoEvent, VirtualDom};
-use crate::glue::GlobalEventCx;
 use crate::widgets::EmptySequence;
 
 use crate::element_tree::ReconcileCtx;
@@ -70,16 +69,6 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for EmptyElementData<CpEvent
     }
 
     fn reconcile(&self, _other: &Self, _widget_seq: &mut EmptySequence, _ctx: &mut ReconcileCtx) {}
-
-    fn process_event(
-        &self,
-        _component_state: &mut CpState,
-        _children_state: &mut (),
-        _widget_seq: &mut EmptySequence,
-        _cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
-        return None;
-    }
 }
 
 #[cfg(test)]

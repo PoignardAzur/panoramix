@@ -6,6 +6,7 @@ use crate::elements::backend::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetTuple;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
@@ -382,54 +383,26 @@ impl<
     }
 
     #[rustfmt::skip]
-    #[instrument(name = "Tuple", skip(self, component_state, children_state, widget_seq, cx))]
+    #[instrument(name = "Tuple", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
-        let event0 = self.0
-            .process_event(component_state, &mut children_state.0, &mut widget_seq.0, cx);
-        let event1 = self.1
-            .process_event(component_state, &mut children_state.1, &mut widget_seq.1, cx);
-        let event2 = self.2
-            .process_event(component_state, &mut children_state.2, &mut widget_seq.2, cx);
-        let event3 = self.3
-            .process_event(component_state, &mut children_state.3, &mut widget_seq.3, cx);
-        let event4 = self.4
-            .process_event(component_state, &mut children_state.4, &mut widget_seq.4, cx);
-        let event5 = self.5
-            .process_event(component_state, &mut children_state.5, &mut widget_seq.5, cx);
-        let event6 = self.6
-            .process_event(component_state, &mut children_state.6, &mut widget_seq.6, cx);
-        let event7 = self.7
-            .process_event(component_state, &mut children_state.7, &mut widget_seq.7, cx);
-        let event8 = self.8
-            .process_event(component_state, &mut children_state.8, &mut widget_seq.8, cx);
-        let event9 = self.9
-            .process_event(component_state, &mut children_state.9, &mut widget_seq.9, cx);
-        let event10 = self.10
-            .process_event(component_state, &mut children_state.10, &mut widget_seq.10, cx);
-        let event11 = self.11
-            .process_event(component_state, &mut children_state.11, &mut widget_seq.11, cx);
-
-        // FIXME - If several events happen simultaneously, this will swallow all but one
-        // process_event() should return an iterator or an observable instead.
-        None
-            .or(event0)
-            .or(event1)
-            .or(event2)
-            .or(event3)
-            .or(event4)
-            .or(event5)
-            .or(event6)
-            .or(event7)
-            .or(event8)
-            .or(event9)
-            .or(event10)
-            .or(event11)
+    ) {
+        self.0.process_event(comp_ctx, &mut children_state.0, &mut widget_seq.0, cx);
+        self.1.process_event(comp_ctx, &mut children_state.1, &mut widget_seq.1, cx);
+        self.2.process_event(comp_ctx, &mut children_state.2, &mut widget_seq.2, cx);
+        self.3.process_event(comp_ctx, &mut children_state.3, &mut widget_seq.3, cx);
+        self.4.process_event(comp_ctx, &mut children_state.4, &mut widget_seq.4, cx);
+        self.5.process_event(comp_ctx, &mut children_state.5, &mut widget_seq.5, cx);
+        self.6.process_event(comp_ctx, &mut children_state.6, &mut widget_seq.6, cx);
+        self.7.process_event(comp_ctx, &mut children_state.7, &mut widget_seq.7, cx);
+        self.8.process_event(comp_ctx, &mut children_state.8, &mut widget_seq.8, cx);
+        self.9.process_event(comp_ctx, &mut children_state.9, &mut widget_seq.9, cx);
+        self.10.process_event(comp_ctx, &mut children_state.10, &mut widget_seq.10, cx);
+        self.11.process_event(comp_ctx, &mut children_state.11, &mut widget_seq.11, cx);
     }
 }
 

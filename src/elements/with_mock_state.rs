@@ -1,6 +1,7 @@
 use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
@@ -102,12 +103,12 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Child::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         self.0
-            .process_event(component_state, &mut children_state.1, widget_seq, cx)
+            .process_event(comp_ctx, &mut children_state.1, widget_seq, cx)
     }
 }

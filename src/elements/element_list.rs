@@ -3,6 +3,7 @@ use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetList;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
@@ -245,17 +246,14 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
         }
     }
 
-    #[instrument(
-        name = "List",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
+    #[instrument(name = "List", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         for child_data in self
             .children
             .iter()
@@ -265,16 +263,8 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
             let (_key, child) = child_data.0 .0;
             let child_comp_state = child_data.0 .1;
             let child_widget_seq = child_data.1;
-            if let Some(event) = child.process_event(
-                component_state,
-                &mut child_comp_state.1,
-                child_widget_seq,
-                cx,
-            ) {
-                return Some(event);
-            }
+            child.process_event(comp_ctx, &mut child_comp_state.1, child_widget_seq, cx);
         }
-        return None;
     }
 }
 

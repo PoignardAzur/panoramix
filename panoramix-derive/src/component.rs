@@ -111,6 +111,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             fn call_indirect<ParentCpEvent, ParentCpState>(
                 &self,
                 prev_state: (
+                    Vec<Self::LocalEvent>,
                     Self::LocalState,
                     Option<panoramix::elements::any_element::AnyStateBox>,
                 ),
@@ -124,6 +125,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
                     ParentCpState,
                 >,
                 (
+                    Vec<Self::LocalEvent>,
                     Self::LocalState,
                     Option<panoramix::elements::any_element::AnyStateBox>,
                 ),

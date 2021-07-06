@@ -1,3 +1,4 @@
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
@@ -244,11 +245,11 @@ pub trait AnyVirtualDom<CpEvent, CpState>: Any + Debug {
 
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Option<AnyStateBox>,
         widget_seq: &mut WidgetSeqBox,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent>;
+    );
 }
 
 impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'static>
@@ -281,11 +282,11 @@ impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: '
 
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Option<AnyStateBox>,
         widget_seq: &mut WidgetSeqBox,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         let children_state = children_state
             .as_mut()
             .unwrap()
@@ -299,7 +300,7 @@ impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: '
             .downcast_mut::<Child::TargetWidgetSeq>()
             .unwrap();
         self.child
-            .process_event(component_state, children_state, widget_seq, cx)
+            .process_event(comp_ctx, children_state, widget_seq, cx)
     }
 }
 
@@ -348,13 +349,13 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for VirtualDomBox<CpEvent, C
 
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Option<AnyStateBox>,
         widget_seq: &mut WidgetSeqBox,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         self.child
-            .process_event(component_state, children_state, widget_seq, cx)
+            .process_event(comp_ctx, children_state, widget_seq, cx)
     }
 }
 

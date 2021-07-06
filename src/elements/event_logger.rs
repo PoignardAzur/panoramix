@@ -1,5 +1,6 @@
 // FIXME - Element used in unit tests to record events emitted by a child event
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
@@ -55,7 +56,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
         self,
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
-        let (element, component_state) = self.child.build(prev_state);
+        let (element, child_state) = self.child.build(prev_state);
         (
             EventLoggerData {
                 child: element,
@@ -63,7 +64,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
                 _comp_state: Default::default(),
                 _comp_event: Default::default(),
             },
-            component_state,
+            child_state,
         )
     }
 }
@@ -93,21 +94,23 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
     #[instrument(
         name = "EventLogger",
-        skip(self, _component_state, children_state, widget_seq, cx)
+        skip(self, comp_ctx, children_state, widget_seq, cx)
     )]
     fn process_event(
         &self,
-        _component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
+        self.child
+            .process_event(comp_ctx, children_state, widget_seq, cx);
+
         let local_event = self
             .child
             .process_local_event(children_state, widget_seq, cx);
         if let Some(local_event) = local_event {
             let _ = self.event_queue.send(local_event);
         }
-        None
     }
 }

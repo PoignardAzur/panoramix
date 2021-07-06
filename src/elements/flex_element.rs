@@ -1,3 +1,4 @@
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::flex::{Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, MainAxisAlignment};
@@ -98,10 +99,10 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
         self,
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
-        let (element, component_state) = self.child.build(prev_state);
+        let (element, children_state) = self.child.build(prev_state);
         (
             FlexData::new(self.axis, element, self.flex, self.flex_container),
-            component_state,
+            children_state,
         )
     }
 }
@@ -138,19 +139,16 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
         );
     }
 
-    #[instrument(
-        name = "Flex",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
+    #[instrument(name = "Flex", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         self.child.process_event(
-            component_state,
+            comp_ctx,
             children_state,
             &mut widget_seq.pod.widget_mut().children_seq,
             cx,

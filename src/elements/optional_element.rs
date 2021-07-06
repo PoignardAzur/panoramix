@@ -1,6 +1,7 @@
 use crate::element_tree::{Element, NoEvent, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use either::{Either, Left, Right};
@@ -63,24 +64,22 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
         }
     }
 
-    #[instrument(
-        name = "Option",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
+    #[instrument(name = "Option", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
-        let child = self.as_ref()?;
-        child.process_event(
-            component_state,
-            children_state.as_mut().unwrap_or_log(),
-            widget_seq.as_mut().unwrap_or_log(),
-            cx,
-        )
+    ) {
+        if let Some(child) = self.as_ref() {
+            child.process_event(
+                comp_ctx,
+                children_state.as_mut().unwrap_or_log(),
+                widget_seq.as_mut().unwrap_or_log(),
+                cx,
+            );
+        }
     }
 }
 
@@ -175,20 +174,17 @@ impl<
         }
     }
 
-    #[instrument(
-        name = "Either",
-        skip(self, component_state, children_state, widget_seq, cx)
-    )]
+    #[instrument(name = "Either", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        component_state: &mut CpState,
+        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<CpEvent> {
+    ) {
         match self {
             Left(child) => child.process_event(
-                component_state,
+                comp_ctx,
                 &mut children_state
                     .as_mut()
                     .unwrap_or_log()
@@ -199,7 +195,7 @@ impl<
                 cx,
             ),
             Right(child) => child.process_event(
-                component_state,
+                comp_ctx,
                 &mut children_state
                     .as_mut()
                     .unwrap_or_log()

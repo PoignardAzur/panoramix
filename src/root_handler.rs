@@ -1,4 +1,4 @@
-use crate::element_tree::{Element, NoEvent, ReconcileCtx, VirtualDom};
+use crate::element_tree::{Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::elements::backend::ComponentHolder;
 use crate::elements::Component;
 use crate::flex;
@@ -44,7 +44,7 @@ impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>>
     /// Set the local state of the root component to a value other than default
     pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
         RootWidget {
-            root_state: (comp_local_state, Default::default()),
+            root_state: (vec![], comp_local_state, Default::default()),
             ..self
         }
     }
@@ -115,8 +115,12 @@ impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
             // We ignore the root event for now.
             // This might change in cases where we want the user to control
             // when RootWidget::run() is called.
-            let _ = prev_vdom.process_event(
-                &mut (),
+            let mut ctx = ProcessEventCtx {
+                event_queue: &mut vec![],
+                state: &mut (),
+            };
+            prev_vdom.process_event(
+                &mut ctx,
                 &mut self.root_state,
                 &mut flex_widget.children_seq,
                 &mut cx,

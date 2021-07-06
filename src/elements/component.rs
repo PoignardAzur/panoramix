@@ -1,6 +1,7 @@
 use crate::element_tree::{CompCtx, Element, VirtualDom};
 use crate::glue::GlobalEventCx;
 
+use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
 
 use crate::elements::any_element::{AnyStateBox, ElementBox, VirtualDomBox};
@@ -10,7 +11,7 @@ use std::fmt::Debug;
 
 pub trait Component: Debug + Clone {
     type Props: Clone + Default + Debug + PartialEq + 'static;
-    type LocalEvent: 'static;
+    type LocalEvent: Clone + Debug + PartialEq + 'static;
     type LocalState: Clone + Default + Debug + PartialEq + 'static;
 
     fn new<ParentCpEvent, ParentCpState>(
@@ -22,7 +23,7 @@ pub trait Component: Debug + Clone {
     #[doc(hidden)]
     fn call_indirect<ParentCpEvent, ParentCpState>(
         &self,
-        prev_state: (Self::LocalState, Option<AnyStateBox>),
+        prev_state: (Vec<Self::LocalEvent>, Self::LocalState, Option<AnyStateBox>),
         props: Self::Props,
     ) -> (
         ComponentOutput<
@@ -32,7 +33,7 @@ pub trait Component: Debug + Clone {
             ParentCpEvent,
             ParentCpState,
         >,
-        (Self::LocalState, Option<AnyStateBox>),
+        (Vec<Self::LocalEvent>, Self::LocalState, Option<AnyStateBox>),
     );
 }
 
@@ -47,7 +48,7 @@ pub struct ComponentHolder<Comp: Component, ParentCpEvent, ParentCpState> {
 #[derive(Derivative, Clone, PartialEq, Eq, Hash)]
 #[derivative(Default(bound = "Child: Default"))]
 pub struct ComponentOutput<
-    ChildCpEvent,
+    ChildCpEvent: Clone + Debug + PartialEq,
     ChildCpState: Clone + Default + Debug + PartialEq,
     Child: VirtualDom<ChildCpEvent, ChildCpState>,
     ParentCpEvent,
@@ -81,7 +82,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState> std::fmt::Debug
 }
 
 impl<
-        ChildCpEvent,
+        ChildCpEvent: Clone + Debug + PartialEq,
         ChildCpState: Clone + Default + Debug + PartialEq,
         Child: VirtualDom<ChildCpEvent, ChildCpState>,
         ParentCpEvent,
@@ -102,7 +103,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState>
     pub fn build_with<ReturnedTree: Element<Comp::LocalEvent, Comp::LocalState> + 'static>(
         _comp: Comp,
         comp_fn: impl Fn(&CompCtx, Comp::Props) -> ReturnedTree,
-        prev_state: (Comp::LocalState, Option<AnyStateBox>),
+        prev_state: (Vec<Comp::LocalEvent>, Comp::LocalState, Option<AnyStateBox>),
         props: Comp::Props,
     ) -> (
         ComponentOutput<
@@ -112,9 +113,9 @@ impl<Comp: Component, ParentCpEvent, ParentCpState>
             ParentCpEvent,
             ParentCpState,
         >,
-        (Comp::LocalState, Option<AnyStateBox>),
+        (Vec<Comp::LocalEvent>, Comp::LocalState, Option<AnyStateBox>),
     ) {
-        let (local_state, children_state) = prev_state;
+        let (_, local_state, children_state) = prev_state;
         let ctx = CompCtx {
             local_state: &local_state,
         };
@@ -128,7 +129,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState>
                 name: Comp::name(),
                 _markers: Default::default(),
             },
-            (local_state, new_children_state),
+            (Default::default(), local_state, new_children_state),
         )
     }
 }
@@ -137,7 +138,8 @@ impl<Comp: Component, ParentCpEvent, ParentCpState> Element<ParentCpEvent, Paren
     for ComponentHolder<Comp, ParentCpEvent, ParentCpState>
 {
     type Event = Comp::LocalEvent;
-    type AggregateChildrenState = (Comp::LocalState, Option<AnyStateBox>);
+    // TODO - Store Event queue somewhere else?
+    type AggregateChildrenState = (Vec<Comp::LocalEvent>, Comp::LocalState, Option<AnyStateBox>);
     type BuildOutput = ComponentOutput<
         Comp::LocalEvent,
         Comp::LocalState,
@@ -158,7 +160,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState> Element<ParentCpEvent, Paren
 /// ---
 
 impl<
-        ChildCpEvent,
+        ChildCpEvent: Clone + Debug + PartialEq,
         ChildCpState: Clone + Default + Debug + PartialEq,
         Child: VirtualDom<ChildCpEvent, ChildCpState>,
         ParentCpEvent,
@@ -167,7 +169,11 @@ impl<
     for ComponentOutput<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
 {
     type Event = ChildCpEvent;
-    type AggregateChildrenState = (ChildCpState, Child::AggregateChildrenState);
+    type AggregateChildrenState = (
+        Vec<ChildCpEvent>,
+        ChildCpState,
+        Child::AggregateChildrenState,
+    );
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     // TODO - add spans
@@ -187,22 +193,27 @@ impl<
     fn process_local_event(
         &self,
         children_state: &mut Self::AggregateChildrenState,
-        widget_seq: &mut Child::TargetWidgetSeq,
-        cx: &mut GlobalEventCx,
+        _widget_seq: &mut Child::TargetWidgetSeq,
+        _cx: &mut GlobalEventCx,
     ) -> Option<Self::Event> {
-        self.child
-            .process_event(&mut children_state.0, &mut children_state.1, widget_seq, cx)
+        let event_queue = &mut children_state.0;
+        // TODO - this is a stack, not a queue; whatever, I'll use VecDeque later
+        event_queue.pop()
     }
 
     fn process_event(
         &self,
-        _component_state: &mut ParentCpState,
+        _comp_ctx: &mut ProcessEventCtx<ParentCpEvent, ParentCpState>,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
-    ) -> Option<ParentCpEvent> {
-        self.process_local_event(children_state, widget_seq, cx);
-        None
+    ) {
+        let mut ctx = ProcessEventCtx {
+            event_queue: &mut children_state.0,
+            state: &mut children_state.1,
+        };
+        self.child
+            .process_event(&mut ctx, &mut children_state.2, widget_seq, cx)
     }
 }
 
@@ -253,6 +264,7 @@ mod tests {
         fn call_indirect<ParentCpEvent, ParentCpState>(
             &self,
             prev_state: (
+                Vec<Self::LocalEvent>,
                 Self::LocalState,
                 Option<panoramix::elements::any_element::AnyStateBox>,
             ),
@@ -266,6 +278,7 @@ mod tests {
                 ParentCpState,
             >,
             (
+                Vec<Self::LocalEvent>,
                 Self::LocalState,
                 Option<panoramix::elements::any_element::AnyStateBox>,
             ),
