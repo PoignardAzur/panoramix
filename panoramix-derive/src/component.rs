@@ -78,17 +78,24 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         #vis struct #ComponentName;
 
         impl #ComponentName {
-            #vis fn new<ParentCpEvent, ParentCpState>(
+            #vis fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
                 props: #PropsType,
             ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=#LocalEvent> {
                 <Self as panoramix::elements::Component>::new(props)
             }
 
-            #vis fn render(
+            #vis fn render<ParentCpEvent: 'static, ParentCpState: 'static>(
                 #ctx_arg,
                 #props_arg,
-            ) -> impl panoramix::Element<#LocalEvent, #LocalState, Event=panoramix::NoEvent> {
-                #fn_block
+            ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=#LocalEvent> {
+                let child = {
+                    #fn_block
+                };
+                panoramix::elements::component::ComponentOutputElem::<#LocalEvent, #LocalState, _, _, _> {
+                    child,
+                    name: #ComponentName_literal,
+                    _markers: Default::default(),
+                }
             }
         }
 
@@ -97,45 +104,17 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             type LocalEvent = #LocalEvent;
             type LocalState = #LocalState;
 
-            fn new<ParentCpEvent, ParentCpState>(
+            fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
                 props: Self::Props,
-            ) -> panoramix::elements::backend::ComponentHolder<Self, ParentCpEvent, ParentCpState>
+            ) -> panoramix::elements::ElementBox<#LocalEvent, ParentCpEvent, ParentCpState>
             {
-                panoramix::elements::backend::ComponentHolder::new(#ComponentName, props)
+                panoramix::elements::ElementBox::new(
+                    panoramix::elements::backend::ComponentHolder::<Self, _, _, ParentCpEvent, ParentCpState>::new(&#ComponentName::render, props)
+                )
             }
 
             fn name() -> &'static str {
                 #ComponentName_literal
-            }
-
-            fn call_indirect<ParentCpEvent, ParentCpState>(
-                &self,
-                prev_state: (
-                    Vec<Self::LocalEvent>,
-                    Self::LocalState,
-                    Option<panoramix::elements::any_element::AnyStateBox>,
-                ),
-                props: Self::Props,
-            ) -> (
-                panoramix::elements::backend::ComponentOutput<
-                    Self::LocalEvent,
-                    Self::LocalState,
-                    panoramix::elements::any_element::VirtualDomBox<panoramix::NoEvent, Self::LocalEvent, Self::LocalState>,
-                    ParentCpEvent,
-                    ParentCpState,
-                >,
-                (
-                    Vec<Self::LocalEvent>,
-                    Self::LocalState,
-                    Option<panoramix::elements::any_element::AnyStateBox>,
-                ),
-            ) {
-                panoramix::elements::backend::ComponentHolder::build_with(
-                    #ComponentName,
-                    &#ComponentName::render,
-                    prev_state,
-                    props,
-                )
             }
         }
     }

@@ -133,7 +133,7 @@ fn main() -> Result<(), PlatformError> {
     };
 
     RootHandler::new(AwesomeEditableList)
-        .with_initial_state(state)
+        //.with_initial_state(state)
         .with_tracing(true)
         .launch()
 }

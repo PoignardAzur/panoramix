@@ -91,6 +91,7 @@ pub use element_tree::{CompCtx, Element, ElementExt, Metadata, NoEvent};
 
 pub use root_handler::{PlatformError, RootHandler, RootWidget};
 
+// TODO - Rename to "internals"
 /// Traits and type used internally to compute the GUI
 pub mod backend {
     // Note: These items are declared together in files, but are exported separately here

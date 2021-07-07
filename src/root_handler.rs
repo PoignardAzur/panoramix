@@ -1,14 +1,17 @@
-use crate::element_tree::{Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
+use crate::element_tree::{CompCtx, Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::elements::backend::ComponentHolder;
 use crate::elements::Component;
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
+use crate::elements::{ElementBox};
 
 use crate::glue::DebugState;
+
 use druid::widget::prelude::*;
 use druid::{widget, AppLauncher, Point, Widget, WidgetPod, WindowDesc};
 use tracing::{debug_span, info, instrument, trace};
+use std::fmt::Debug;
 
 pub use druid::PlatformError;
 
@@ -30,8 +33,10 @@ pub struct RootWidget<RootElem: Element<NoEvent, ()> + 'static> {
     >,
 }
 
-impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>> {
-    pub fn new(_root_component: Comp) -> Self {
+impl<
+    LocalEvent: Clone + Debug + PartialEq + 'static,
+> RootWidget<ElementBox<LocalEvent, NoEvent, ()>> {
+    pub fn new<Comp: Component<Props = (), LocalEvent = LocalEvent>>(_root_component: Comp) -> Self {
         RootWidget {
             root_element: Comp::new(()),
             root_state: Default::default(),
@@ -41,8 +46,11 @@ impl<Comp: Component<Props = ()>> RootWidget<ComponentHolder<Comp, NoEvent, ()>>
         }
     }
 
+    // FIXME
     /// Set the local state of the root component to a value other than default
+        #[cfg(FALSE)]
     pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
+        todo!();
         RootWidget {
             root_state: (vec![], comp_local_state, Default::default()),
             ..self
@@ -264,21 +272,26 @@ pub struct RootHandler<RootElem: Element<NoEvent, ()> + 'static> {
     pub init_tracing: bool,
 }
 
-impl<Comp: Component<Props = ()>> RootHandler<ComponentHolder<Comp, NoEvent, ()>> {
+impl<
+    LocalEvent: Clone + Debug + PartialEq + 'static,
+> RootHandler<ElementBox<LocalEvent, NoEvent, ()>> {
     /// Creates the data to start the application.
     ///
     /// The `root_component` parameter should be roughly `YourRootComponent::new(some_props)`.
     ///
     /// Call [`launch`](RootHandler::launch) to actually start the application.
-    pub fn new(root_component: Comp) -> Self {
+    pub fn new(root_component: impl Component<Props = (), LocalEvent = LocalEvent>) -> Self {
         RootHandler {
             root_widget: RootWidget::new(root_component),
             init_tracing: false,
         }
     }
 
+    // FIXME
     /// Set the local state of the root component to a value other than default
+        #[cfg(FALSE)]
     pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
+        todo!();
         RootHandler {
             root_widget: self.root_widget.with_initial_state(comp_local_state),
             ..self

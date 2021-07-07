@@ -1,16 +1,15 @@
 //! GUI elements that can be built in a component.
 
+mod any_element;
 mod button;
 mod checkbox;
-mod component;
+pub mod component;
 mod element_list;
 mod empty;
 mod flex_element;
 mod label;
 mod optional_element;
 mod textbox;
-
-pub mod any_element;
 
 // TODO
 mod with_mock_state;
@@ -24,6 +23,7 @@ pub mod with_event;
 
 mod compute_diff;
 
+pub use any_element::{ElementBox, AnyState};
 pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
 pub use component::Component;
@@ -35,6 +35,7 @@ pub use optional_element::*;
 pub use textbox::{TextBox, TextChanged};
 
 pub mod backend {
+    pub use super::any_element::VirtualDomBox;
     pub use super::button::ButtonData;
     pub use super::checkbox::CheckboxData;
     pub use super::component::{ComponentHolder, ComponentOutput};

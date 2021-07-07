@@ -93,7 +93,7 @@ pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
     /// In the `StoreItem` example, the `Event` type of buttons is `ButtonClick`, and their `CpEvent` parameter is `BuyItem`.
     type Event;
 
-    type ComponentState: Clone + Default + Debug + PartialEq;
+    type ComponentState: Clone + Default + Debug + PartialEq + 'static;
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
         CpEvent,
