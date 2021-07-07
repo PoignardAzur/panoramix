@@ -1,4 +1,4 @@
-use crate::element_tree::{CompCtx, Element, VirtualDom};
+use crate::element_tree::{CompCtx, Element, NoEvent, NoState, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ProcessEventCtx;
@@ -29,7 +29,7 @@ pub trait Component: Debug + Clone {
         ComponentOutput<
             Self::LocalEvent,
             Self::LocalState,
-            VirtualDomBox<Self::LocalEvent, Self::LocalState>,
+            VirtualDomBox<NoEvent, Self::LocalEvent, Self::LocalState>,
             ParentCpEvent,
             ParentCpState,
         >,
@@ -100,7 +100,7 @@ impl<
 impl<Comp: Component, ParentCpEvent, ParentCpState>
     ComponentHolder<Comp, ParentCpEvent, ParentCpState>
 {
-    pub fn build_with<ReturnedTree: Element<Comp::LocalEvent, Comp::LocalState> + 'static>(
+    pub fn build_with<ReturnedTree: Element<Comp::LocalEvent, Comp::LocalState, Event=NoEvent> + 'static>(
         _comp: Comp,
         comp_fn: impl Fn(&CompCtx, Comp::Props) -> ReturnedTree,
         prev_state: (Vec<Comp::LocalEvent>, Comp::LocalState, Option<AnyStateBox>),
@@ -109,7 +109,7 @@ impl<Comp: Component, ParentCpEvent, ParentCpState>
         ComponentOutput<
             Comp::LocalEvent,
             Comp::LocalState,
-            VirtualDomBox<Comp::LocalEvent, Comp::LocalState>,
+            VirtualDomBox<NoEvent, Comp::LocalEvent, Comp::LocalState>,
             ParentCpEvent,
             ParentCpState,
         >,
@@ -138,12 +138,13 @@ impl<Comp: Component, ParentCpEvent, ParentCpState> Element<ParentCpEvent, Paren
     for ComponentHolder<Comp, ParentCpEvent, ParentCpState>
 {
     type Event = Comp::LocalEvent;
+    type ComponentState = NoState;
     // TODO - Store Event queue somewhere else?
     type AggregateChildrenState = (Vec<Comp::LocalEvent>, Comp::LocalState, Option<AnyStateBox>);
     type BuildOutput = ComponentOutput<
         Comp::LocalEvent,
         Comp::LocalState,
-        VirtualDomBox<Comp::LocalEvent, Comp::LocalState>,
+        VirtualDomBox<NoEvent, Comp::LocalEvent, Comp::LocalState>,
         ParentCpEvent,
         ParentCpState,
     >;
@@ -233,14 +234,14 @@ mod tests {
     impl MyComponent {
         fn new<ParentCpEvent, ParentCpState>(
             props: MyPropsType,
-        ) -> impl panoramix::Element<ParentCpEvent, ParentCpState> {
+        ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=panoramix::NoEvent> {
             <Self as panoramix::elements::component::Component>::new(props)
         }
 
         fn render(
             _ctx: &panoramix::CompCtx,
             _my_props: MyPropsType,
-        ) -> impl panoramix::Element<MyLocalEvent, MyLocalState> {
+        ) -> impl panoramix::Element<MyLocalEvent, MyLocalState, Event=panoramix::NoEvent> {
             panoramix::elements::EmptyElement::new()
         }
     }
@@ -273,7 +274,7 @@ mod tests {
             panoramix::elements::component::ComponentOutput<
                 Self::LocalEvent,
                 Self::LocalState,
-                panoramix::elements::any_element::VirtualDomBox<Self::LocalEvent, Self::LocalState>,
+                panoramix::elements::any_element::VirtualDomBox<panoramix::NoEvent, Self::LocalEvent, Self::LocalState>,
                 ParentCpEvent,
                 ParentCpState,
             >,

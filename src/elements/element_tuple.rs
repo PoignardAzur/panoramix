@@ -86,6 +86,7 @@ impl<
     > Element<CpEvent, CpState> for $TupleName<$($Type,)* CpEvent, CpState>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = (
         $(
             $Type::AggregateChildrenState,

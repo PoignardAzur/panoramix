@@ -87,7 +87,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             #vis fn render(
                 #ctx_arg,
                 #props_arg,
-            ) -> #fn_output {
+            ) -> impl panoramix::Element<#LocalEvent, #LocalState, Event=panoramix::NoEvent> {
                 #fn_block
             }
         }
@@ -120,7 +120,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
                 panoramix::elements::backend::ComponentOutput<
                     Self::LocalEvent,
                     Self::LocalState,
-                    panoramix::elements::any_element::VirtualDomBox<Self::LocalEvent, Self::LocalState>,
+                    panoramix::elements::any_element::VirtualDomBox<panoramix::NoEvent, Self::LocalEvent, Self::LocalState>,
                     ParentCpEvent,
                     ParentCpState,
                 >,

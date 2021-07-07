@@ -1,6 +1,7 @@
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widget_sequence::WidgetSequence;
 
+use derivative::Derivative;
 use druid::{Env, EventCtx};
 use std::any::Any;
 use std::fmt::Debug;
@@ -35,6 +36,18 @@ pub struct ProcessEventCtx<'e, 's, ComponentEvent, ComponentState> {
     pub state: &'s mut ComponentState,
 }
 
+#[derive(Derivative)]
+#[derivative(Clone(bound = ""), Copy(bound = ""), Default(bound = ""))]
+pub struct Metadata<ComponentEvent, ComponentState> {
+    _marker: std::marker::PhantomData<(ComponentEvent, ComponentState)>,
+}
+
+impl<ComponentEvent, ComponentState> Metadata<ComponentEvent, ComponentState> {
+    pub fn new() -> Self {
+        Default::default()
+    }
+}
+
 /// The trait implemented by all GUI elements.
 ///
 /// Every type you use to explicitly create a GUI in Panoramix ([`Button`](crate::elements::Button), [`TextBox`](crate::elements::TextBox), any user-made component) implements Element. You usually don't need to worry about this trait unless you want to implement your own custom element.
@@ -48,21 +61,22 @@ pub struct ProcessEventCtx<'e, 's, ComponentEvent, ComponentState> {
 /// To give a concrete example:
 ///
 /// ```rust
-/// # use panoramix::{component, CompCtx, Column, Element, ElementExt};
+/// # use panoramix::{component, CompCtx, Column, Element, ElementExt, Metadata};
 /// # use panoramix::elements::{ButtonClick, Button, Label};
 /// # type BuyItem = ButtonClick;
 /// #
 /// #[component]
 /// fn StoreItem(ctx: &CompCtx, item_name: String) -> impl Element<BuyItem, u32> {
+///     let md = Metadata::<BuyItem, u32>::new();
 ///     let item_count = ctx.use_local_state::<u32>();
 ///     Column!(
 ///         Label::new(format!("Item: {} x{}", item_name, item_count)),
 ///         Button::new("+")
-///             .on_click(|item_count, _| {
+///             .on_click(md, |item_count, _| {
 ///                 *item_count += 1;
 ///             }),
 ///         Button::new("Buy")
-///             .bubble_up::<BuyItem>()
+///             .bubble_up::<BuyItem>(md)
 ///     )
 /// }
 /// ```
@@ -79,6 +93,7 @@ pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
     /// In the `StoreItem` example, the `Event` type of buttons is `ButtonClick`, and their `CpEvent` parameter is `BuyItem`.
     type Event;
 
+    type ComponentState: Clone + Default + Debug + PartialEq;
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
         CpEvent,
@@ -91,14 +106,18 @@ pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
         self,
         prev_state: Self::AggregateChildrenState,
     ) -> (Self::BuildOutput, Self::AggregateChildrenState);
+
+    fn get_component_state(_state: &Self::AggregateChildrenState) -> Option<&Self::ComponentState> {
+        None
+    }
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
 pub trait VirtualDom<CpEvent, CpState>: Debug {
+    type Event;
+
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type TargetWidgetSeq: WidgetSequence;
-
-    type Event;
 
     // update_value is intended to enable memoize-style HOC
     // where instead of returning a vdom node, it returns
@@ -148,6 +167,9 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum NoEvent {}
 
+#[derive(Default, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct NoState;
+
 // Used in unit tests
 #[allow(dead_code)]
 pub(crate) fn assign_empty_state_type(_elem: &impl Element<NoEvent, ()>) {}
@@ -161,6 +183,7 @@ use crate::elements::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEven
 pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
     fn on<EventParam, Cb: Fn(&mut CpState, EventParam) + Clone>(
         self,
+        md: Metadata<CpEvent, CpState>,
         callback: Cb,
     ) -> WithCallbackEvent<CpEvent, CpState, EventParam, Self, Cb>
     where
@@ -169,9 +192,8 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
         WithCallbackEvent {
             element: self,
             callback,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-            _comp_param: Default::default(),
+            _metadata: md,
+            _marker: Default::default(),
         }
     }
 
@@ -181,6 +203,7 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
         Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
     >(
         self,
+        md: Metadata<CpEvent, CpState>,
         callback: Cb,
     ) -> WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Self, Cb>
     where
@@ -190,23 +213,23 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
         WithMapEvent {
             element: self,
             callback,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-            _comp_param: Default::default(),
-            _comp_return: Default::default(),
+            _metadata: md,
+            _marker: Default::default(),
         }
     }
 
-    fn bubble_up<Event>(self) -> WithBubbleEvent<CpEvent, CpState, Event, Self>
+    fn bubble_up<Event>(
+        self,
+        md: Metadata<CpEvent, CpState>,
+    ) -> WithBubbleEvent<CpEvent, CpState, Event, Self>
     where
         Self::Event: ParentEvent<Event>,
         CpEvent: ParentEvent<Event>,
     {
         WithBubbleEvent {
             element: self,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-            _comp_param: Default::default(),
+            _metadata: md,
+            _marker: Default::default(),
         }
     }
 }

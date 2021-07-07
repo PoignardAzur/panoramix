@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::TextBoxWidget;
 
@@ -85,14 +85,17 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
     /// Provide a closure to be called when this box is edited.
     pub fn on_text_changed(
         self,
+        md: Metadata<CpEvent, CpState>,
         callback: impl Fn(&mut CpState, TextChanged) + Clone,
     ) -> impl Element<CpEvent, CpState> {
-        self.on(callback)
+        self.on(md, callback)
     }
 }
 
 impl<CpEvent, CpState> Element<CpEvent, CpState> for TextBox<CpEvent, CpState> {
     type Event = TextChanged;
+
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
     type BuildOutput = TextBoxData<CpEvent, CpState>;
 

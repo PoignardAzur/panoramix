@@ -11,13 +11,14 @@
 //!
 //! ```no_run
 //! use panoramix::elements::{Button, Label};
-//! use panoramix::{component, Column, CompCtx, Element, NoEvent, RootHandler};
+//! use panoramix::{component, Column, CompCtx, Element, Metadata, NoEvent, RootHandler};
 //!
 //! #[component]
 //! fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element {
+//!     let md = Metadata::<NoEvent, ()>::new();
 //!     Column!(
 //!         Label::new("Hello world!"),
-//!         Button::new("Say hello").on_click(|_, _| {
+//!         Button::new("Say hello").on_click(md, |_, _| {
 //!             println!("Hello world");
 //!         })
 //!     )
@@ -86,7 +87,7 @@ pub mod flex;
 
 pub use panoramix_derive::component;
 
-pub use element_tree::{CompCtx, Element, ElementExt, NoEvent};
+pub use element_tree::{CompCtx, Element, ElementExt, Metadata, NoEvent};
 
 pub use root_handler::{PlatformError, RootHandler, RootWidget};
 

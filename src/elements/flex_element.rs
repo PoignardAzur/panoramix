@@ -91,6 +91,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     for Flex<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = FlexData<Child::BuildOutput, CpEvent, CpState>;
 
@@ -112,7 +113,6 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
-
     type TargetWidgetSeq = SingleWidget<FlexWidget<Child::TargetWidgetSeq>>;
 
     #[instrument(name = "Flex", skip(self))]

@@ -82,6 +82,7 @@ impl<CpEvent, CpState> LabelData<CpEvent, CpState> {
 
 impl<CpEvent, CpState> Element<CpEvent, CpState> for Label<CpEvent, CpState> {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
     type BuildOutput = LabelData<CpEvent, CpState>;
 

@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
@@ -79,14 +79,17 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
     /// Provide a closure to be called when this button is clicked.
     pub fn on_click(
         self,
+        md: Metadata<CpEvent, CpState>,
         callback: impl Fn(&mut CpState, ButtonClick) + Clone,
     ) -> impl Element<CpEvent, CpState> {
-        self.on(callback)
+        self.on(md, callback)
     }
 }
 
 impl<CpEvent, CpState> Element<CpEvent, CpState> for Button<CpEvent, CpState> {
     type Event = ButtonClick;
+
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
     type BuildOutput = ButtonData<CpEvent, CpState>;
 

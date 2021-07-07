@@ -1,6 +1,8 @@
 use panoramix::elements::{Button, Checkbox, ElementList, Label, TextBox, TextChanged, Toggled};
 use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row};
+use panoramix::{
+    component, Column, CompCtx, Element, ElementExt, Metadata, NoEvent, RootHandler, Row,
+};
 
 use panoramix::PlatformError;
 
@@ -29,6 +31,7 @@ type ItemEvent = Toggled;
 
 #[component]
 fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
+    let md = Metadata::<ItemEvent, ()>::new();
     let text = if props.is_completed {
         format!("{} (complete)", props.text)
     } else {
@@ -36,7 +39,7 @@ fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
     };
 
     Row!(
-        Checkbox::new("", props.is_completed).bubble_up::<ItemEvent>(),
+        Checkbox::new("", props.is_completed).bubble_up::<ItemEvent>(md),
         Label::new(text),
     )
     .with_flex_container_params(ROW_FLEX_PARAMS)
@@ -44,21 +47,24 @@ fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
 
 #[component]
 fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
+    let md = Metadata::<NoEvent, AppState>::new();
     let state = ctx.use_local_state::<AppState>();
 
     let checkbox_priority = Checkbox::new("High priority", state.high_priority).on(
+        md,
         |state: &mut AppState, event: Toggled| {
             state.high_priority = event.new_value;
         },
     );
     // TODO - Add "validate on enter" feature
     let textbox_task_name = TextBox::new(state.task_name.clone()).on_text_changed(
+        md,
         |state: &mut AppState, event: TextChanged| {
             state.task_name = event.new_content;
         },
     );
 
-    let button_new_task = Button::new("New task").on_click(|state: &mut AppState, _| {
+    let button_new_task = Button::new("New task").on_click(md, |state: &mut AppState, _| {
         if state.task_name == "" {
             return;
         }
@@ -83,14 +89,17 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
     // TODO - Find a syntax that looks more hierachical
     let list_keys = state.tasks.iter().map(|task_item| task_item.id.to_string());
     let list_rows = state.tasks.iter().enumerate().map(|(i, task_item)| {
-        TodoItem::new(task_item.clone()).on::<ItemEvent, _>(move |state: &mut AppState, event| {
-            state.tasks[i].is_completed = event.new_value;
-        })
+        TodoItem::new(task_item.clone()).on::<ItemEvent, _>(
+            md,
+            move |state: &mut AppState, event| {
+                state.tasks[i].is_completed = event.new_value;
+            },
+        )
     });
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);
 
     let button_delete =
-        Button::new("Delete completed tasks").on_click(|state: &mut AppState, _| {
+        Button::new("Delete completed tasks").on_click(md, |state: &mut AppState, _| {
             state.tasks = std::mem::take(&mut state.tasks)
                 .into_iter()
                 .filter(|task| !task.is_completed)

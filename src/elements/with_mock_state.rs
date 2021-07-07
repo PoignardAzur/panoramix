@@ -68,6 +68,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     for WithMockState<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type BuildOutput = WithMockStateData<Child::BuildOutput, CpEvent, CpState>;
 

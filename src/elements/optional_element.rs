@@ -12,6 +12,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     for Option<Child>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type BuildOutput = Option<Child::BuildOutput>;
 
@@ -93,6 +94,7 @@ impl<
     > Element<CpEvent, CpState> for Either<ChildLeft, ChildRight>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type BuildOutput = Either<ChildLeft::BuildOutput, ChildRight::BuildOutput>;

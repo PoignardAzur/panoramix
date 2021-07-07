@@ -1,6 +1,6 @@
 use crate::element_tree::ProcessEventCtx;
 use crate::element_tree::ReconcileCtx;
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::element_tree::{Element, NoState, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::widgets::WidgetSeqBox;
 
@@ -97,17 +97,19 @@ impl<Child: Element<CpEvent, CpState>, CpEvent, CpState> Debug
 }
 
 trait AnyElement<CpEvent, CpState>: Any + Debug {
+    type Event;
+
     fn print_type(&self) {
         println!("{:#?}", std::any::type_name::<Self>());
     }
 
-    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState>>;
+    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState, Event=Self::Event>>;
 
     fn build(
         &mut self,
         prev_state: Option<AnyStateBox>,
     ) -> (
-        Box<dyn AnyVirtualDom<CpEvent, CpState>>,
+        Box<dyn AnyVirtualDom<CpEvent, CpState, Event=Self::Event>>,
         Option<AnyStateBox>,
     );
 }
@@ -115,7 +117,9 @@ trait AnyElement<CpEvent, CpState>: Any + Debug {
 impl<Child: Element<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'static>
     AnyElement<CpEvent, CpState> for ErasedElement<Child, CpEvent, CpState>
 {
-    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState>> {
+    type Event = Child::Event;
+
+    fn dyn_clone(&self) -> Box<dyn AnyElement<CpEvent, CpState, Event = Self::Event>> {
         Box::new(self.clone())
     }
 
@@ -123,7 +127,7 @@ impl<Child: Element<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'sta
         &mut self,
         prev_state: Option<AnyStateBox>,
     ) -> (
-        Box<dyn AnyVirtualDom<CpEvent, CpState>>,
+        Box<dyn AnyVirtualDom<CpEvent, CpState, Event=Self::Event>>,
         Option<AnyStateBox>,
     ) {
         let child = self.child.take().unwrap();
@@ -156,13 +160,13 @@ impl<Child: Element<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'sta
 
 // -
 
-pub struct ElementBox<CpEvent, CpState> {
-    child: Box<dyn AnyElement<CpEvent, CpState>>,
+pub struct ElementBox<Event, CpEvent, CpState> {
+    child: Box<dyn AnyElement<CpEvent, CpState, Event = Event>>,
     _markers: std::marker::PhantomData<(CpState, CpEvent)>,
 }
 
-impl<CpEvent: 'static, CpState: 'static> ElementBox<CpEvent, CpState> {
-    pub fn new(child: impl Element<CpEvent, CpState> + 'static) -> Self {
+impl<Event, CpEvent: 'static, CpState: 'static> ElementBox<Event, CpEvent, CpState> {
+    pub fn new(child: impl Element<CpEvent, CpState, Event = Event> + 'static) -> Self {
         ElementBox {
             child: Box::new(ErasedElement {
                 child: Some(child),
@@ -173,13 +177,13 @@ impl<CpEvent: 'static, CpState: 'static> ElementBox<CpEvent, CpState> {
     }
 }
 
-impl<CpEvent, CpState> Debug for ElementBox<CpEvent, CpState> {
+impl<Event, CpEvent, CpState> Debug for ElementBox<Event, CpEvent, CpState> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         self.child.fmt(f)
     }
 }
 
-impl<CpEvent, CpState> Clone for ElementBox<CpEvent, CpState> {
+impl<Event, CpEvent, CpState> Clone for ElementBox<Event, CpEvent, CpState> {
     fn clone(&self) -> Self {
         ElementBox {
             child: self.child.dyn_clone(),
@@ -188,15 +192,16 @@ impl<CpEvent, CpState> Clone for ElementBox<CpEvent, CpState> {
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for ElementBox<CpEvent, CpState> {
-    type Event = NoEvent;
+impl<Event, CpEvent, CpState> Element<CpEvent, CpState> for ElementBox<Event, CpEvent, CpState> {
+    type Event = Event;
+    type ComponentState = NoState;
     type AggregateChildrenState = Option<AnyStateBox>;
-    type BuildOutput = VirtualDomBox<CpEvent, CpState>;
+    type BuildOutput = VirtualDomBox<Event, CpEvent, CpState>;
 
     fn build(
         self,
         prev_state: Option<AnyStateBox>,
-    ) -> (VirtualDomBox<CpEvent, CpState>, Option<AnyStateBox>) {
+    ) -> (VirtualDomBox<Event, CpEvent, CpState>, Option<AnyStateBox>) {
         let mut child = self.child;
         let (output, state) = child.build(prev_state);
 
@@ -228,6 +233,8 @@ impl<Child: VirtualDom<CpEvent, CpState>, CpEvent, CpState> Debug
 }
 
 pub trait AnyVirtualDom<CpEvent, CpState>: Any + Debug {
+    type Event;
+
     fn as_any(&self) -> &dyn Any;
 
     fn print_type(&self) {
@@ -238,7 +245,7 @@ pub trait AnyVirtualDom<CpEvent, CpState>: Any + Debug {
 
     fn reconcile(
         &self,
-        other: &Box<dyn AnyVirtualDom<CpEvent, CpState>>,
+        other: &Box<dyn AnyVirtualDom<CpEvent, CpState, Event=Self::Event>>,
         widget_seq: &mut WidgetSeqBox,
         ctx: &mut ReconcileCtx,
     );
@@ -255,6 +262,8 @@ pub trait AnyVirtualDom<CpEvent, CpState>: Any + Debug {
 impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: 'static>
     AnyVirtualDom<CpEvent, CpState> for ErasedVirtualDom<Child, CpEvent, CpState>
 {
+    type Event = Child::Event;
+
     fn as_any(&self) -> &dyn Any {
         self
     }
@@ -267,7 +276,7 @@ impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: '
 
     fn reconcile(
         &self,
-        other: &Box<dyn AnyVirtualDom<CpEvent, CpState>>,
+        other: &Box<dyn AnyVirtualDom<CpEvent, CpState, Event=Self::Event>>,
         widget_seq: &mut WidgetSeqBox,
         ctx: &mut ReconcileCtx,
     ) {
@@ -306,13 +315,13 @@ impl<Child: VirtualDom<CpEvent, CpState> + 'static, CpEvent: 'static, CpState: '
 
 // -
 
-pub struct VirtualDomBox<CpEvent, CpState> {
-    child: Box<dyn AnyVirtualDom<CpEvent, CpState>>,
+pub struct VirtualDomBox<Event, CpEvent, CpState> {
+    child: Box<dyn AnyVirtualDom<CpEvent, CpState, Event=Event>>,
     _markers: std::marker::PhantomData<(CpState, CpEvent)>,
 }
 
-impl<CpEvent: 'static, CpState: 'static> VirtualDomBox<CpEvent, CpState> {
-    pub fn new(child: impl VirtualDom<CpEvent, CpState> + 'static) -> Self {
+impl<Event, CpEvent: 'static, CpState: 'static> VirtualDomBox<Event, CpEvent, CpState> {
+    pub fn new(child: impl VirtualDom<CpEvent, CpState, Event = Event> + 'static) -> Self {
         VirtualDomBox {
             child: Box::new(ErasedVirtualDom {
                 child: child,
@@ -323,14 +332,15 @@ impl<CpEvent: 'static, CpState: 'static> VirtualDomBox<CpEvent, CpState> {
     }
 }
 
-impl<CpEvent, CpState> Debug for VirtualDomBox<CpEvent, CpState> {
+impl<Event, CpEvent, CpState> Debug for VirtualDomBox<Event, CpEvent, CpState> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         self.child.fmt(f)
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for VirtualDomBox<CpEvent, CpState> {
-    type Event = NoEvent;
+impl<Event, CpEvent, CpState> VirtualDom<CpEvent, CpState> for VirtualDomBox<Event, CpEvent, CpState> {
+    // TODO - Accept any Event parent of Self::Event
+    type Event = Event;
     type AggregateChildrenState = Option<AnyStateBox>;
     type TargetWidgetSeq = WidgetSeqBox;
 
@@ -357,6 +367,8 @@ impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for VirtualDomBox<CpEvent, C
         self.child
             .process_event(comp_ctx, children_state, widget_seq, cx)
     }
+
+    // TODO - Process child event
 }
 
 // --- TESTS ---

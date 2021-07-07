@@ -90,6 +90,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     for ElementList<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type BuildOutput = ElementListData<Child::BuildOutput, CpEvent, CpState>;
 

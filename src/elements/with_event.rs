@@ -1,4 +1,4 @@
-use crate::element_tree::{Element, VirtualDom};
+use crate::element_tree::{Element, Metadata, VirtualDom};
 use crate::glue::GlobalEventCx;
 
 use crate::element_tree::ProcessEventCtx;
@@ -78,11 +78,9 @@ pub struct WithCallbackEvent<
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _metadata: Metadata<CpEvent, CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
-    #[derivative(Debug = "ignore")]
-    pub _comp_param: std::marker::PhantomData<EventParam>,
+    pub _marker: std::marker::PhantomData<EventParam>,
 }
 
 #[derive(Derivative)]
@@ -102,13 +100,9 @@ pub struct WithMapEvent<
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _metadata: Metadata<CpEvent, CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
-    #[derivative(Debug = "ignore")]
-    pub _comp_param: std::marker::PhantomData<EventParam>,
-    #[derivative(Debug = "ignore")]
-    pub _comp_return: std::marker::PhantomData<EventParam>,
+    pub _marker: std::marker::PhantomData<EventParam>,
 }
 
 #[derive(Derivative)]
@@ -120,11 +114,9 @@ where
 {
     pub element: Child,
     #[derivative(Debug = "ignore")]
-    pub _comp_state: std::marker::PhantomData<CpState>,
+    pub _metadata: Metadata<CpEvent, CpState>,
     #[derivative(Debug = "ignore")]
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
-    #[derivative(Debug = "ignore")]
-    pub _comp_param: std::marker::PhantomData<Event>,
+    pub _marker: std::marker::PhantomData<Event>,
 }
 
 #[derive(Derivative)]
@@ -145,13 +137,9 @@ pub struct WithEventTarget<
     #[derivative(Debug(format_with = "format_typename"))]
     callback: Cb,
     #[derivative(Debug = "ignore")]
-    _comp_state: std::marker::PhantomData<CpState>,
+    _metadata: Metadata<CpEvent, CpState>,
     #[derivative(Debug = "ignore")]
-    _comp_event: std::marker::PhantomData<CpEvent>,
-    #[derivative(Debug = "ignore")]
-    _comp_param: std::marker::PhantomData<EventParam>,
-    #[derivative(Debug = "ignore")]
-    _comp_return: std::marker::PhantomData<EventReturn>,
+    _marker: std::marker::PhantomData<(EventParam, EventReturn)>,
 }
 
 // ---
@@ -167,6 +155,7 @@ where
     Child::Event: ParentEvent<EventParam>,
 {
     type Event = Child::Event;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput =
         WithEventTarget<CpEvent, CpState, EventParam, CpEvent, (), Child::BuildOutput, Cb>;
@@ -181,10 +170,8 @@ where
             WithEventTarget {
                 element,
                 callback: self.callback,
-                _comp_state: Default::default(),
-                _comp_event: Default::default(),
-                _comp_param: Default::default(),
-                _comp_return: Default::default(),
+                _metadata: Default::default(),
+                _marker: Default::default(),
             },
             state,
         )
@@ -205,6 +192,7 @@ where
     CpEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
         CpEvent,
@@ -226,10 +214,8 @@ where
             WithEventTarget {
                 element,
                 callback: self.callback,
-                _comp_state: Default::default(),
-                _comp_event: Default::default(),
-                _comp_param: Default::default(),
-                _comp_return: Default::default(),
+                _metadata: Default::default(),
+                _marker: Default::default(),
             },
             state,
         )
@@ -243,6 +229,8 @@ where
     CpEvent: ParentEvent<Event>,
 {
     type Event = Child::Event;
+
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
         CpEvent,
@@ -264,10 +252,8 @@ where
             WithEventTarget {
                 element,
                 callback: bubble_event_up,
-                _comp_state: Default::default(),
-                _comp_event: Default::default(),
-                _comp_param: Default::default(),
-                _comp_return: Default::default(),
+                _metadata: Default::default(),
+                _marker: Default::default(),
             },
             state,
         )

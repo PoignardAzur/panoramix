@@ -48,6 +48,8 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     for EventLogger<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
+
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = EventLoggerData<Child::BuildOutput, CpEvent, CpState>;
 
@@ -73,8 +75,8 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     for EventLoggerData<Child, CpEvent, CpState>
 {
     type Event = NoEvent;
-    type AggregateChildrenState = Child::AggregateChildrenState;
 
+    type AggregateChildrenState = Child::AggregateChildrenState;
     type TargetWidgetSeq = Child::TargetWidgetSeq;
 
     #[instrument(name = "EventLogger", skip(self))]

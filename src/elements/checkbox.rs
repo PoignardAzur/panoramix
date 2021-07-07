@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::{CheckboxWidget, SingleCheckboxWidget};
 
@@ -86,14 +86,17 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
     /// Provide a closure to be called when this checkbox is toggled.
     pub fn on_toggled(
         self,
+        md: Metadata<CpEvent, CpState>,
         callback: impl Fn(&mut CpState, Toggled) + Clone,
     ) -> impl Element<CpEvent, CpState> {
-        self.on(callback)
+        self.on(md, callback)
     }
 }
 
 impl<CpEvent, CpState> Element<CpEvent, CpState> for Checkbox<CpEvent, CpState> {
     type Event = Toggled;
+
+    type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
     type BuildOutput = CheckboxData<CpEvent, CpState>;
 

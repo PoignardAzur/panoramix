@@ -1,6 +1,8 @@
 use panoramix::elements::{Button, Checkbox, ElementList, Label, Toggled};
 use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{component, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row, Tuple};
+use panoramix::{
+    component, CompCtx, Element, ElementExt, Metadata, NoEvent, RootHandler, Row, Tuple,
+};
 
 use panoramix::PlatformError;
 
@@ -33,9 +35,10 @@ struct RowProps {
 
 #[component]
 fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<RowEvent, u16> {
+    let md = Metadata::<RowEvent, u16>::new();
     let age = ctx.use_local_state::<u16>();
     Row!(
-        Checkbox::new("", props.is_selected).map_event(|state: &mut u16, event| {
+        Checkbox::new("", props.is_selected).map_event(md, |state: &mut u16, event| {
             *state += 1;
             Some(event)
         }),
@@ -47,16 +50,17 @@ fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<RowEvent, u16> {
 
 #[component]
 fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
+    let md = Metadata::<NoEvent, AppState>::new();
     let state = ctx.use_local_state::<AppState>();
 
-    let button_create = Button::new("Create").on_click(|state: &mut AppState, _| {
+    let button_create = Button::new("Create").on_click(md, |state: &mut AppState, _| {
         state.data.push(ListItem {
             text: "new item".to_string(),
             id: state.next_id,
         });
         state.next_id += 1;
     });
-    let button_insert = Button::new("Insert").on_click(|state: &mut AppState, _| {
+    let button_insert = Button::new("Insert").on_click(md, |state: &mut AppState, _| {
         state.data.insert(
             0,
             ListItem {
@@ -66,13 +70,13 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
         );
         state.next_id += 1;
     });
-    let button_delete = Button::new("Delete").on_click(|state: &mut AppState, _| {
+    let button_delete = Button::new("Delete").on_click(md, |state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data.remove(row as usize);
             state.selected_row = None;
         }
     });
-    let button_update = Button::new("Update").on_click(|state: &mut AppState, _| {
+    let button_update = Button::new("Update").on_click(md, |state: &mut AppState, _| {
         if let Some(row) = state.selected_row {
             state.data[row as usize].text = "updated".to_string();
         }
@@ -86,7 +90,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
             is_selected: state.selected_row == Some(i),
         };
 
-        MyListRow::new(row_props).on::<RowEvent, _>(move |state: &mut AppState, event| {
+        MyListRow::new(row_props).on::<RowEvent, _>(md, move |state: &mut AppState, event| {
             if event.new_value {
                 state.selected_row = Some(i);
             } else {
