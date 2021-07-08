@@ -11,29 +11,25 @@ use tracing::instrument;
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
-pub struct Flex<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct Flex<Child: Element> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
-pub struct FlexData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct FlexData<Child: VirtualDom> {
     pub axis: Axis,
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Flex<Child, CpEvent, CpState> {
+impl<Child: Element> Flex<Child> {
     pub fn new(axis: Axis, child: Child) -> Self {
         Flex {
             axis,
@@ -47,8 +43,6 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Flex<Child, CpEvent, Cp
                 main_alignment: MainAxisAlignment::Start,
                 fill_major_axis: false,
             },
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
         }
     }
 
@@ -67,7 +61,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Flex<Child, CpEvent, Cp
     }
 }
 
-impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> FlexData<Child, CpEvent, CpState> {
+impl<Child: VirtualDom> FlexData<Child> {
     pub fn new(
         axis: Axis,
         child: Child,
@@ -79,21 +73,17 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> FlexData<Child, CpEv
             child,
             flex,
             flex_container,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
         }
     }
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
-    for Flex<Child, CpEvent, CpState>
-{
+impl<Child: Element> Element for Flex<Child> {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = FlexData<Child::BuildOutput, CpEvent, CpState>;
+    type BuildOutput = FlexData<Child::BuildOutput>;
 
     #[instrument(name = "Flex", skip(self, prev_state))]
     fn build(
@@ -108,9 +98,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     }
 }
 
-impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
-    for FlexData<Child, CpEvent, CpState>
-{
+impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type TargetWidgetSeq = SingleWidget<FlexWidget<Child::TargetWidgetSeq>>;
@@ -142,7 +130,7 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     #[instrument(name = "Flex", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

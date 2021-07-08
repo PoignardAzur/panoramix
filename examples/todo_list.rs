@@ -39,7 +39,7 @@ fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
     };
 
     Row!(
-        Checkbox::new("", props.is_completed).bubble_up::<ItemEvent>(md),
+        Checkbox::new("", props.is_completed).bubble_up::<ItemEvent, _, _>(md),
         Label::new(text),
     )
     .with_flex_container_params(ROW_FLEX_PARAMS)
@@ -89,7 +89,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
     // TODO - Find a syntax that looks more hierachical
     let list_keys = state.tasks.iter().map(|task_item| task_item.id.to_string());
     let list_rows = state.tasks.iter().enumerate().map(|(i, task_item)| {
-        TodoItem::new(task_item.clone()).on::<ItemEvent, _>(
+        TodoItem::new(task_item.clone()).on::<ItemEvent, _, _, _>(
             md,
             move |state: &mut AppState, event| {
                 state.tasks[i].is_completed = event.new_value;

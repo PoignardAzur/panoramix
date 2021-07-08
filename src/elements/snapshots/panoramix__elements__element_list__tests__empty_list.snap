@@ -5,6 +5,4 @@ expression: list
 ---
 ElementList {
     children: [],
-    _comp_state: PhantomData,
-    _comp_event: PhantomData,
 }

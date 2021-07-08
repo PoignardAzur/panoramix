@@ -8,9 +8,7 @@ use either::{Either, Left, Right};
 use tracing::{debug_span, info, instrument};
 use tracing_unwrap::OptionExt;
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
-    for Option<Child>
-{
+impl<Child: Element> Element for Option<Child> {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
@@ -30,9 +28,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     }
 }
 
-impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
-    for Option<Child>
-{
+impl<Child: VirtualDom> VirtualDom for Option<Child> {
     type Event = NoEvent;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type TargetWidgetSeq = Option<Child::TargetWidgetSeq>;
@@ -68,7 +64,7 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     #[instrument(name = "Option", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -86,13 +82,7 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
 
 // ----
 
-impl<
-        CpState,
-        CpEvent,
-        ChildLeft: Element<CpEvent, CpState>,
-        ChildRight: Element<CpEvent, CpState>,
-    > Element<CpEvent, CpState> for Either<ChildLeft, ChildRight>
-{
+impl<ChildLeft: Element, ChildRight: Element> Element for Either<ChildLeft, ChildRight> {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState =
@@ -119,13 +109,7 @@ impl<
     }
 }
 
-impl<
-        CpState,
-        CpEvent,
-        ChildLeft: VirtualDom<CpEvent, CpState>,
-        ChildRight: VirtualDom<CpEvent, CpState>,
-    > VirtualDom<CpEvent, CpState> for Either<ChildLeft, ChildRight>
-{
+impl<ChildLeft: VirtualDom, ChildRight: VirtualDom> VirtualDom for Either<ChildLeft, ChildRight> {
     type Event = NoEvent;
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
@@ -179,7 +163,7 @@ impl<
     #[instrument(name = "Either", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

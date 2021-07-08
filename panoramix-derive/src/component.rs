@@ -78,23 +78,23 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         #vis struct #ComponentName;
 
         impl #ComponentName {
-            #vis fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
+            #vis fn new(
                 props: #PropsType,
-            ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=#LocalEvent> {
+            ) -> impl panoramix::Element<Event=#LocalEvent> {
                 <Self as panoramix::elements::Component>::new(props)
             }
 
-            #vis fn render<ParentCpEvent: 'static, ParentCpState: 'static>(
+            #vis fn render(
                 #ctx_arg,
                 #props_arg,
-            ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=#LocalEvent> {
+            ) -> impl panoramix::Element<Event=#LocalEvent> {
                 let child = {
                     #fn_block
                 };
-                panoramix::elements::component::ComponentOutputElem::<#LocalEvent, #LocalState, _, _, _> {
+                panoramix::elements::component::ComponentOutput {
                     child,
                     name: #ComponentName_literal,
-                    _markers: Default::default(),
+                    _metadata: panoramix::backend::Metadata::<#LocalEvent, #LocalState>::new(),
                 }
             }
         }
@@ -104,12 +104,12 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             type LocalEvent = #LocalEvent;
             type LocalState = #LocalState;
 
-            fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
+            fn new(
                 props: Self::Props,
-            ) -> panoramix::elements::ElementBox<#LocalEvent, ParentCpEvent, ParentCpState>
+            ) -> panoramix::elements::ElementBox<#LocalEvent>
             {
                 panoramix::elements::ElementBox::new(
-                    panoramix::elements::backend::ComponentHolder::<Self, _, _, ParentCpEvent, ParentCpState>::new(&#ComponentName::render, props)
+                    panoramix::elements::backend::ComponentHolder::<Self, _, _>::new(&#ComponentName::render, props)
                 )
             }
 

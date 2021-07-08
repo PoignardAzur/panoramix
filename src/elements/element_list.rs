@@ -45,29 +45,23 @@ use tracing::{debug_span, info, instrument};
 /// Panoramix will figure out that the element at `foo-2` has been removed, and will remove it from the underlying widget tree, as well as perform any necessary cleanup.
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
-pub struct ElementList<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct ElementList<Child: Element> {
     pub children: Vec<(String, Child)>,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
-pub struct ElementListData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct ElementListData<Child: VirtualDom> {
     pub children: Vec<(String, Child)>,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> ElementList<Child, CpEvent, CpState> {
+impl<Child: Element> ElementList<Child> {
     /// Build a list by providing an iterator of `(Key, Element)` pairs.
     pub fn from_pairs(pairs: impl std::iter::IntoIterator<Item = (String, Child)>) -> Self {
         Self {
             children: pairs.into_iter().collect(),
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
         }
     }
 
@@ -78,21 +72,17 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> ElementList<Child, CpEv
     ) -> Self {
         Self {
             children: keys.into_iter().zip(elems.into_iter()).collect(),
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
         }
     }
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
-    for ElementList<Child, CpEvent, CpState>
-{
+impl<Child: Element> Element for ElementList<Child> {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
-    type BuildOutput = ElementListData<Child::BuildOutput, CpEvent, CpState>;
+    type BuildOutput = ElementListData<Child::BuildOutput>;
 
     #[instrument(name = "List", skip(self, prev_state))]
     fn build(
@@ -149,9 +139,7 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
     }
 }
 
-impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
-    for ElementListData<Child, CpEvent, CpState>
-{
+impl<Child: VirtualDom> VirtualDom for ElementListData<Child> {
     type Event = NoEvent;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type TargetWidgetSeq = WidgetList<Child::TargetWidgetSeq>;
@@ -250,7 +238,7 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     #[instrument(name = "List", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -278,30 +266,20 @@ mod tests {
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
-    fn new_label_list<State>(names: &[&str]) -> ElementList<Label<State>, State> {
+    fn new_label_list(names: &[&str]) -> ElementList<Label> {
         let children: Vec<_> = names
             .into_iter()
             .map(|name| (String::from(*name), Label::new(*name)))
             .collect();
-        ElementList {
-            children,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-        }
+        ElementList { children }
     }
 
-    fn new_label_list_with_state<State>(
-        names: &[&str],
-    ) -> ElementList<WithMockState<Label<State>, State>, State> {
+    fn new_label_list_with_state(names: &[&str]) -> ElementList<WithMockState<Label>> {
         let children: Vec<_> = names
             .iter()
             .map(|name| (String::from(*name), Label::new(*name).with_mock_state()))
             .collect();
-        ElementList {
-            children,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-        }
+        ElementList { children }
     }
 
     #[test]
@@ -331,8 +309,6 @@ mod tests {
                     (String::from("bbb"), LabelData::new("bbb")),
                     (String::from("ccc"), LabelData::new("ccc")),
                 ],
-                _comp_state: Default::default(),
-                _comp_event: Default::default(),
             },
         );
 
@@ -341,7 +317,7 @@ mod tests {
 
     #[test]
     fn new_list_with_existing_state() {
-        let list = new_label_list_with_state::<MockState>(&["aaa", "bbb", "ccc"]);
+        let list = new_label_list_with_state(&["aaa", "bbb", "ccc"]);
         let list_state = vec![
             (String::from("bbb"), (MockState::new("Foobar"), ())),
             (String::from("notfound"), (MockState::new("IAmError"), ())),

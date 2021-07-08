@@ -27,8 +27,6 @@ Flex {
                 alignment: None,
             },
         },
-        PhantomData,
-        PhantomData,
     ),
     flex: FlexParams {
         flex: 1.0,
@@ -39,6 +37,4 @@ Flex {
         main_alignment: Start,
         fill_major_axis: false,
     },
-    _comp_state: PhantomData,
-    _comp_event: PhantomData,
 }

@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoState, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::ButtonWidget;
 
@@ -16,22 +16,18 @@ use tracing::{instrument, trace};
 /// Emits [ButtonClick] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Button<CpEvent = NoEvent, CpState = ()> {
+pub struct Button {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct ButtonData<CpEvent = NoEvent, CpState = ()> {
+pub struct ButtonData {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 /// Event emitted when a [Button] is clicked.
@@ -43,7 +39,7 @@ pub struct ButtonClick;
 //
 // --- IMPLS
 
-impl<CpEvent, CpState> Button<CpEvent, CpState> {
+impl Button {
     /// Build a button with the given label.
     ///
     /// Use the [.on_click](Button::on_click) method to provide a closure to be called when the button is clicked.
@@ -55,7 +51,6 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
                 alignment: None,
             },
             reserved_widget_id: None,
-            _markers: Default::default(),
         }
     }
 
@@ -77,37 +72,36 @@ impl<CpEvent, CpState> Button<CpEvent, CpState> {
     }
 
     /// Provide a closure to be called when this button is clicked.
-    pub fn on_click(
+    pub fn on_click<ComponentEvent: 'static, ComponentState: 'static>(
         self,
-        md: Metadata<CpEvent, CpState>,
-        callback: impl Fn(&mut CpState, ButtonClick) + Clone,
-    ) -> impl Element<CpEvent, CpState> {
+        md: Metadata<ComponentEvent, ComponentState>,
+        callback: impl Fn(&mut ComponentState, ButtonClick) + Clone,
+    ) -> impl Element {
         self.on(md, callback)
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for Button<CpEvent, CpState> {
+impl Element for Button {
     type Event = ButtonClick;
 
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = ();
-    type BuildOutput = ButtonData<CpEvent, CpState>;
+    type BuildOutput = ButtonData;
 
     #[instrument(name = "Button", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (ButtonData<CpEvent, CpState>, ()) {
+    fn build(self, _prev_state: ()) -> (ButtonData, ()) {
         (
             ButtonData {
                 text: self.text,
                 flex: self.flex,
                 reserved_widget_id: self.reserved_widget_id,
-                _markers: Default::default(),
             },
             (),
         )
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for ButtonData<CpEvent, CpState> {
+impl VirtualDom for ButtonData {
     type Event = ButtonClick;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = ButtonWidget;

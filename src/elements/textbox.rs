@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoState, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::TextBoxWidget;
 
@@ -22,22 +22,18 @@ use tracing::{instrument, trace};
 /// Emits [TextChanged] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBox<CpEvent = NoEvent, CpState = ()> {
+pub struct TextBox {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct TextBoxData<CpEvent = NoEvent, CpState = ()> {
+pub struct TextBoxData {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 /// Event emitted when text is entered or edited in a [TextBox].
@@ -51,7 +47,7 @@ pub struct TextChanged {
 //
 // --- IMPLS
 
-impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
+impl TextBox {
     /// Build a text box with the given content.
     ///
     /// Use the [.on_text_changed](TextBox::on_text_changed) method to provide a closure to be called when the box is edited.
@@ -63,7 +59,6 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
                 alignment: None,
             },
             reserved_widget_id: None,
-            _markers: Default::default(),
         }
     }
 
@@ -83,37 +78,36 @@ impl<CpEvent, CpState> TextBox<CpEvent, CpState> {
     }
 
     /// Provide a closure to be called when this box is edited.
-    pub fn on_text_changed(
+    pub fn on_text_changed<ComponentEvent: 'static, ComponentState: 'static>(
         self,
-        md: Metadata<CpEvent, CpState>,
-        callback: impl Fn(&mut CpState, TextChanged) + Clone,
-    ) -> impl Element<CpEvent, CpState> {
+        md: Metadata<ComponentEvent, ComponentState>,
+        callback: impl Fn(&mut ComponentState, TextChanged) + Clone,
+    ) -> impl Element {
         self.on(md, callback)
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for TextBox<CpEvent, CpState> {
+impl Element for TextBox {
     type Event = TextChanged;
 
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = ();
-    type BuildOutput = TextBoxData<CpEvent, CpState>;
+    type BuildOutput = TextBoxData;
 
     #[instrument(name = "TextBox", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (TextBoxData<CpEvent, CpState>, ()) {
+    fn build(self, _prev_state: ()) -> (TextBoxData, ()) {
         (
             TextBoxData {
                 text: self.text,
                 flex: self.flex,
                 reserved_widget_id: self.reserved_widget_id,
-                _markers: Default::default(),
             },
             (),
         )
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for TextBoxData<CpEvent, CpState> {
+impl VirtualDom for TextBoxData {
     type Event = TextChanged;
     type AggregateChildrenState = ();
 

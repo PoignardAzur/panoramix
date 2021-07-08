@@ -98,7 +98,7 @@ pub mod backend {
     // to have a clean separation in the documentation between the items required to write
     // a GUI and the items required to create a GUI element.
 
-    pub use crate::element_tree::{ReconcileCtx, VirtualDom};
+    pub use crate::element_tree::{Metadata, ReconcileCtx, VirtualDom};
     pub use crate::glue::{Action, DruidAppData, GlobalEventCx, WidgetId};
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
 

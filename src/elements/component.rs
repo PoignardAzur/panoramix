@@ -1,10 +1,7 @@
-use crate::element_tree::{CompCtx, Element, NoEvent, NoState, VirtualDom};
+use crate::element_tree::{CompCtx, ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, Metadata, NoState, VirtualDom};
+use crate::elements::ElementBox;
 use crate::glue::GlobalEventCx;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
-
-use crate::elements::any_element::{AnyStateBox, ElementBox, VirtualDomBox};
 
 use derivative::Derivative;
 use std::fmt::Debug;
@@ -14,9 +11,7 @@ pub trait Component: Debug + Clone {
     type LocalEvent: Clone + Debug + PartialEq + 'static;
     type LocalState: Clone + Default + Debug + PartialEq + 'static;
 
-    fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
-        props: Self::Props,
-    ) -> ElementBox<Self::LocalEvent, ParentCpEvent, ParentCpState>;
+    fn new(props: Self::Props) -> ElementBox<Self::LocalEvent>;
 
     fn name() -> &'static str;
 }
@@ -25,54 +20,57 @@ pub trait Component: Debug + Clone {
 #[derivative(Clone(bound = "Comp::Props: Clone"))]
 pub struct ComponentHolder<
     Comp: Component,
-    ReturnedTree: Element<ParentCpEvent, ParentCpState, Event=Comp::LocalEvent>,
+    ReturnedTree: Element<Event = Comp::LocalEvent>,
     CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
-    ParentCpEvent, ParentCpState
->
-{
+> {
     component_fn: CompFn,
     props: Comp::Props,
-    _marker: std::marker::PhantomData<(Comp, ParentCpEvent, ParentCpState)>,
+    _marker: std::marker::PhantomData<Comp>,
 }
 
-
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Clone(bound = ""), Default(bound = "Child: Default"))]
-pub struct ComponentOutputElem<
-    ChildCpEvent: Clone + Debug + PartialEq,
-    ChildCpState: Clone + Default + Debug + PartialEq,
-    Child: Element<ChildCpEvent, ChildCpState>,
-    ParentCpEvent,
-    ParentCpState,
-> {
-    pub child: Child,
-    pub name: &'static str,
-    pub _markers: std::marker::PhantomData<(ParentCpEvent, ParentCpState, ChildCpEvent, ChildCpState)>,
-}
-
-#[derive(Derivative, Clone, PartialEq, Eq, Hash)]
-#[derivative(Default(bound = "Child: Default"))]
+#[derive(Derivative, Hash)]
+#[derivative(
+    Clone(bound = ""),
+    Default(bound = "Child: Default"),
+    PartialEq(bound = "Child: PartialEq"),
+    Eq(bound = "Child: Eq")
+)]
 pub struct ComponentOutput<
-    ChildCpEvent: Clone + Debug + PartialEq,
-    ChildCpState: Clone + Default + Debug + PartialEq,
-    Child: VirtualDom<ChildCpEvent, ChildCpState>,
-    ParentCpEvent,
-    ParentCpState,
+    ComponentEvent: Clone + Debug + PartialEq,
+    ComponentState: Clone + Default + Debug + PartialEq,
+    Child: Element,
 > {
     pub child: Child,
     pub name: &'static str,
-    pub _markers: std::marker::PhantomData<(ParentCpEvent, ParentCpState, ChildCpEvent, ChildCpState)>,
+    #[derivative(Debug = "ignore")]
+    pub _metadata: Metadata<ComponentEvent, ComponentState>,
+}
+
+#[derive(Derivative, Hash)]
+#[derivative(
+    Clone(bound = "Child: Clone"),
+    Default(bound = "Child: Default"),
+    PartialEq(bound = "Child: PartialEq"),
+    Eq(bound = "Child: Eq")
+)]
+pub struct ComponentOutputData<
+    ComponentEvent: Clone + Debug + PartialEq,
+    ComponentState: Clone + Default + Debug + PartialEq,
+    Child: VirtualDom,
+> {
+    pub child: Child,
+    pub name: &'static str,
+    #[derivative(Debug = "ignore")]
+    pub _metadata: Metadata<ComponentEvent, ComponentState>,
 }
 
 // ---
 
 impl<
-    Comp: Component,
-    ReturnedTree: Element<ParentCpEvent, ParentCpState, Event=Comp::LocalEvent>,
-    CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
-    ParentCpEvent, ParentCpState
->
-    ComponentHolder<Comp, ReturnedTree, CompFn, ParentCpEvent, ParentCpState>
+        Comp: Component,
+        ReturnedTree: Element<Event = Comp::LocalEvent>,
+        CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
+    > ComponentHolder<Comp, ReturnedTree, CompFn>
 {
     pub fn new(component_fn: CompFn, props: Comp::Props) -> Self {
         Self {
@@ -83,15 +81,11 @@ impl<
     }
 }
 
-
 impl<
-    Comp: Component,
-    ReturnedTree: Element<ParentCpEvent, ParentCpState, Event=Comp::LocalEvent>,
-    CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
-    ParentCpEvent, ParentCpState
->
-std::fmt::Debug for
-    ComponentHolder<Comp, ReturnedTree, CompFn, ParentCpEvent, ParentCpState>
+        Comp: Component,
+        ReturnedTree: Element<Event = Comp::LocalEvent>,
+        CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
+    > std::fmt::Debug for ComponentHolder<Comp, ReturnedTree, CompFn>
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple(Comp::name()).field(&self.props).finish()
@@ -99,13 +93,10 @@ std::fmt::Debug for
 }
 
 impl<
-        ChildCpEvent: Clone + Debug + PartialEq,
-        ChildCpState: Clone + Default + Debug + PartialEq,
-        Child: Element<ChildCpEvent, ChildCpState>,
-        ParentCpEvent,
-        ParentCpState,
-    > std::fmt::Debug
-    for ComponentOutputElem<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
+        ComponentEvent: Clone + Debug + PartialEq + 'static,
+        ComponentState: Clone + Default + Debug + PartialEq + 'static,
+        Child: Element,
+    > std::fmt::Debug for ComponentOutput<ComponentEvent, ComponentState, Child>
 {
     #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -116,13 +107,10 @@ impl<
 }
 
 impl<
-        ChildCpEvent: Clone + Debug + PartialEq,
-        ChildCpState: Clone + Default + Debug + PartialEq,
-        Child: VirtualDom<ChildCpEvent, ChildCpState>,
-        ParentCpEvent,
-        ParentCpState,
-    > std::fmt::Debug
-    for ComponentOutput<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
+        ComponentEvent: Clone + Debug + PartialEq + 'static,
+        ComponentState: Clone + Default + Debug + PartialEq + 'static,
+        Child: VirtualDom,
+    > std::fmt::Debug for ComponentOutputData<ComponentEvent, ComponentState, Child>
 {
     #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -135,13 +123,10 @@ impl<
 // ---
 
 impl<
-    Comp: Component,
-    ReturnedTree: Element<ParentCpEvent, ParentCpState, Event=Comp::LocalEvent>,
-    CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
-    ParentCpEvent, ParentCpState
->
-Element<ParentCpEvent, ParentCpState> for
-    ComponentHolder<Comp, ReturnedTree, CompFn, ParentCpEvent, ParentCpState>
+        Comp: Component,
+        ReturnedTree: Element<Event = Comp::LocalEvent>,
+        CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
+    > Element for ComponentHolder<Comp, ReturnedTree, CompFn>
 {
     type Event = Comp::LocalEvent;
     type ComponentState = NoState;
@@ -168,30 +153,21 @@ Element<ParentCpEvent, ParentCpState> for
 /// ---
 
 impl<
-        ChildCpEvent: Clone + Debug + PartialEq,
-        ChildCpState: Clone + Default + Debug + PartialEq + 'static,
-        Child: Element<ChildCpEvent, ChildCpState>,
-        ParentCpEvent,
-        ParentCpState,
-    > Element<ParentCpEvent, ParentCpState>
-    for ComponentOutputElem<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
+        ComponentEvent: Clone + Debug + PartialEq + 'static,
+        ComponentState: Clone + Default + Debug + PartialEq + 'static,
+        Child: Element,
+    > Element for ComponentOutput<ComponentEvent, ComponentState, Child>
 {
-    type Event = ChildCpEvent;
+    type Event = ComponentEvent;
 
-    type ComponentState = ChildCpState;
+    type ComponentState = ComponentState;
     // TODO - Store Event queue somewhere else?
     type AggregateChildrenState = (
-        Vec<ChildCpEvent>,
-        ChildCpState,
+        Vec<ComponentEvent>,
+        ComponentState,
         Child::AggregateChildrenState,
     );
-    type BuildOutput = ComponentOutput<
-        ChildCpEvent,
-        ChildCpState,
-        Child::BuildOutput,
-        ParentCpEvent,
-        ParentCpState,
-    >;
+    type BuildOutput = ComponentOutputData<ComponentEvent, ComponentState, Child::BuildOutput>;
 
     fn build(
         self,
@@ -200,10 +176,10 @@ impl<
         let (_, prev_local_state, children_prev_state) = prev_state;
         let (child, children_state) = self.child.build(children_prev_state);
         (
-            ComponentOutput {
+            ComponentOutputData {
                 child,
                 name: self.name,
-                _markers: Default::default(),
+                _metadata: Default::default(),
             },
             (vec![], prev_local_state, children_state),
         )
@@ -215,18 +191,15 @@ impl<
 }
 
 impl<
-        ChildCpEvent: Clone + Debug + PartialEq,
-        ChildCpState: Clone + Default + Debug + PartialEq,
-        Child: VirtualDom<ChildCpEvent, ChildCpState>,
-        ParentCpEvent,
-        ParentCpState,
-    > VirtualDom<ParentCpEvent, ParentCpState>
-    for ComponentOutput<ChildCpEvent, ChildCpState, Child, ParentCpEvent, ParentCpState>
+        ComponentEvent: Clone + Debug + PartialEq + 'static,
+        ComponentState: Clone + Default + Debug + PartialEq + 'static,
+        Child: VirtualDom,
+    > VirtualDom for ComponentOutputData<ComponentEvent, ComponentState, Child>
 {
-    type Event = ChildCpEvent;
+    type Event = ComponentEvent;
     type AggregateChildrenState = (
-        Vec<ChildCpEvent>,
-        ChildCpState,
+        Vec<ComponentEvent>,
+        ComponentState,
         Child::AggregateChildrenState,
     );
     type TargetWidgetSeq = Child::TargetWidgetSeq;
@@ -258,7 +231,7 @@ impl<
 
     fn process_event(
         &self,
-        _comp_ctx: &mut ProcessEventCtx<ParentCpEvent, ParentCpState>,
+        _comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -286,23 +259,19 @@ mod tests {
     type MyLocalState = u16;
 
     impl MyComponent {
-        fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
-            props: MyPropsType,
-        ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=panoramix::NoEvent> {
+        fn new(props: MyPropsType) -> impl panoramix::Element<Event = MyLocalEvent> {
             <Self as panoramix::elements::component::Component>::new(props)
         }
 
-        fn render<ParentCpEvent: 'static, ParentCpState: 'static>(
+        fn render(
             _ctx: &panoramix::CompCtx,
             _my_props: MyPropsType,
-        ) -> impl panoramix::Element<ParentCpEvent, ParentCpState, Event=panoramix::NoEvent> {
-            let child = {
-                panoramix::elements::EmptyElement::new()
-            };
-            panoramix::elements::component::ComponentOutputElem::<MyLocalEvent, MyLocalState, _, _, _> {
+        ) -> impl panoramix::Element<Event = MyLocalEvent> {
+            let child = { panoramix::elements::EmptyElement::new() };
+            panoramix::elements::component::ComponentOutput {
                 child,
                 name: "MyComponent",
-                _markers: Default::default(),
+                _metadata: panoramix::backend::Metadata::<MyLocalEvent, MyLocalState>::new(),
             }
         }
     }
@@ -312,13 +281,12 @@ mod tests {
         type LocalState = MyLocalState;
         type LocalEvent = MyLocalEvent;
 
-        fn new<ParentCpEvent: 'static, ParentCpState: 'static>(
-            props: Self::Props,
-        ) -> panoramix::elements::ElementBox<MyLocalEvent, ParentCpEvent, ParentCpState>
-        {
-            panoramix::elements::ElementBox::new(
-                panoramix::elements::backend::ComponentHolder::<Self, _, _, ParentCpEvent, ParentCpState>::new(&MyComponent::render, props)
-            )
+        fn new(props: Self::Props) -> panoramix::elements::ElementBox<MyLocalEvent> {
+            panoramix::elements::ElementBox::new(panoramix::elements::backend::ComponentHolder::<
+                Self,
+                _,
+                _,
+            >::new(&MyComponent::render, props))
         }
 
         fn name() -> &'static str {

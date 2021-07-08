@@ -25,6 +25,4 @@ ElementTuple_3(
             alignment: None,
         },
     },
-    PhantomData,
-    PhantomData,
 )

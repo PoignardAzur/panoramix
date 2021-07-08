@@ -47,8 +47,6 @@ expression: row_data
             main_alignment: Start,
             fill_major_axis: false,
         },
-        _comp_state: PhantomData,
-        _comp_event: PhantomData,
     },
     (
         (),

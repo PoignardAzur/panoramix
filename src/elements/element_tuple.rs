@@ -15,20 +15,18 @@ use tracing::instrument;
 #[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
 #[derivative(Debug(bound = ""))]
 pub struct ElementTupleData<
-    C0: VirtualDom<CpEvent, CpState>,
-    C1: VirtualDom<CpEvent, CpState>,
-    C2: VirtualDom<CpEvent, CpState>,
-    C3: VirtualDom<CpEvent, CpState>,
-    C4: VirtualDom<CpEvent, CpState>,
-    C5: VirtualDom<CpEvent, CpState>,
-    C6: VirtualDom<CpEvent, CpState>,
-    C7: VirtualDom<CpEvent, CpState>,
-    C8: VirtualDom<CpEvent, CpState>,
-    C9: VirtualDom<CpEvent, CpState>,
-    C10: VirtualDom<CpEvent, CpState>,
-    C11: VirtualDom<CpEvent, CpState>,
-    CpEvent = NoEvent,
-    CpState = (),
+    C0: VirtualDom,
+    C1: VirtualDom,
+    C2: VirtualDom,
+    C3: VirtualDom,
+    C4: VirtualDom,
+    C5: VirtualDom,
+    C6: VirtualDom,
+    C7: VirtualDom,
+    C8: VirtualDom,
+    C9: VirtualDom,
+    C10: VirtualDom,
+    C11: VirtualDom,
 >(
     pub C0,
     pub C1,
@@ -42,8 +40,6 @@ pub struct ElementTupleData<
     pub C9,
     pub C10,
     pub C11,
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
 );
 
 macro_rules! replace_ty {
@@ -65,25 +61,19 @@ macro_rules! declare_stuff {
 #[derivative(Clone(bound=""), Debug(bound=""))]
 pub struct $TupleName<
     $(
-        $Type: Element<CpEvent, CpState>,
+        $Type: Element,
     )*
-    CpEvent = NoEvent,
-    CpState = (),
 >(
     $(
         pub $Type,
     )*
-    pub std::marker::PhantomData<CpState>,
-    pub std::marker::PhantomData<CpEvent>,
 );
 
 impl<
-        CpEvent,
-        CpState,
         $(
-            $Type: Element<CpEvent, CpState>,
+            $Type: Element,
         )*
-    > Element<CpEvent, CpState> for $TupleName<$($Type,)* CpEvent, CpState>
+    > Element for $TupleName<$($Type,)*>
 {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
@@ -100,10 +90,8 @@ impl<
             $Type::BuildOutput,
         )*
         $(replace_ty!(($Remainder) >>>
-            EmptyElementData<CpEvent, CpState>
+            EmptyElementData
         ),)*
-        CpEvent,
-        CpState,
     >;
 
     #[instrument(name = "Tuple", skip(self, prev_state))]
@@ -124,8 +112,6 @@ impl<
             $(replace_expr!(($Remainder) >>>
                 Default::default()
             ),)*
-            Default::default(),
-            Default::default(),
         );
 
         (node, state)
@@ -216,103 +202,68 @@ declare_stuff! {
 /// Returned element doesn't emit events.
 #[macro_export]
 macro_rules! Tuple {
-
     ( $(,)? ) => {
         $crate::elements::EmptyElement::new()
     };
 
     ( $e0:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_1(
-            $e0,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_1($e0)
     };
     ( $e0:expr, $e1:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_2(
-            $e0, $e1,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_2($e0, $e1)
     };
     ( $e0:expr, $e1:expr, $e2:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_3(
-            $e0, $e1, $e2,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_3($e0, $e1, $e2)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_4(
-            $e0, $e1, $e2, $e3,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_4($e0, $e1, $e2, $e3)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_5(
-            $e0, $e1, $e2, $e3, $e4,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_5($e0, $e1, $e2, $e3, $e4)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_6(
-            $e0, $e1, $e2, $e3, $e4, $e5,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_6($e0, $e1, $e2, $e3, $e4, $e5)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_7(
-            $e0, $e1, $e2, $e3, $e4, $e5, $e6,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_7($e0, $e1, $e2, $e3, $e4, $e5, $e6)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_8(
-            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_8($e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr $(,)? ) => {
-        $crate::elements::element_tuple::ElementTuple_9(
-            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8,
-            Default::default(), Default::default(),
-        )
+        $crate::elements::element_tuple::ElementTuple_9($e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8)
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr $(,)? ) => {
         $crate::elements::element_tuple::ElementTuple_10(
             $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9,
-            Default::default(), Default::default(),
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr $(,)? ) => {
         $crate::elements::element_tuple::ElementTuple_11(
-            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10
-            Default::default(), Default::default(),
+            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10,
         )
     };
     ( $e0:expr, $e1:expr, $e2:expr, $e3:expr, $e4:expr, $e5:expr, $e6:expr, $e7:expr, $e8:expr, $e9:expr, $e10:expr, $e11:expr $(,)? ) => {
         $crate::elements::element_tuple::ElementTuple_12(
-            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10, $e11
-            Default::default(), Default::default(),
+            $e0, $e1, $e2, $e3, $e4, $e5, $e6, $e7, $e8, $e9, $e10, $e11,
         )
     };
-
 }
 
 impl<
-        CpEvent,
-        CpState,
-        C0: VirtualDom<CpEvent, CpState>,
-        C1: VirtualDom<CpEvent, CpState>,
-        C2: VirtualDom<CpEvent, CpState>,
-        C3: VirtualDom<CpEvent, CpState>,
-        C4: VirtualDom<CpEvent, CpState>,
-        C5: VirtualDom<CpEvent, CpState>,
-        C6: VirtualDom<CpEvent, CpState>,
-        C7: VirtualDom<CpEvent, CpState>,
-        C8: VirtualDom<CpEvent, CpState>,
-        C9: VirtualDom<CpEvent, CpState>,
-        C10: VirtualDom<CpEvent, CpState>,
-        C11: VirtualDom<CpEvent, CpState>,
-    > VirtualDom<CpEvent, CpState>
-    for ElementTupleData<C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, CpEvent, CpState>
+        C0: VirtualDom,
+        C1: VirtualDom,
+        C2: VirtualDom,
+        C3: VirtualDom,
+        C4: VirtualDom,
+        C5: VirtualDom,
+        C6: VirtualDom,
+        C7: VirtualDom,
+        C8: VirtualDom,
+        C9: VirtualDom,
+        C10: VirtualDom,
+        C11: VirtualDom,
+    > VirtualDom for ElementTupleData<C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11>
 {
     type Event = NoEvent;
     type AggregateChildrenState = (
@@ -387,7 +338,7 @@ impl<
     #[instrument(name = "Tuple", skip(self, comp_ctx, children_state, widget_seq, cx))]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

@@ -3,7 +3,7 @@ use crate::widget_sequence::WidgetSequence;
 
 use derivative::Derivative;
 use druid::{Env, EventCtx};
-use std::any::Any;
+use std::any::{type_name, Any, TypeId};
 use std::fmt::Debug;
 
 /// Context type passed to all components when building them.
@@ -16,10 +16,14 @@ impl<'a> CompCtx<'a> {
     ///
     /// Panics if the generic type doesn't match the component's local state type.
     pub fn use_local_state<T: 'static>(&self) -> &'a T {
+        if (*self.local_state).type_id() == TypeId::of::<NoState>() {
+            panic!("error: 'use_local_state' cannot be called for a component whose root element isn't ComponentOutput")
+        }
         self.local_state.downcast_ref::<T>().unwrap()
     }
 
     // TODO - add methods
+    // get metadata
     // use_lifecycle
     // get_vdom_context
 }
@@ -31,13 +35,53 @@ pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
     pub env: &'c Env,
 }
 
-pub struct ProcessEventCtx<'e, 's, ComponentEvent, ComponentState> {
-    pub event_queue: &'e mut Vec<ComponentEvent>,
-    pub state: &'s mut ComponentState,
+pub struct ProcessEventCtx<'e, 's> {
+    pub event_queue: &'e mut dyn Any,
+    pub state: &'s mut dyn Any,
+}
+
+impl<'e, 's> ProcessEventCtx<'e, 's> {
+    pub fn event_queue<ComponentEvent: 'static, ComponentState: 'static>(
+        &mut self,
+        md: Metadata<ComponentEvent, ComponentState>,
+    ) -> &mut Vec<ComponentEvent> {
+        #![allow(unused_variables)]
+        let type_id = (*self.event_queue).type_id();
+        self.event_queue
+            .downcast_mut::<Vec<ComponentEvent>>()
+            .expect(&format!(
+                "internal type error: event handler expected {:?} ({}), parent component gave {:?}",
+                TypeId::of::<Vec<ComponentEvent>>(),
+                type_name::<Vec<ComponentEvent>>(),
+                type_id,
+            ))
+    }
+
+    pub fn state<ComponentEvent: 'static, ComponentState: 'static>(
+        &mut self,
+        md: Metadata<ComponentEvent, ComponentState>,
+    ) -> &mut ComponentState {
+        #![allow(unused_variables)]
+        let type_id = (*self.event_queue).type_id();
+        // TODO - Add one failing test for this
+        self.state.downcast_mut::<ComponentState>().expect(&format!(
+            "internal type error: event handler expected {:?} ({}), parent component gave {:?}",
+            TypeId::of::<ComponentState>(),
+            type_name::<ComponentState>(),
+            type_id,
+        ))
+    }
 }
 
 #[derive(Derivative)]
-#[derivative(Clone(bound = ""), Copy(bound = ""), Default(bound = ""))]
+#[derivative(
+    Clone(bound = ""),
+    Copy(bound = ""),
+    Default(bound = ""),
+    PartialEq(bound = ""),
+    Eq(bound = ""),
+    Hash(bound = "")
+)]
 pub struct Metadata<ComponentEvent, ComponentState> {
     _marker: std::marker::PhantomData<(ComponentEvent, ComponentState)>,
 }
@@ -85,7 +129,7 @@ impl<ComponentEvent, ComponentState> Metadata<ComponentEvent, ComponentState> {
 ///
 /// The flip side of this is that constructing an element and not returning it (eg doing `let x = Button::new("...");` and then not using `x`) will lead to a compile error, because the compiler can't infer what `CpEvent` and `CpState` should be.
 ///
-pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
+pub trait Element: Debug + Clone {
     /// The type of events this element can raise.
     ///
     /// This is the type that [`ElementExt::on`], [`ElementExt::map_event`] and [`ElementExt::bubble_up`] can take. It's different from the `CpEvent` generic parameter, which is the event the parent component emits.
@@ -96,8 +140,6 @@ pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
     type ComponentState: Clone + Default + Debug + PartialEq + 'static;
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type BuildOutput: VirtualDom<
-        CpEvent,
-        CpState,
         Event = Self::Event,
         AggregateChildrenState = Self::AggregateChildrenState,
     >;
@@ -113,7 +155,7 @@ pub trait Element<CpEvent = NoEvent, CpState = ()>: Debug + Clone {
 }
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
-pub trait VirtualDom<CpEvent, CpState>: Debug {
+pub trait VirtualDom: Debug {
     type Event;
 
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
@@ -142,7 +184,7 @@ pub trait VirtualDom<CpEvent, CpState>: Debug {
     // TODO - Rename methods
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Self::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -171,21 +213,27 @@ pub enum NoEvent {}
 pub struct NoState;
 
 // Used in unit tests
+// TODO
 #[allow(dead_code)]
-pub(crate) fn assign_empty_state_type(_elem: &impl Element<NoEvent, ()>) {}
+pub(crate) fn assign_empty_state_type(_elem: &impl Element) {}
 
 #[allow(dead_code)]
-pub(crate) fn assign_state_type<CpEvent, CpState, Elem: Element<CpEvent, CpState>>(_elem: &Elem) {}
+pub(crate) fn assign_state_type<Elem: Element>(_elem: &Elem) {}
 
 use crate::elements::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
 /// Helper methods that can be called on all elements.
-pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
-    fn on<EventParam, Cb: Fn(&mut CpState, EventParam) + Clone>(
+pub trait ElementExt: Element + Sized {
+    fn on<
+        EventParam,
+        Cb: Fn(&mut ComponentState, EventParam) + Clone,
+        ComponentEvent,
+        ComponentState,
+    >(
         self,
-        md: Metadata<CpEvent, CpState>,
+        md: Metadata<ComponentEvent, ComponentState>,
         callback: Cb,
-    ) -> WithCallbackEvent<CpEvent, CpState, EventParam, Self, Cb>
+    ) -> WithCallbackEvent<ComponentEvent, ComponentState, EventParam, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
     {
@@ -200,15 +248,17 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
     fn map_event<
         EventParam,
         EventReturn,
-        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
+        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + Clone,
+        ComponentEvent,
+        ComponentState,
     >(
         self,
-        md: Metadata<CpEvent, CpState>,
+        md: Metadata<ComponentEvent, ComponentState>,
         callback: Cb,
-    ) -> WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Self, Cb>
+    ) -> WithMapEvent<ComponentEvent, ComponentState, EventParam, EventReturn, Self, Cb>
     where
         Self::Event: ParentEvent<EventParam>,
-        CpEvent: ParentEvent<EventReturn>,
+        ComponentEvent: ParentEvent<EventReturn>,
     {
         WithMapEvent {
             element: self,
@@ -218,13 +268,13 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
         }
     }
 
-    fn bubble_up<Event>(
+    fn bubble_up<Event, ComponentEvent, ComponentState>(
         self,
-        md: Metadata<CpEvent, CpState>,
-    ) -> WithBubbleEvent<CpEvent, CpState, Event, Self>
+        md: Metadata<ComponentEvent, ComponentState>,
+    ) -> WithBubbleEvent<ComponentEvent, ComponentState, Event, Self>
     where
         Self::Event: ParentEvent<Event>,
-        CpEvent: ParentEvent<Event>,
+        ComponentEvent: ParentEvent<Event>,
     {
         WithBubbleEvent {
             element: self,
@@ -234,4 +284,4 @@ pub trait ElementExt<CpEvent, CpState>: Element<CpEvent, CpState> + Sized {
     }
 }
 
-impl<CpEvent, CpState, ET: Element<CpEvent, CpState>> ElementExt<CpEvent, CpState> for ET {}
+impl<ET: Element> ElementExt for ET {}

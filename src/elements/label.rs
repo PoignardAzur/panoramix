@@ -16,35 +16,30 @@ use tracing::instrument;
 /// Doesn't emit events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Label<CpEvent = NoEvent, CpState = ()> {
+pub struct Label {
     pub text: String,
     pub flex: FlexParams,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct LabelData<CpEvent = NoEvent, CpState = ()> {
+pub struct LabelData {
     pub text: String,
     pub flex: FlexParams,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 //
 // --- IMPLS
 
-impl<CpEvent, CpState> Label<CpEvent, CpState> {
+impl Label {
     /// Build a text label.
-    pub fn new(text: impl Into<String>) -> Label<CpEvent, CpState> {
+    pub fn new(text: impl Into<String>) -> Label {
         Label {
             text: text.into(),
             flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            _markers: Default::default(),
         }
     }
 
@@ -58,48 +53,46 @@ impl<CpEvent, CpState> Label<CpEvent, CpState> {
 
     // TODO
     /// Used for unit tests.
-    pub fn with_mock_state(self) -> super::WithMockState<Self, CpEvent, CpState> {
+    pub fn with_mock_state(self) -> super::WithMockState<Self> {
         super::WithMockState::new(self)
     }
 }
 
-impl<CpEvent, CpState> LabelData<CpEvent, CpState> {
-    pub fn new(text: impl Into<String>) -> LabelData<CpEvent, CpState> {
+impl LabelData {
+    pub fn new(text: impl Into<String>) -> LabelData {
         LabelData {
             text: text.into(),
             flex: FlexParams {
                 flex: 1.0,
                 alignment: None,
             },
-            _markers: Default::default(),
         }
     }
 
-    pub fn with_mock_state(self) -> super::WithMockStateData<Self, CpEvent, CpState> {
+    pub fn with_mock_state(self) -> super::WithMockStateData<Self> {
         super::WithMockStateData::new(self)
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for Label<CpEvent, CpState> {
+impl Element for Label {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
-    type BuildOutput = LabelData<CpEvent, CpState>;
+    type BuildOutput = LabelData;
 
     #[instrument(name = "Label", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (LabelData<CpEvent, CpState>, ()) {
+    fn build(self, _prev_state: ()) -> (LabelData, ()) {
         (
             LabelData {
                 text: self.text,
                 flex: self.flex,
-                _markers: Default::default(),
             },
             (),
         )
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for LabelData<CpEvent, CpState> {
+impl VirtualDom for LabelData {
     type Event = NoEvent;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = SingleWidget<druid_w::Label<DruidAppData>>;

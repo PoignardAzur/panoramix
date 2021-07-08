@@ -12,46 +12,35 @@ use tracing::instrument;
 // PartialEq?
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
-pub struct EventLogger<Child: Element<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct EventLogger<Child: Element> {
     pub child: Child,
     pub event_queue: Sender<Child::Event>,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // PartialEq?
 #[derive(Derivative)]
 #[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
-pub struct EventLoggerData<Child: VirtualDom<CpEvent, CpState>, CpEvent = NoEvent, CpState = ()> {
+pub struct EventLoggerData<Child: VirtualDom> {
     pub child: Child,
     pub event_queue: Sender<Child::Event>,
-    pub _comp_state: std::marker::PhantomData<CpState>,
-    pub _comp_event: std::marker::PhantomData<CpEvent>,
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> EventLogger<Child, CpEvent, CpState> {
+impl<Child: Element> EventLogger<Child> {
     pub fn new(event_queue: Sender<Child::Event>, child: Child) -> Self {
-        EventLogger {
-            child,
-            event_queue,
-            _comp_state: Default::default(),
-            _comp_event: Default::default(),
-        }
+        EventLogger { child, event_queue }
     }
 }
 
 // ----
 
-impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
-    for EventLogger<Child, CpEvent, CpState>
-{
+impl<Child: Element> Element for EventLogger<Child> {
     type Event = NoEvent;
 
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput = EventLoggerData<Child::BuildOutput, CpEvent, CpState>;
+    type BuildOutput = EventLoggerData<Child::BuildOutput>;
 
     #[instrument(name = "EventLogger", skip(self, prev_state))]
     fn build(
@@ -63,17 +52,13 @@ impl<CpEvent, CpState, Child: Element<CpEvent, CpState>> Element<CpEvent, CpStat
             EventLoggerData {
                 child: element,
                 event_queue: self.event_queue,
-                _comp_state: Default::default(),
-                _comp_event: Default::default(),
             },
             child_state,
         )
     }
 }
 
-impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, CpState>
-    for EventLoggerData<Child, CpEvent, CpState>
-{
+impl<Child: VirtualDom> VirtualDom for EventLoggerData<Child> {
     type Event = NoEvent;
 
     type AggregateChildrenState = Child::AggregateChildrenState;
@@ -100,7 +85,7 @@ impl<CpEvent, CpState, Child: VirtualDom<CpEvent, CpState>> VirtualDom<CpEvent, 
     )]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,

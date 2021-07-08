@@ -90,7 +90,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
             is_selected: state.selected_row == Some(i),
         };
 
-        MyListRow::new(row_props).on::<RowEvent, _>(md, move |state: &mut AppState, event| {
+        MyListRow::new(row_props).on::<RowEvent, _, _, _>(md, move |state: &mut AppState, event| {
             if event.new_value {
                 state.selected_row = Some(i);
             } else {

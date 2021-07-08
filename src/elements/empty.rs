@@ -31,36 +31,31 @@ use derivative::Derivative;
 /// Doesn't emit events.
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Clone(bound = ""), Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElement<CpEvent = NoEvent, CpState = ()>(
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
-);
+pub struct EmptyElement;
 
+// TODO - Remove Derivative
 #[derive(Derivative, PartialEq, Eq, Hash)]
 #[derivative(Clone(bound = ""), Debug(bound = ""), Default(bound = ""))]
-pub struct EmptyElementData<CpEvent = NoEvent, CpState = ()>(
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpState>,
-    #[derivative(Debug = "ignore")] pub std::marker::PhantomData<CpEvent>,
-);
+pub struct EmptyElementData;
 
-impl<CpEvent, CpState> EmptyElement<CpEvent, CpState> {
-    pub fn new() -> EmptyElement<CpEvent, CpState> {
-        EmptyElement(Default::default(), Default::default())
+impl EmptyElement {
+    pub fn new() -> EmptyElement {
+        EmptyElement
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for EmptyElement<CpEvent, CpState> {
+impl Element for EmptyElement {
     type Event = NoEvent;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = ();
-    type BuildOutput = EmptyElementData<CpEvent, CpState>;
+    type BuildOutput = EmptyElementData;
 
-    fn build(self, _prev_state: ()) -> (EmptyElementData<CpEvent, CpState>, ()) {
-        (EmptyElementData(Default::default(), Default::default()), ())
+    fn build(self, _prev_state: ()) -> (EmptyElementData, ()) {
+        (EmptyElementData, ())
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for EmptyElementData<CpEvent, CpState> {
+impl VirtualDom for EmptyElementData {
     type Event = NoEvent;
     type AggregateChildrenState = ();
     type TargetWidgetSeq = EmptySequence;
@@ -80,13 +75,10 @@ mod tests {
 
     #[test]
     fn new_empty() {
-        let empty = EmptyElement::<NoEvent, ()>::new();
+        let empty = EmptyElement::new();
         let (empty_data, _) = empty.clone().build(());
-        assert_eq!(empty, EmptyElement(Default::default(), Default::default()));
-        assert_eq!(
-            empty_data,
-            EmptyElementData(Default::default(), Default::default())
-        );
+        assert_eq!(empty, EmptyElement);
+        assert_eq!(empty_data, EmptyElementData);
     }
 
     #[test]

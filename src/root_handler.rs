@@ -1,42 +1,41 @@
-use crate::element_tree::{CompCtx, Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
-use crate::elements::backend::ComponentHolder;
+use crate::element_tree::{Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::elements::Component;
+use crate::elements::ElementBox;
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
-use crate::elements::{ElementBox};
 
 use crate::glue::DebugState;
 
 use druid::widget::prelude::*;
 use druid::{widget, AppLauncher, Point, Widget, WidgetPod, WindowDesc};
-use tracing::{debug_span, info, instrument, trace};
 use std::fmt::Debug;
+use tracing::{debug_span, info, instrument, trace};
 
 pub use druid::PlatformError;
 
-type WidgetSeqOf<RootCpEvent, RootCpState, ReturnedTree> = <<ReturnedTree as Element<
-    RootCpEvent,
-    RootCpState,
->>::BuildOutput as VirtualDom<RootCpEvent, RootCpState>>::TargetWidgetSeq;
+// TODO - trait Element: 'static
 
 /// Implements [`druid::Widget`] from a component
 ///
 /// You should probably use [`RootHandler`] directly instead.
-pub struct RootWidget<RootElem: Element<NoEvent, ()> + 'static> {
+pub struct RootWidget<RootElem: Element + 'static> {
     pub root_element: RootElem,
     pub root_state: RootElem::AggregateChildrenState,
     pub vdom: Option<RootElem::BuildOutput>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
     pub widget: Option<
-        WidgetPod<DruidAppData, flex_widget::FlexWidget<WidgetSeqOf<NoEvent, (), RootElem>>>,
+        WidgetPod<
+            DruidAppData,
+            flex_widget::FlexWidget<<RootElem::BuildOutput as VirtualDom>::TargetWidgetSeq>,
+        >,
     >,
 }
 
-impl<
-    LocalEvent: Clone + Debug + PartialEq + 'static,
-> RootWidget<ElementBox<LocalEvent, NoEvent, ()>> {
-    pub fn new<Comp: Component<Props = (), LocalEvent = LocalEvent>>(_root_component: Comp) -> Self {
+impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootWidget<ElementBox<LocalEvent>> {
+    pub fn new<Comp: Component<Props = (), LocalEvent = LocalEvent>>(
+        _root_component: Comp,
+    ) -> Self {
         RootWidget {
             root_element: Comp::new(()),
             root_state: Default::default(),
@@ -48,7 +47,7 @@ impl<
 
     // FIXME
     /// Set the local state of the root component to a value other than default
-        #[cfg(FALSE)]
+    #[cfg(FALSE)]
     pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
         todo!();
         RootWidget {
@@ -58,7 +57,7 @@ impl<
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
+impl<RootElem: Element + 'static> RootWidget<RootElem> {
     pub fn from_element(elem: RootElem) -> Self {
         RootWidget {
             root_element: elem,
@@ -70,7 +69,7 @@ impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
+impl<RootElem: Element + 'static> RootWidget<RootElem> {
     #[instrument(level = "debug", skip(self, ctx))]
     pub fn init(&mut self, ctx: &mut EventCtx) {
         let (new_vdom, state) =
@@ -124,7 +123,8 @@ impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
             // This might change in cases where we want the user to control
             // when RootWidget::run() is called.
             let mut ctx = ProcessEventCtx {
-                event_queue: &mut vec![],
+                // TODO - types
+                event_queue: &mut Vec::<NoEvent>::new(),
                 state: &mut (),
             };
             prev_vdom.process_event(
@@ -171,7 +171,7 @@ impl<RootElem: Element<NoEvent, ()> + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + 'static> Widget<DruidAppData> for RootWidget<RootElem> {
+impl<RootElem: Element + 'static> Widget<DruidAppData> for RootWidget<RootElem> {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         let mut force_update = false;
 
@@ -267,14 +267,12 @@ impl<RootElem: Element<NoEvent, ()> + 'static> Widget<DruidAppData> for RootWidg
 }
 
 /// Creates a GUI application from a component
-pub struct RootHandler<RootElem: Element<NoEvent, ()> + 'static> {
+pub struct RootHandler<RootElem: Element + 'static> {
     pub root_widget: RootWidget<RootElem>,
     pub init_tracing: bool,
 }
 
-impl<
-    LocalEvent: Clone + Debug + PartialEq + 'static,
-> RootHandler<ElementBox<LocalEvent, NoEvent, ()>> {
+impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootHandler<ElementBox<LocalEvent>> {
     /// Creates the data to start the application.
     ///
     /// The `root_component` parameter should be roughly `YourRootComponent::new(some_props)`.
@@ -289,7 +287,7 @@ impl<
 
     // FIXME
     /// Set the local state of the root component to a value other than default
-        #[cfg(FALSE)]
+    #[cfg(FALSE)]
     pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
         todo!();
         RootHandler {
@@ -299,7 +297,7 @@ impl<
     }
 }
 
-impl<RootElem: Element<NoEvent, ()> + 'static> RootHandler<RootElem> {
+impl<RootElem: Element + 'static> RootHandler<RootElem> {
     pub fn with_tracing(self, init_tracing: bool) -> Self {
         RootHandler {
             init_tracing,

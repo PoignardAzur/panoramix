@@ -66,11 +66,11 @@ fn bubble_event_up<State, Event>(_state: &mut State, event: Event) -> Option<Eve
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithCallbackEvent<
-    CpEvent,
-    CpState,
+    ComponentEvent: 'static,
+    ComponentState: 'static,
     EventParam,
-    Child: Element<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam) + Clone,
+    Child: Element,
+    Cb: Fn(&mut ComponentState, EventParam) + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
 {
@@ -78,7 +78,7 @@ pub struct WithCallbackEvent<
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _metadata: Metadata<CpEvent, CpState>,
+    pub _metadata: Metadata<ComponentEvent, ComponentState>,
     #[derivative(Debug = "ignore")]
     pub _marker: std::marker::PhantomData<EventParam>,
 }
@@ -86,35 +86,35 @@ pub struct WithCallbackEvent<
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithMapEvent<
-    CpEvent,
-    CpState,
+    ComponentEvent: 'static,
+    ComponentState: 'static,
     EventParam,
     EventReturn,
-    Child: Element<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
+    Child: Element,
+    Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
-    CpEvent: ParentEvent<EventReturn>,
+    ComponentEvent: ParentEvent<EventReturn>,
 {
     pub element: Child,
     #[derivative(Debug(format_with = "format_typename"))]
     pub callback: Cb,
     #[derivative(Debug = "ignore")]
-    pub _metadata: Metadata<CpEvent, CpState>,
+    pub _metadata: Metadata<ComponentEvent, ComponentState>,
     #[derivative(Debug = "ignore")]
     pub _marker: std::marker::PhantomData<EventParam>,
 }
 
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
-pub struct WithBubbleEvent<CpEvent, CpState, Event, Child: Element<CpEvent, CpState>>
+pub struct WithBubbleEvent<ComponentEvent, ComponentState, Event, Child: Element>
 where
     Child::Event: ParentEvent<Event>,
-    CpEvent: ParentEvent<Event>,
+    ComponentEvent: ParentEvent<Event>,
 {
     pub element: Child,
     #[derivative(Debug = "ignore")]
-    pub _metadata: Metadata<CpEvent, CpState>,
+    pub _metadata: Metadata<ComponentEvent, ComponentState>,
     #[derivative(Debug = "ignore")]
     pub _marker: std::marker::PhantomData<Event>,
 }
@@ -122,22 +122,22 @@ where
 #[derive(Derivative)]
 #[derivative(Debug(bound = ""))]
 pub struct WithEventTarget<
-    CpEvent,
-    CpState,
+    ComponentEvent: 'static,
+    ComponentState: 'static,
     EventParam,
     EventReturn,
     CbReturn: OptionOrUnit<EventReturn>,
-    Child: VirtualDom<CpEvent, CpState>,
-    Cb: Fn(&mut CpState, EventParam) -> CbReturn + Clone,
+    Child: VirtualDom,
+    Cb: Fn(&mut ComponentState, EventParam) -> CbReturn + Clone,
 > where
     Child::Event: ParentEvent<EventParam>,
-    CpEvent: ParentEvent<EventReturn>,
+    ComponentEvent: ParentEvent<EventReturn>,
 {
     element: Child,
     #[derivative(Debug(format_with = "format_typename"))]
     callback: Cb,
     #[derivative(Debug = "ignore")]
-    _metadata: Metadata<CpEvent, CpState>,
+    _metadata: Metadata<ComponentEvent, ComponentState>,
     #[derivative(Debug = "ignore")]
     _marker: std::marker::PhantomData<(EventParam, EventReturn)>,
 }
@@ -145,20 +145,27 @@ pub struct WithEventTarget<
 // ---
 
 impl<
-        CpEvent,
-        CpState,
+        ComponentEvent: 'static,
+        ComponentState: 'static,
         EventParam,
-        Child: Element<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam) + Clone,
-    > Element<CpEvent, CpState> for WithCallbackEvent<CpEvent, CpState, EventParam, Child, Cb>
+        Child: Element,
+        Cb: Fn(&mut ComponentState, EventParam) + Clone,
+    > Element for WithCallbackEvent<ComponentEvent, ComponentState, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
 {
     type Event = Child::Event;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type BuildOutput =
-        WithEventTarget<CpEvent, CpState, EventParam, CpEvent, (), Child::BuildOutput, Cb>;
+    type BuildOutput = WithEventTarget<
+        ComponentEvent,
+        ComponentState,
+        EventParam,
+        ComponentEvent,
+        (),
+        Child::BuildOutput,
+        Cb,
+    >;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
     fn build(
@@ -179,24 +186,23 @@ where
 }
 
 impl<
-        CpEvent,
-        CpState,
+        ComponentEvent: 'static,
+        ComponentState: 'static,
         EventParam,
         EventReturn,
-        Child: Element<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam) -> Option<EventReturn> + Clone,
-    > Element<CpEvent, CpState>
-    for WithMapEvent<CpEvent, CpState, EventParam, EventReturn, Child, Cb>
+        Child: Element,
+        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + Clone,
+    > Element for WithMapEvent<ComponentEvent, ComponentState, EventParam, EventReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
-    CpEvent: ParentEvent<EventReturn>,
+    ComponentEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        CpEvent,
-        CpState,
+        ComponentEvent,
+        ComponentState,
         EventParam,
         EventReturn,
         Option<EventReturn>,
@@ -222,24 +228,24 @@ where
     }
 }
 
-impl<CpEvent, CpState, Event, Child: Element<CpEvent, CpState>> Element<CpEvent, CpState>
-    for WithBubbleEvent<CpEvent, CpState, Event, Child>
+impl<ComponentEvent: 'static, ComponentState: 'static, Event, Child: Element> Element
+    for WithBubbleEvent<ComponentEvent, ComponentState, Event, Child>
 where
     Child::Event: ParentEvent<Event>,
-    CpEvent: ParentEvent<Event>,
+    ComponentEvent: ParentEvent<Event>,
 {
     type Event = Child::Event;
 
     type ComponentState = crate::element_tree::NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
-        CpEvent,
-        CpState,
+        ComponentEvent,
+        ComponentState,
         Event,
         Event,
         Option<Event>,
         Child::BuildOutput,
-        fn(&mut CpState, Event) -> Option<Event>,
+        fn(&mut ComponentState, Event) -> Option<Event>,
     >;
 
     #[instrument(name = "WithEvent", skip(self, prev_state))]
@@ -261,18 +267,26 @@ where
 }
 
 impl<
-        CpEvent,
-        CpState,
+        ComponentEvent: 'static,
+        ComponentState: 'static,
         EventParam,
         EventReturn,
         CbReturn: OptionOrUnit<EventReturn>,
-        Child: VirtualDom<CpEvent, CpState>,
-        Cb: Fn(&mut CpState, EventParam) -> CbReturn + Clone,
-    > VirtualDom<CpEvent, CpState>
-    for WithEventTarget<CpEvent, CpState, EventParam, EventReturn, CbReturn, Child, Cb>
+        Child: VirtualDom,
+        Cb: Fn(&mut ComponentState, EventParam) -> CbReturn + Clone,
+    > VirtualDom
+    for WithEventTarget<
+        ComponentEvent,
+        ComponentState,
+        EventParam,
+        EventReturn,
+        CbReturn,
+        Child,
+        Cb,
+    >
 where
     Child::Event: ParentEvent<EventParam>,
-    CpEvent: ParentEvent<EventReturn>,
+    ComponentEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
     type AggregateChildrenState = Child::AggregateChildrenState;
@@ -299,7 +313,7 @@ where
     )]
     fn process_event(
         &self,
-        comp_ctx: &mut ProcessEventCtx<CpEvent, CpState>,
+        comp_ctx: &mut ProcessEventCtx,
         children_state: &mut Child::AggregateChildrenState,
         widget_seq: &mut Self::TargetWidgetSeq,
         cx: &mut GlobalEventCx,
@@ -316,18 +330,19 @@ where
                 .on(|MouseLeave| ...)
         */
 
+        let md = self._metadata;
         let local_event = self
             .element
             .process_local_event(children_state, widget_seq, cx);
         if let Some(local_event) = local_event.map(ParentEvent::into_child_event).flatten() {
             trace!("Processing callback for local event");
-            let event = (self.callback)(comp_ctx.state, local_event)
+            let event = (self.callback)(comp_ctx.state(md), local_event)
                 .to_option()
-                .map(CpEvent::from_child_event);
+                .map(ComponentEvent::from_child_event);
             if let Some(event) = event {
                 // TODO - Log event
                 trace!("Callback returned event");
-                comp_ctx.event_queue.push(event);
+                comp_ctx.event_queue(md).push(event);
             }
         }
     }

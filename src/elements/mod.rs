@@ -23,7 +23,7 @@ pub mod with_event;
 
 mod compute_diff;
 
-pub use any_element::{ElementBox, AnyState};
+pub use any_element::{AnyState, ElementBox};
 pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
 pub use component::Component;

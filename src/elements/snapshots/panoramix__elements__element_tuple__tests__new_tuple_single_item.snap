@@ -11,6 +11,4 @@ ElementTuple_1(
             alignment: None,
         },
     },
-    PhantomData,
-    PhantomData,
 )

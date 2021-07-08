@@ -1,6 +1,6 @@
 use crate::glue::{Action, GlobalEventCx, WidgetId};
 
-use crate::element_tree::{Element, ElementExt, Metadata, NoEvent, VirtualDom};
+use crate::element_tree::{Element, ElementExt, Metadata, NoState, VirtualDom};
 use crate::flex::FlexParams;
 use crate::widgets::{CheckboxWidget, SingleCheckboxWidget};
 
@@ -20,24 +20,20 @@ use tracing::{instrument, trace};
 /// Emits [Toggled] events.
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct Checkbox<CpEvent = NoEvent, CpState = ()> {
+pub struct Checkbox {
     pub text: String,
     pub value: bool,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 #[derive(Derivative, PartialEq)]
 #[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
-pub struct CheckboxData<CpEvent = NoEvent, CpState = ()> {
+pub struct CheckboxData {
     pub text: String,
     pub value: bool,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
-    #[derivative(Debug = "ignore")]
-    pub _markers: std::marker::PhantomData<(CpEvent, CpState)>,
 }
 
 /// Event emitted when a [Checkbox] is clicked.
@@ -51,7 +47,7 @@ pub struct Toggled {
 //
 // --- IMPLS
 
-impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
+impl Checkbox {
     /// Build a checkbox with the given label.
     ///
     /// Use the [.on_toggled](Checkbox::on_toggled) method to provide a closure to be called when the box is toggled.
@@ -64,7 +60,6 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
                 alignment: None,
             },
             reserved_widget_id: None,
-            _markers: Default::default(),
         }
     }
 
@@ -84,38 +79,37 @@ impl<CpEvent, CpState> Checkbox<CpEvent, CpState> {
     }
 
     /// Provide a closure to be called when this checkbox is toggled.
-    pub fn on_toggled(
+    pub fn on_toggled<ComponentEvent: 'static, ComponentState: 'static>(
         self,
-        md: Metadata<CpEvent, CpState>,
-        callback: impl Fn(&mut CpState, Toggled) + Clone,
-    ) -> impl Element<CpEvent, CpState> {
+        md: Metadata<ComponentEvent, ComponentState>,
+        callback: impl Fn(&mut ComponentState, Toggled) + Clone,
+    ) -> impl Element {
         self.on(md, callback)
     }
 }
 
-impl<CpEvent, CpState> Element<CpEvent, CpState> for Checkbox<CpEvent, CpState> {
+impl Element for Checkbox {
     type Event = Toggled;
 
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = ();
-    type BuildOutput = CheckboxData<CpEvent, CpState>;
+    type BuildOutput = CheckboxData;
 
     #[instrument(name = "Checkbox", skip(self, _prev_state))]
-    fn build(self, _prev_state: ()) -> (CheckboxData<CpEvent, CpState>, ()) {
+    fn build(self, _prev_state: ()) -> (CheckboxData, ()) {
         (
             CheckboxData {
                 text: self.text,
                 value: self.value,
                 flex: self.flex,
                 reserved_widget_id: self.reserved_widget_id,
-                _markers: Default::default(),
             },
             (),
         )
     }
 }
 
-impl<CpEvent, CpState> VirtualDom<CpEvent, CpState> for CheckboxData<CpEvent, CpState> {
+impl VirtualDom for CheckboxData {
     type Event = Toggled;
     type AggregateChildrenState = ();
 
