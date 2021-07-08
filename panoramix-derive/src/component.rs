@@ -59,7 +59,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
         panic!()
     };
 
-    let (local_event_ty, local_state_ty) = parse_return_ty(fn_output.clone());
+    let local_event_ty = parse_return_ty(fn_output.clone());
 
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
@@ -71,7 +71,6 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     let ComponentName_literal = proc_macro2::Literal::string(&component_name.to_string());
     let PropsType = props_ty;
     let LocalEvent = local_event_ty;
-    let LocalState = local_state_ty;
 
     quote! {
         #[derive(Debug, Default, Clone, PartialEq, Hash)]
@@ -87,22 +86,14 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             #vis fn render(
                 #ctx_arg,
                 #props_arg,
-            ) -> impl panoramix::Element<Event=#LocalEvent> {
-                let child = {
-                    #fn_block
-                };
-                panoramix::elements::component::ComponentOutput {
-                    child,
-                    name: #ComponentName_literal,
-                    _metadata: panoramix::backend::Metadata::<#LocalEvent, #LocalState>::new(),
-                }
+            ) -> #fn_output {
+                #fn_block
             }
         }
 
         impl panoramix::elements::Component for #ComponentName {
             type Props = #PropsType;
             type LocalEvent = #LocalEvent;
-            type LocalState = #LocalState;
 
             fn new(
                 props: Self::Props,
@@ -131,7 +122,7 @@ fn get_arg_ident(pattern: syn::Pat) -> syn::Ident {
     }
 }
 
-fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
+fn parse_return_ty(return_ty: syn::Type) -> syn::Type {
     // TODO - Handle return types `impl Element`, `impl Element<Event>`
 
     // Uses syn::TypeImplTrait
@@ -165,23 +156,16 @@ fn parse_return_ty(return_ty: syn::Type) -> (syn::Type, syn::Type) {
     };
 
     use syn::parse_quote;
-    let default_event_ty: syn::GenericArgument = parse_quote!( NoEvent );
-    let default_state_ty: syn::GenericArgument = parse_quote!( () );
+    let default_event_ty: syn::GenericArgument = parse_quote!( Event = NoEvent );
 
-    assert!(elements_ty_args.len() <= 2);
+    assert!(elements_ty_args.len() <= 1);
     let local_event_ty = elements_ty_args.get(0).cloned().unwrap_or(default_event_ty);
-    let local_state_ty = elements_ty_args.get(1).cloned().unwrap_or(default_state_ty);
 
-    let local_state_ty = if let syn::GenericArgument::Type(local_state_ty) = local_state_ty {
-        local_state_ty
+    let local_event_ty = if let syn::GenericArgument::Binding(local_event_bind) = local_event_ty {
+        local_event_bind.ty
     } else {
-        panic!("Component must return impl Element<LocalEvent, LocalState>")
-    };
-    let local_event_ty = if let syn::GenericArgument::Type(local_event_ty) = local_event_ty {
-        local_event_ty
-    } else {
-        panic!("Component must return impl Element<LocalEvent, LocalState>")
+        panic!("Component must return impl Element<Event=LocalEvent>")
     };
 
-    (local_event_ty.clone(), local_state_ty.clone())
+    local_event_ty.clone()
 }

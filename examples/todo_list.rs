@@ -1,8 +1,8 @@
-use panoramix::elements::{Button, Checkbox, ElementList, Label, TextBox, TextChanged, Toggled};
-use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{
-    component, Column, CompCtx, Element, ElementExt, Metadata, NoEvent, RootHandler, Row,
+use panoramix::elements::{
+    Button, Checkbox, ComponentOutput, ElementList, Label, TextBox, TextChanged, Toggled,
 };
+use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
+use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row};
 
 use panoramix::PlatformError;
 
@@ -19,7 +19,7 @@ struct TaskItem {
     id: i32,
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 struct AppState {
     tasks: Vec<TaskItem>,
     high_priority: bool,
@@ -27,28 +27,51 @@ struct AppState {
     next_id: i32,
 }
 
+// We implement the initial state of the app
+impl Default for AppState {
+    fn default() -> Self {
+        let tasks: Vec<_> = (0..4)
+            .into_iter()
+            .map(|i| TaskItem {
+                text: format!("Task #{}", i),
+                is_completed: false,
+                id: i,
+            })
+            .collect();
+        let next_id = tasks.len() as i32;
+
+        AppState {
+            tasks,
+            high_priority: false,
+            task_name: String::new(),
+            next_id,
+        }
+    }
+}
+
 type ItemEvent = Toggled;
 
 #[component]
-fn TodoItem(_ctx: &CompCtx, props: TaskItem) -> impl Element<ItemEvent, ()> {
-    let md = Metadata::<ItemEvent, ()>::new();
+fn TodoItem(ctx: &CompCtx, props: TaskItem) -> impl Element<Event = ItemEvent> {
+    let md = ctx.use_metadata::<ItemEvent, ()>();
     let text = if props.is_completed {
         format!("{} (complete)", props.text)
     } else {
         props.text.clone()
     };
 
-    Row!(
+    let row = Row!(
         Checkbox::new("", props.is_completed).bubble_up::<ItemEvent, _, _>(md),
         Label::new(text),
     )
-    .with_flex_container_params(ROW_FLEX_PARAMS)
+    .with_flex_container_params(ROW_FLEX_PARAMS);
+    ComponentOutput::new(md, row)
 }
 
 #[component]
-fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
-    let md = Metadata::<NoEvent, AppState>::new();
-    let state = ctx.use_local_state::<AppState>();
+fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<Event = NoEvent> {
+    let md = ctx.use_metadata::<NoEvent, AppState>();
+    let state = ctx.get_local_state(md);
 
     let checkbox_priority = Checkbox::new("High priority", state.high_priority).on(
         md,
@@ -106,34 +129,19 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
                 .collect();
         });
 
-    Column!(
-        Row!(checkbox_priority, textbox_task_name, button_new_task)
-            .with_flex_container_params(ROW_FLEX_PARAMS),
-        list_view,
-        button_delete,
+    ComponentOutput::new(
+        md,
+        Column!(
+            Row!(checkbox_priority, textbox_task_name, button_new_task)
+                .with_flex_container_params(ROW_FLEX_PARAMS),
+            list_view,
+            button_delete,
+        ),
     )
 }
 
 fn main() -> Result<(), PlatformError> {
-    let tasks: Vec<_> = (0..4)
-        .into_iter()
-        .map(|i| TaskItem {
-            text: format!("Task #{}", i),
-            is_completed: false,
-            id: i,
-        })
-        .collect();
-    let next_id = tasks.len() as i32;
-
-    let state = AppState {
-        tasks,
-        high_priority: false,
-        task_name: String::new(),
-        next_id,
-    };
-
     RootHandler::new(AwesomeEditableList)
-        //.with_initial_state(state)
         .with_tracing(true)
         .launch()
 }

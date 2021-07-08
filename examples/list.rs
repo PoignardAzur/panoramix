@@ -1,8 +1,6 @@
-use panoramix::elements::{Button, Checkbox, ElementList, Label, Toggled};
+use panoramix::elements::{Button, Checkbox, ComponentOutput, ElementList, Label, Toggled};
 use panoramix::flex::{CrossAxisAlignment, FlexContainerParams, MainAxisAlignment};
-use panoramix::{
-    component, CompCtx, Element, ElementExt, Metadata, NoEvent, RootHandler, Row, Tuple,
-};
+use panoramix::{component, CompCtx, Element, ElementExt, NoEvent, RootHandler, Row, Tuple};
 
 use panoramix::PlatformError;
 
@@ -18,11 +16,27 @@ struct ListItem {
     id: i32,
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 struct AppState {
     data: Vec<ListItem>,
     selected_row: Option<usize>,
     next_id: i32,
+}
+
+// We implement the initial state of the app
+impl Default for AppState {
+    fn default() -> Self {
+        AppState {
+            data: (0..8_i32)
+                .map(|i| ListItem {
+                    text: "hello".to_string(),
+                    id: i,
+                })
+                .collect(),
+            selected_row: None,
+            next_id: 8,
+        }
+    }
 }
 
 type RowEvent = Toggled;
@@ -34,10 +48,11 @@ struct RowProps {
 }
 
 #[component]
-fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<RowEvent, u16> {
-    let md = Metadata::<RowEvent, u16>::new();
-    let age = ctx.use_local_state::<u16>();
-    Row!(
+fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<Event = RowEvent> {
+    let md = ctx.use_metadata::<RowEvent, u16>();
+    let age = ctx.get_local_state(md);
+
+    let row = Row!(
         Checkbox::new("", props.is_selected).map_event(md, |state: &mut u16, event| {
             *state += 1;
             Some(event)
@@ -45,13 +60,14 @@ fn MyListRow(ctx: &CompCtx, props: RowProps) -> impl Element<RowEvent, u16> {
         Label::new(format!("{} - age={}", &props.list_item.text, age)),
         Label::new(format!("id={}", props.list_item.id)),
     )
-    .with_flex_container_params(ROW_FLEX_PARAMS)
+    .with_flex_container_params(ROW_FLEX_PARAMS);
+    ComponentOutput::new(md, row)
 }
 
 #[component]
-fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppState> {
-    let md = Metadata::<NoEvent, AppState>::new();
-    let state = ctx.use_local_state::<AppState>();
+fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<Event = NoEvent> {
+    let md = ctx.use_metadata::<NoEvent, AppState>();
+    let state = ctx.get_local_state(md);
 
     let button_create = Button::new("Create").on_click(md, |state: &mut AppState, _| {
         state.data.push(ListItem {
@@ -100,27 +116,18 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<NoEvent, AppSt
     });
     let list_view = ElementList::from_keys_elems(list_keys, list_rows);
 
-    Tuple!(
-        Row!(button_create, button_insert, button_delete, button_update)
-            .with_flex_container_params(ROW_FLEX_PARAMS),
-        list_view,
+    ComponentOutput::new(
+        md,
+        Tuple!(
+            Row!(button_create, button_insert, button_delete, button_update)
+                .with_flex_container_params(ROW_FLEX_PARAMS),
+            list_view,
+        ),
     )
 }
 
 fn main() -> Result<(), PlatformError> {
-    let state = AppState {
-        data: (0..8_i32)
-            .map(|i| ListItem {
-                text: "hello".to_string(),
-                id: i,
-            })
-            .collect(),
-        selected_row: None,
-        next_id: 8,
-    };
-
     RootHandler::new(AwesomeEditableList)
-        //.with_initial_state(state)
         .with_tracing(true)
         .launch()
 }

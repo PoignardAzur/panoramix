@@ -60,12 +60,7 @@
 //! }
 //!
 //! fn main() -> Result<(), panoramix::PlatformError> {
-//!     let initial_state = ApplicationState {
-//!         // ...
-//!     };
-//!
 //!     RootHandler::new(MyRootComponent)
-//!         .with_initial_state(initial_state)
 //!         .with_tracing(true)
 //!         .launch()
 //! }

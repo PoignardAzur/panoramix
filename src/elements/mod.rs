@@ -26,7 +26,7 @@ mod compute_diff;
 pub use any_element::{AnyState, ElementBox};
 pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
-pub use component::Component;
+pub use component::{Component, ComponentOutput};
 pub use element_list::ElementList;
 pub use empty::EmptyElement;
 pub use flex_element::Flex;
@@ -38,7 +38,7 @@ pub mod backend {
     pub use super::any_element::VirtualDomBox;
     pub use super::button::ButtonData;
     pub use super::checkbox::CheckboxData;
-    pub use super::component::{ComponentHolder, ComponentOutput};
+    pub use super::component::{ComponentHolder, ComponentOutputData};
     pub use super::element_list::ElementListData;
     pub use super::element_tuple::ElementTupleData;
     pub use super::empty::EmptyElementData;

@@ -44,17 +44,6 @@ impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootWidget<ElementBox<Loca
             widget: None,
         }
     }
-
-    // FIXME
-    /// Set the local state of the root component to a value other than default
-    #[cfg(FALSE)]
-    pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
-        todo!();
-        RootWidget {
-            root_state: (vec![], comp_local_state, Default::default()),
-            ..self
-        }
-    }
 }
 
 impl<RootElem: Element + 'static> RootWidget<RootElem> {
@@ -282,17 +271,6 @@ impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootHandler<ElementBox<Loc
         RootHandler {
             root_widget: RootWidget::new(root_component),
             init_tracing: false,
-        }
-    }
-
-    // FIXME
-    /// Set the local state of the root component to a value other than default
-    #[cfg(FALSE)]
-    pub fn with_initial_state(self, comp_local_state: Comp::LocalState) -> Self {
-        todo!();
-        RootHandler {
-            root_widget: self.root_widget.with_initial_state(comp_local_state),
-            ..self
         }
     }
 }

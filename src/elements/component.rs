@@ -10,7 +10,6 @@ use std::fmt::Debug;
 pub trait Component: Debug + Clone {
     type Props: Clone + Default + Debug + PartialEq + 'static;
     type LocalEvent: Clone + Debug + PartialEq + 'static;
-    type LocalState: Clone + Default + Debug + PartialEq + 'static;
 
     fn new(props: Self::Props) -> ElementBox<Self::LocalEvent>;
 
@@ -31,6 +30,7 @@ pub struct ComponentHolder<
 
 #[derive(Derivative, Hash)]
 #[derivative(
+    Debug(bound = ""),
     Clone(bound = ""),
     Default(bound = "Child: Default"),
     PartialEq(bound = "Child: PartialEq"),
@@ -42,13 +42,13 @@ pub struct ComponentOutput<
     Child: Element,
 > {
     pub child: Child,
-    pub name: &'static str,
     #[derivative(Debug = "ignore")]
     pub _metadata: Metadata<ComponentEvent, ComponentState>,
 }
 
 #[derive(Derivative, Hash)]
 #[derivative(
+    Debug(bound = ""),
     Clone(bound = "Child: Clone"),
     Default(bound = "Child: Default"),
     PartialEq(bound = "Child: PartialEq"),
@@ -60,12 +60,25 @@ pub struct ComponentOutputData<
     Child: VirtualDom,
 > {
     pub child: Child,
-    pub name: &'static str,
     #[derivative(Debug = "ignore")]
     pub _metadata: Metadata<ComponentEvent, ComponentState>,
 }
 
 // ---
+
+impl<
+        ComponentEvent: Clone + Debug + PartialEq,
+        ComponentState: Clone + Default + Debug + PartialEq,
+        Child: Element,
+    > ComponentOutput<ComponentEvent, ComponentState, Child>
+{
+    pub fn new(md: Metadata<ComponentEvent, ComponentState>, child: Child) -> Self {
+        Self {
+            child,
+            _metadata: md,
+        }
+    }
+}
 
 impl<
         Comp: Component,
@@ -88,35 +101,10 @@ impl<
         CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
     > std::fmt::Debug for ComponentHolder<Comp, ReturnedTree, CompFn>
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple(Comp::name()).field(&self.props).finish()
-    }
-}
-
-impl<
-        ComponentEvent: Clone + Debug + PartialEq + 'static,
-        ComponentState: Clone + Default + Debug + PartialEq + 'static,
-        Child: Element,
-    > std::fmt::Debug for ComponentOutput<ComponentEvent, ComponentState, Child>
-{
     #[rustfmt::skip]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple(self.name)
-            .field(&self.child)
-        .finish()
-    }
-}
-
-impl<
-        ComponentEvent: Clone + Debug + PartialEq + 'static,
-        ComponentState: Clone + Default + Debug + PartialEq + 'static,
-        Child: VirtualDom,
-    > std::fmt::Debug for ComponentOutputData<ComponentEvent, ComponentState, Child>
-{
-    #[rustfmt::skip]
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple(self.name)
-            .field(&self.child)
+        f.debug_tuple(Comp::name())
+            .field(&self.props)
         .finish()
     }
 }
@@ -143,6 +131,7 @@ impl<
         let local_state = ReturnedTree::get_component_state(&prev_state).unwrap_or(&default_state);
 
         let ctx = CompCtx {
+            called_use_metadata: std::cell::Cell::new(false),
             local_state: local_state,
         };
         let element_tree = (self.component_fn)(&ctx, self.props);
@@ -179,7 +168,6 @@ impl<
         (
             ComponentOutputData {
                 child,
-                name: self.name,
                 _metadata: Default::default(),
             },
             (vec![], prev_local_state, children_state),
@@ -257,7 +245,6 @@ mod tests {
 
     type MyPropsType = ();
     type MyLocalEvent = panoramix::NoEvent;
-    type MyLocalState = u16;
 
     impl MyComponent {
         fn new(props: MyPropsType) -> impl panoramix::Element<Event = MyLocalEvent> {
@@ -268,18 +255,12 @@ mod tests {
             _ctx: &panoramix::CompCtx,
             _my_props: MyPropsType,
         ) -> impl panoramix::Element<Event = MyLocalEvent> {
-            let child = { panoramix::elements::EmptyElement::new() };
-            panoramix::elements::component::ComponentOutput {
-                child,
-                name: "MyComponent",
-                _metadata: panoramix::backend::Metadata::<MyLocalEvent, MyLocalState>::new(),
-            }
+            panoramix::elements::EmptyElement::new()
         }
     }
 
     impl panoramix::elements::component::Component for MyComponent {
         type Props = MyPropsType;
-        type LocalState = MyLocalState;
         type LocalEvent = MyLocalEvent;
 
         fn new(props: Self::Props) -> panoramix::elements::ElementBox<MyLocalEvent> {

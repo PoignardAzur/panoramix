@@ -21,9 +21,3 @@ pub struct NoState;
 pub struct Metadata<ComponentEvent, ComponentState> {
     _marker: std::marker::PhantomData<(ComponentEvent, ComponentState)>,
 }
-
-impl<ComponentEvent, ComponentState> Metadata<ComponentEvent, ComponentState> {
-    pub fn new() -> Self {
-        Default::default()
-    }
-}

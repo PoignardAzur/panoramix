@@ -5,22 +5,44 @@ use std::any::{type_name, Any, TypeId};
 
 /// Context type passed to all components when building them.
 pub struct CompCtx<'a> {
+    // Yeah, we're using a cell, sorry. It's very local, though.
+    pub(crate) called_use_metadata: std::cell::Cell<bool>,
     pub(crate) local_state: &'a dyn Any,
 }
 
 impl<'a> CompCtx<'a> {
+    pub fn use_metadata<ComponentEvent: 'static, ComponentState: 'static>(
+        &self,
+    ) -> Metadata<ComponentEvent, ComponentState> {
+        if self.called_use_metadata.get() {
+            panic!("error: 'use_metadata' can only be called once per component")
+        }
+        self.called_use_metadata.set(true);
+        Default::default()
+    }
+
     /// Returns the local state of the current component instance.
     ///
     /// Panics if the generic type doesn't match the component's local state type.
-    pub fn use_local_state<T: 'static>(&self) -> &'a T {
+    pub fn get_local_state<ComponentEvent: 'static, ComponentState: 'static>(
+        &self,
+        md: Metadata<ComponentEvent, ComponentState>,
+    ) -> &'a ComponentState {
+        #![allow(unused_variables)]
         if (*self.local_state).type_id() == TypeId::of::<NoState>() {
-            panic!("error: 'use_local_state' cannot be called for a component whose root element isn't ComponentOutput")
+            panic!("error: 'get_local_state' cannot be called for a component whose root element isn't ComponentOutput")
         }
-        self.local_state.downcast_ref::<T>().unwrap()
+        self.local_state
+            .downcast_ref::<ComponentState>()
+            .expect(&format!(
+            "internal type error: get_local_state expected {:?} ({}), parent component gave {:?}",
+            TypeId::of::<ComponentState>(),
+            type_name::<ComponentState>(),
+            (*self.local_state).type_id(),
+        ))
     }
 
     // TODO - add methods
-    // get metadata
     // use_lifecycle
     // get_vdom_context
 }

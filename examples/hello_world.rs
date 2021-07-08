@@ -1,9 +1,9 @@
 use panoramix::elements::{Button, Label};
-use panoramix::{component, Column, CompCtx, Element, Metadata, NoEvent, RootHandler};
+use panoramix::{component, Column, CompCtx, Element, NoEvent, RootHandler};
 
 #[component]
-fn HelloBox(_ctx: &CompCtx, _props: ()) -> impl Element {
-    let md = Metadata::<NoEvent, ()>::new();
+fn HelloBox(ctx: &CompCtx, _props: ()) -> impl Element<Event = NoEvent> {
+    let md = ctx.use_metadata::<NoEvent, ()>();
     Column!(
         Label::new("Hello world!"),
         Button::new("Say hello").on_click(md, |_, _| {
