@@ -1,7 +1,7 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::ReconcileCtx;
+use crate::element_tree::{Element, VirtualDom};
+use crate::metadata::{NoEvent, NoState};
 use crate::widgets::EmptySequence;
-
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 
@@ -46,7 +46,7 @@ impl EmptyElement {
 
 impl Element for EmptyElement {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = ();
     type BuildOutput = EmptyElementData;
 

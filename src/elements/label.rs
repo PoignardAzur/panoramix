@@ -1,9 +1,10 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::ReconcileCtx;
+use crate::element_tree::{Element, VirtualDom};
 use crate::flex::FlexParams;
 use crate::glue::DruidAppData;
+use crate::metadata::{NoEvent, NoState};
 use crate::widgets::SingleWidget;
 
-use crate::element_tree::ReconcileCtx;
 use druid::widget as druid_w;
 
 use derivative::Derivative;
@@ -76,7 +77,7 @@ impl LabelData {
 
 impl Element for Label {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = ();
     type BuildOutput = LabelData;
 
@@ -107,7 +108,7 @@ impl VirtualDom for LabelData {
     fn reconcile(&self, other: &Self, widget: &mut Self::TargetWidgetSeq, ctx: &mut ReconcileCtx) {
         if self.text != other.text {
             widget.pod.widget_mut().set_text(self.text.clone());
-            widget.request_druid_update(ctx);
+            widget.request_druid_update(ctx.event_ctx);
         }
     }
 }

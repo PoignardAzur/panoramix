@@ -1,7 +1,7 @@
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
-use crate::element_tree::{Element, NoState, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
+use crate::metadata::NoState;
 use crate::widgets::WidgetSeqBox;
 
 use derivative::Derivative;

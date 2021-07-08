@@ -1,11 +1,13 @@
 #![allow(unused_imports)]
 
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::backend::{ReconcileCtx, VirtualDom};
 use crate::flex::FlexParams;
-use crate::glue::DebugState;
-use crate::glue::DruidAppData;
+use crate::glue::{DebugState, DruidAppData};
 use crate::widgets::SingleWidget;
 use crate::RootWidget;
+use crate::{Element, NoEvent};
+
+use derivative::Derivative;
 use druid::keyboard_types::{Code, Key, KeyState};
 use druid::tests::harness::Harness as DruidHarness;
 use druid::{
@@ -13,12 +15,9 @@ use druid::{
     Vec2, WidgetId, WidgetState,
 };
 use std::any::Any;
-
-use crate::element_tree::ReconcileCtx;
-use druid::widget as druid_w;
-
-use derivative::Derivative;
 use tracing::instrument;
+
+use druid::widget as druid_w;
 
 pub struct Harness<'a, 'b, RootElem: Element + Any> {
     pub druid_harness: &'a mut DruidHarness<'b, DruidAppData>,

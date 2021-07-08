@@ -1,10 +1,9 @@
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::flex::{Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, MainAxisAlignment};
 use crate::glue::GlobalEventCx;
-use crate::widgets::FlexWidget;
-use crate::widgets::SingleWidget;
+use crate::metadata::{NoEvent, NoState};
+use crate::widgets::{FlexWidget, SingleWidget};
 
 use derivative::Derivative;
 use tracing::instrument;
@@ -81,7 +80,7 @@ impl<Child: VirtualDom> FlexData<Child> {
 
 impl<Child: Element> Element for Flex<Child> {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = FlexData<Child::BuildOutput>;
 

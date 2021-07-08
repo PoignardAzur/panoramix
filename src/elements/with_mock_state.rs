@@ -1,8 +1,7 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
+use crate::metadata::{NoEvent, NoState};
 
 use derivative::Derivative;
 
@@ -56,7 +55,7 @@ impl Default for MockState {
 
 impl<Child: Element> Element for WithMockState<Child> {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = (MockState, Child::AggregateChildrenState);
     type BuildOutput = WithMockStateData<Child::BuildOutput>;
 

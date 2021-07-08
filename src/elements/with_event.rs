@@ -1,8 +1,7 @@
-use crate::element_tree::{Element, Metadata, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
+use crate::metadata::{Metadata, NoState};
 
 use derivative::Derivative;
 use tracing::{instrument, trace};
@@ -155,7 +154,7 @@ where
     Child::Event: ParentEvent<EventParam>,
 {
     type Event = Child::Event;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
         ComponentEvent,
@@ -198,7 +197,7 @@ where
     ComponentEvent: ParentEvent<EventReturn>,
 {
     type Event = Child::Event;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
         ComponentEvent,
@@ -236,7 +235,7 @@ where
 {
     type Event = Child::Event;
 
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = WithEventTarget<
         ComponentEvent,

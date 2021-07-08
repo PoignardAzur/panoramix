@@ -1,10 +1,9 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::elements::compute_diff::compute_diff;
 use crate::glue::GlobalEventCx;
+use crate::metadata::{NoEvent, NoState};
 use crate::widgets::WidgetList;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 use either::{Left, Right};
@@ -80,7 +79,7 @@ impl<Child: Element> ElementList<Child> {
 
 impl<Child: Element> Element for ElementList<Child> {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Vec<(String, Child::AggregateChildrenState)>;
     type BuildOutput = ElementListData<Child::BuildOutput>;
 

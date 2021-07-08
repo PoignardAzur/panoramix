@@ -1,7 +1,8 @@
-use crate::element_tree::{CompCtx, ProcessEventCtx, ReconcileCtx};
-use crate::element_tree::{Element, Metadata, NoState, VirtualDom};
+use crate::ctx::{CompCtx, ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::elements::ElementBox;
 use crate::glue::GlobalEventCx;
+use crate::metadata::{Metadata, NoState};
 
 use derivative::Derivative;
 use std::fmt::Debug;

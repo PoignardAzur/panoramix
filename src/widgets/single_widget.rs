@@ -1,4 +1,3 @@
-use crate::element_tree::ReconcileCtx;
 use crate::flex::FlexParams;
 use crate::glue::DebugState;
 use crate::glue::DruidAppData;
@@ -32,9 +31,9 @@ impl<W: Widget<DruidAppData>> SingleWidget<W> {
         self.pod.widget_mut()
     }
 
-    pub fn request_druid_update(&mut self, ctx: &mut ReconcileCtx) {
+    pub fn request_druid_update(&mut self, ctx: &mut EventCtx) {
         self.pod
-            .with_event_context(ctx.event_ctx, |_widget: &mut W, ctx: &mut EventCtx| {
+            .with_event_context(ctx, |_widget: &mut W, ctx: &mut EventCtx| {
                 trace!("request_druid_update: {:?}", ctx.widget_id());
                 ctx.request_update();
             });

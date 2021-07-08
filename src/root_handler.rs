@@ -1,9 +1,9 @@
-use crate::element_tree::{Element, NoEvent, ProcessEventCtx, ReconcileCtx, VirtualDom};
-use crate::elements::Component;
-use crate::elements::ElementBox;
+use crate::backend::{ProcessEventCtx, ReconcileCtx, VirtualDom};
+use crate::elements::{Component, ElementBox};
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::widgets::flex_widget;
+use crate::{Element, NoEvent};
 
 use crate::glue::DebugState;
 

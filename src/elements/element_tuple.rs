@@ -1,13 +1,12 @@
 #![allow(unused_attributes)]
 #![allow(non_camel_case_types)]
 
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::elements::backend::EmptyElementData;
 use crate::glue::GlobalEventCx;
+use crate::metadata::{NoEvent, NoState};
 use crate::widgets::WidgetTuple;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 use tracing::instrument;
@@ -76,7 +75,7 @@ impl<
     > Element for $TupleName<$($Type,)*>
 {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = (
         $(
             $Type::AggregateChildrenState,

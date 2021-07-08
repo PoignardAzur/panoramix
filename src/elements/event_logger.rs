@@ -1,8 +1,9 @@
 // FIXME - Element used in unit tests to record events emitted by a child event
 
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
+use crate::metadata::{NoEvent, NoState};
+
 use crate::glue::GlobalEventCx;
 
 use derivative::Derivative;
@@ -38,7 +39,7 @@ impl<Child: Element> EventLogger<Child> {
 impl<Child: Element> Element for EventLogger<Child> {
     type Event = NoEvent;
 
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Child::AggregateChildrenState;
     type BuildOutput = EventLoggerData<Child::BuildOutput>;
 

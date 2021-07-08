@@ -73,8 +73,10 @@
 //!
 //! For information on how to write a component, see [this document on Github](https://github.com/PoignardAzur/panoramix/blob/main/misc_docs/writing_a_component.md).
 
+mod ctx;
 mod element_tree;
 mod glue;
+mod metadata;
 mod root_handler;
 mod widget_sequence;
 
@@ -87,8 +89,9 @@ pub mod flex;
 
 pub use panoramix_derive::component;
 
-pub use element_tree::{CompCtx, Element, ElementExt, Metadata, NoEvent};
-
+pub use crate::ctx::CompCtx;
+pub use element_tree::{Element, ElementExt};
+pub use metadata::{Metadata, NoEvent};
 pub use root_handler::{PlatformError, RootHandler, RootWidget};
 
 // TODO - Rename to "internals"
@@ -98,8 +101,11 @@ pub mod backend {
     // to have a clean separation in the documentation between the items required to write
     // a GUI and the items required to create a GUI element.
 
-    pub use crate::element_tree::{Metadata, ReconcileCtx, VirtualDom};
+    pub use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+    pub use crate::element_tree::VirtualDom;
     pub use crate::glue::{Action, DruidAppData, GlobalEventCx, WidgetId};
+    // TODO
+    pub use crate::metadata::Metadata;
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
 
     // TODO

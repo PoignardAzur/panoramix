@@ -1,10 +1,9 @@
-use crate::glue::{Action, GlobalEventCx, WidgetId};
-
-use crate::element_tree::{Element, ElementExt, Metadata, NoState, VirtualDom};
+use crate::ctx::ReconcileCtx;
+use crate::element_tree::{Element, ElementExt, VirtualDom};
 use crate::flex::FlexParams;
+use crate::glue::{Action, GlobalEventCx, WidgetId};
+use crate::metadata::{Metadata, NoState};
 use crate::widgets::ButtonWidget;
-
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 use tracing::{instrument, trace};

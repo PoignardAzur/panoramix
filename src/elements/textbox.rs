@@ -1,10 +1,9 @@
-use crate::glue::{Action, GlobalEventCx, WidgetId};
-
-use crate::element_tree::{Element, ElementExt, Metadata, NoState, VirtualDom};
+use crate::ctx::ReconcileCtx;
+use crate::element_tree::{Element, ElementExt, VirtualDom};
 use crate::flex::FlexParams;
+use crate::glue::{Action, GlobalEventCx, WidgetId};
+use crate::metadata::{Metadata, NoState};
 use crate::widgets::TextBoxWidget;
-
-use crate::element_tree::ReconcileCtx;
 
 use derivative::Derivative;
 use tracing::{instrument, trace};
@@ -123,7 +122,7 @@ impl VirtualDom for TextBoxData {
     fn reconcile(&self, _other: &Self, widget: &mut TextBoxWidget, ctx: &mut ReconcileCtx) {
         widget.text = self.text.clone();
         // TODO - check diff with previous value
-        widget.request_druid_update(ctx);
+        widget.request_druid_update(ctx.event_ctx);
     }
 
     #[instrument(name = "TextBox", skip(self, _children_state, widget, cx))]

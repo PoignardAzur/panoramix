@@ -1,8 +1,7 @@
-use crate::element_tree::{Element, NoEvent, VirtualDom};
+use crate::ctx::{ProcessEventCtx, ReconcileCtx};
+use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
-
-use crate::element_tree::ProcessEventCtx;
-use crate::element_tree::ReconcileCtx;
+use crate::metadata::{NoEvent, NoState};
 
 use either::{Either, Left, Right};
 use tracing::{debug_span, info, instrument};
@@ -10,7 +9,7 @@ use tracing_unwrap::OptionExt;
 
 impl<Child: Element> Element for Option<Child> {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState = Option<Child::AggregateChildrenState>;
     type BuildOutput = Option<Child::BuildOutput>;
 
@@ -84,7 +83,7 @@ impl<Child: VirtualDom> VirtualDom for Option<Child> {
 
 impl<ChildLeft: Element, ChildRight: Element> Element for Either<ChildLeft, ChildRight> {
     type Event = NoEvent;
-    type ComponentState = crate::element_tree::NoState;
+    type ComponentState = NoState;
     type AggregateChildrenState =
         Option<Either<ChildLeft::AggregateChildrenState, ChildRight::AggregateChildrenState>>;
     type BuildOutput = Either<ChildLeft::BuildOutput, ChildRight::BuildOutput>;
