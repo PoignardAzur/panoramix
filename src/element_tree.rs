@@ -212,14 +212,6 @@ pub enum NoEvent {}
 #[derive(Default, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NoState;
 
-// Used in unit tests
-// TODO
-#[allow(dead_code)]
-pub(crate) fn assign_empty_state_type(_elem: &impl Element) {}
-
-#[allow(dead_code)]
-pub(crate) fn assign_state_type<Elem: Element>(_elem: &Elem) {}
-
 use crate::elements::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
 /// Helper methods that can be called on all elements.

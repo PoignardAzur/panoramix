@@ -198,7 +198,6 @@ impl<ChildLeft: VirtualDom, ChildRight: VirtualDom> VirtualDom for Either<ChildL
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::elements::button::{Button, ButtonData};
     use crate::elements::label::{Label, LabelData};
     use crate::flex::FlexParams;
@@ -213,8 +212,6 @@ mod tests {
         assert_debug_snapshot!(option_label);
         assert_debug_snapshot!(option_label_data);
         assert_eq!(option_label_data, Some(LabelData::new("Hello")));
-
-        assign_empty_state_type(&option_label);
 
         option_label = None;
         let (option_label_data, _) = option_label.clone().build(None);
@@ -248,8 +245,6 @@ mod tests {
         assert_debug_snapshot!(either_elem);
         assert_debug_snapshot!(either_elem_data);
         assert_eq!(either_elem_data, Right(button_data));
-
-        assign_empty_state_type(&either_elem);
     }
 
     // TODO - Widget tests

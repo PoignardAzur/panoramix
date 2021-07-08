@@ -361,7 +361,6 @@ impl<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::elements::label::Label;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
@@ -373,8 +372,6 @@ mod tests {
 
         assert_debug_snapshot!(tuple);
         assert_debug_snapshot!(tuple_data);
-
-        assign_empty_state_type(&tuple);
     }
 
     #[test]
@@ -384,8 +381,6 @@ mod tests {
 
         assert_debug_snapshot!(tuple);
         assert_debug_snapshot!(tuple_data);
-
-        assign_empty_state_type(&tuple);
     }
 
     #[test]
@@ -406,8 +401,6 @@ mod tests {
         assert_debug_snapshot!(tuple_data);
 
         assert_eq!(tuple, tuple_trailing_comma);
-
-        assign_empty_state_type(&tuple);
     }
 
     #[test]

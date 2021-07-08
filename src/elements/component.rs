@@ -294,7 +294,6 @@ mod tests {
         }
     }
 
-    use crate::element_tree::assign_empty_state_type;
     use crate::element_tree::Element;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
@@ -302,7 +301,6 @@ mod tests {
     #[test]
     fn call_component() {
         let my_component = MyComponent::new(());
-        assign_empty_state_type(&my_component);
 
         let (component_result, _state) = my_component.build(Default::default());
         assert_debug_snapshot!(component_result);

@@ -138,7 +138,6 @@ impl VirtualDom for ButtonData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::test_harness::Harness;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
@@ -162,8 +161,6 @@ mod tests {
                 ..Default::default()
             }
         );
-
-        assign_empty_state_type(&button);
     }
 
     #[test]

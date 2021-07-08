@@ -260,7 +260,6 @@ impl<Child: VirtualDom> VirtualDom for ElementListData<Child> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::elements::label::{Label, LabelData};
     use crate::elements::{MockState, WithMockState};
     use insta::assert_debug_snapshot;
@@ -289,8 +288,6 @@ mod tests {
 
         assert_debug_snapshot!(list);
         assert_debug_snapshot!(list_data);
-
-        assign_empty_state_type(&list);
     }
 
     #[test]
@@ -311,8 +308,6 @@ mod tests {
                 ],
             },
         );
-
-        assign_empty_state_type(&list);
     }
 
     #[test]

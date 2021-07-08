@@ -185,7 +185,6 @@ macro_rules! Column {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::elements::Label;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
@@ -201,9 +200,6 @@ mod tests {
         assert_debug_snapshot!(column);
         assert_debug_snapshot!(row_data);
         assert_debug_snapshot!(column_data);
-
-        assign_empty_state_type(&row);
-        assign_empty_state_type(&column);
     }
 
     #[test]
@@ -217,9 +213,6 @@ mod tests {
         assert_debug_snapshot!(column);
         assert_debug_snapshot!(row_data);
         assert_debug_snapshot!(column_data);
-
-        assign_empty_state_type(&row);
-        assign_empty_state_type(&column);
     }
 
     #[test]
@@ -233,8 +226,6 @@ mod tests {
 
         assert_debug_snapshot!(row);
         assert_debug_snapshot!(row_data);
-
-        assign_empty_state_type(&row);
     }
 
     #[test]

@@ -380,7 +380,6 @@ impl<Event> VirtualDom for VirtualDomBox<Event> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use crate::elements::{Button, Label};
     use crate::test_harness::Harness;
     use insta::assert_debug_snapshot;
@@ -398,8 +397,6 @@ mod tests {
     fn new_element() {
         let label = ElementBox::new(Label::new("Hello"));
         assert_debug_snapshot!(label);
-
-        assign_empty_state_type(&label);
 
         let (label_data, _state) = label.build(None);
         assert_debug_snapshot!(label_data);

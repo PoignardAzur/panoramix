@@ -115,7 +115,6 @@ impl VirtualDom for LabelData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::element_tree::assign_empty_state_type;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
@@ -128,8 +127,6 @@ mod tests {
         assert_debug_snapshot!(label_data);
 
         assert_eq!(label_data, LabelData::new("Hello"));
-
-        assign_empty_state_type(&label);
     }
 
     #[test]
