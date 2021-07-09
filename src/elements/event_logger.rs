@@ -10,7 +10,6 @@ use derivative::Derivative;
 use std::sync::mpsc::Sender;
 use tracing::instrument;
 
-// PartialEq?
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct EventLogger<Child: Element> {
@@ -18,7 +17,6 @@ pub struct EventLogger<Child: Element> {
     pub event_queue: Sender<Child::Event>,
 }
 
-// PartialEq?
 #[derive(Derivative)]
 #[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
 pub struct EventLoggerData<Child: VirtualDom> {

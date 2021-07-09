@@ -5,7 +5,6 @@ use crate::glue::{Action, GlobalEventCx, WidgetId};
 use crate::metadata::{Metadata, NoState};
 use crate::widgets::ButtonWidget;
 
-use derivative::Derivative;
 use tracing::{instrument, trace};
 
 /// A button with a text label.
@@ -13,16 +12,14 @@ use tracing::{instrument, trace};
 /// ## Events
 ///
 /// Emits [ButtonClick] events.
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Button {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
 }
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct ButtonData {
     pub text: String,
     pub flex: FlexParams,
@@ -164,9 +161,7 @@ mod tests {
 
     #[test]
     fn button_widget() {
-        // TODO - We use Tuple! because RootWidget currently wants a root element with no event
-        use crate::Tuple;
-        let button = Tuple!(Button::new("Hello"));
+        let button = Button::new("Hello");
 
         Harness::run_test_window(button, |harness| {
             let button_state = harness.get_root_debug_state();

@@ -4,7 +4,6 @@ use crate::glue::GlobalEventCx;
 use crate::metadata::NoState;
 use crate::widgets::WidgetSeqBox;
 
-use derivative::Derivative;
 use std::any::Any;
 use std::fmt::Debug;
 
@@ -81,8 +80,7 @@ impl PartialEq for AnyStateBox {
 
 // --- ELEMENT ---
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Default(bound = "Child: Default"), Clone(bound = ""))]
+#[derive(Default, Clone, PartialEq, Eq, Hash)]
 struct ErasedElement<Child: Element> {
     child: Option<Child>,
 }
@@ -194,8 +192,7 @@ impl<Event> Element for ElementBox<Event> {
 
 // --- VIRTUAL_DOM ---
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Default(bound = "Child: Default"), Clone(bound = "Child: Clone"))]
+#[derive(Default, Clone, PartialEq, Eq, Hash)]
 pub struct ErasedVirtualDom<Child: VirtualDom> {
     child: Child,
 }

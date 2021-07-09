@@ -3,16 +3,14 @@
 
 use crate::ctx::{ProcessEventCtx, ReconcileCtx};
 use crate::element_tree::{Element, VirtualDom};
-use crate::elements::backend::EmptyElementData;
+use crate::elements::internals::EmptyElementData;
 use crate::glue::GlobalEventCx;
 use crate::metadata::{NoEvent, NoState};
 use crate::widgets::WidgetTuple;
 
-use derivative::Derivative;
 use tracing::instrument;
 
-#[derive(Derivative, Clone, Default, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub struct ElementTupleData<
     C0: VirtualDom,
     C1: VirtualDom,
@@ -56,8 +54,7 @@ macro_rules! replace_expr {
 macro_rules! declare_stuff {
     ( $TupleName:ident ; $( $Type:ident ),* ; $( $Remainder:ident ),* ; $( $index:tt ),* ) => {
 
-#[derive(Derivative, Default, PartialEq, Eq, Hash)]
-#[derivative(Clone(bound=""), Debug(bound=""))]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct $TupleName<
     $(
         $Type: Element,

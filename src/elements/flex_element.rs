@@ -5,11 +5,9 @@ use crate::glue::GlobalEventCx;
 use crate::metadata::{NoEvent, NoState};
 use crate::widgets::{FlexWidget, SingleWidget};
 
-use derivative::Derivative;
 use tracing::instrument;
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Clone(bound = ""), Debug(bound = ""))]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Flex<Child: Element> {
     pub axis: Axis,
     pub child: Child,
@@ -17,8 +15,7 @@ pub struct Flex<Child: Element> {
     pub flex_container: FlexContainerParams,
 }
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FlexData<Child: VirtualDom> {
     pub axis: Axis,
     pub child: Child,

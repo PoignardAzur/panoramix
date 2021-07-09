@@ -34,7 +34,7 @@ pub use label::Label;
 pub use optional_element::*;
 pub use textbox::{TextBox, TextChanged};
 
-pub mod backend {
+pub mod internals {
     pub use super::any_element::VirtualDomBox;
     pub use super::button::ButtonData;
     pub use super::checkbox::CheckboxData;

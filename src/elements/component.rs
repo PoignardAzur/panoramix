@@ -264,7 +264,7 @@ mod tests {
         type LocalEvent = MyLocalEvent;
 
         fn new(props: Self::Props) -> panoramix::elements::ElementBox<MyLocalEvent> {
-            panoramix::elements::ElementBox::new(panoramix::elements::backend::ComponentHolder::<
+            panoramix::elements::ElementBox::new(panoramix::elements::internals::ComponentHolder::<
                 Self,
                 _,
                 _,
@@ -285,6 +285,7 @@ mod tests {
         let my_component = MyComponent::new(());
 
         let (component_result, _state) = my_component.build(Default::default());
+        // TODO - update snapshot
         assert_debug_snapshot!(component_result);
 
         //let prev_state = (999, Default::default());

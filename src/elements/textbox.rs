@@ -5,7 +5,6 @@ use crate::glue::{Action, GlobalEventCx, WidgetId};
 use crate::metadata::{Metadata, NoState};
 use crate::widgets::TextBoxWidget;
 
-use derivative::Derivative;
 use tracing::{instrument, trace};
 
 // TODO - Handle the anti-pattern where the user does something like
@@ -19,16 +18,14 @@ use tracing::{instrument, trace};
 /// ## Events
 ///
 /// Emits [TextChanged] events.
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct TextBox {
     pub text: String,
     pub flex: FlexParams,
     pub reserved_widget_id: Option<WidgetId>,
 }
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct TextBoxData {
     pub text: String,
     pub flex: FlexParams,
@@ -175,15 +172,13 @@ mod tests {
 
     #[test]
     fn textbox_widget() {
-        // TODO - We use Tuple! because RootWidget currently wants a root element with no event
-        use crate::Tuple;
-        let textbox = Tuple!(TextBox::new("Hello"));
+        let textbox = TextBox::new("Hello");
 
         Harness::run_test_window(textbox, |harness| {
             let textbox_state = harness.get_root_debug_state();
             assert_debug_snapshot!(textbox_state);
 
-            let new_textbox = Tuple!(TextBox::new("World"));
+            let new_textbox = TextBox::new("World");
             harness.update_root_element(new_textbox);
 
             let textbox_state_2 = harness.get_root_debug_state();

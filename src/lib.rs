@@ -89,9 +89,8 @@ pub use element_tree::{Element, ElementExt};
 pub use metadata::{Metadata, NoEvent};
 pub use root_handler::{PlatformError, RootHandler, RootWidget};
 
-// TODO - Rename to "internals"
 /// Traits and type used internally to compute the GUI
-pub mod backend {
+pub mod internals {
     // Note: These items are declared together in files, but are exported separately here
     // to have a clean separation in the documentation between the items required to write
     // a GUI and the items required to create a GUI element.
@@ -99,8 +98,6 @@ pub mod backend {
     pub use crate::ctx::{ProcessEventCtx, ReconcileCtx};
     pub use crate::element_tree::VirtualDom;
     pub use crate::glue::{Action, DruidAppData, GlobalEventCx, WidgetId};
-    // TODO
-    pub use crate::metadata::Metadata;
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
 
     // TODO

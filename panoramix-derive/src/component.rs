@@ -64,8 +64,6 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
 
-    // TODO - only pub when input declaration is pub
-
     let vis = fn_visibility;
     let ComponentName = component_name.clone();
     let ComponentName_literal = proc_macro2::Literal::string(&component_name.to_string());
@@ -100,7 +98,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
             ) -> panoramix::elements::ElementBox<#LocalEvent>
             {
                 panoramix::elements::ElementBox::new(
-                    panoramix::elements::backend::ComponentHolder::<Self, _, _>::new(&#ComponentName::render, props)
+                    panoramix::elements::internals::ComponentHolder::<Self, _, _>::new(&#ComponentName::render, props)
                 )
             }
 

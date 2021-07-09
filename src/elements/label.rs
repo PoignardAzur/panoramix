@@ -7,7 +7,6 @@ use crate::widgets::SingleWidget;
 
 use druid::widget as druid_w;
 
-use derivative::Derivative;
 use tracing::instrument;
 
 /// A text label.
@@ -15,15 +14,13 @@ use tracing::instrument;
 /// ## Events
 ///
 /// Doesn't emit events.
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Label {
     pub text: String,
     pub flex: FlexParams,
 }
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct LabelData {
     pub text: String,
     pub flex: FlexParams,

@@ -5,7 +5,6 @@ use crate::glue::{Action, GlobalEventCx, WidgetId};
 use crate::metadata::{Metadata, NoState};
 use crate::widgets::{CheckboxWidget, SingleCheckboxWidget};
 
-use derivative::Derivative;
 use tracing::{instrument, trace};
 
 // TODO - Handle the anti-pattern where the user does something like
@@ -17,8 +16,7 @@ use tracing::{instrument, trace};
 /// ## Events
 ///
 /// Emits [Toggled] events.
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Checkbox {
     pub text: String,
     pub value: bool,
@@ -26,8 +24,7 @@ pub struct Checkbox {
     pub reserved_widget_id: Option<WidgetId>,
 }
 
-#[derive(Derivative, PartialEq)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct CheckboxData {
     pub text: String,
     pub value: bool,
@@ -188,15 +185,13 @@ mod tests {
 
     #[test]
     fn checkbox_widget() {
-        // TODO - We use Tuple! because RootWidget currently wants a root element with no event
-        use crate::Tuple;
-        let checkbox = Tuple!(Checkbox::new("Hello", false));
+        let checkbox = Checkbox::new("Hello", false);
 
         Harness::run_test_window(checkbox, |harness| {
             let checkbox_state = harness.get_root_debug_state();
             assert_debug_snapshot!(checkbox_state);
 
-            let new_checkbox = Tuple!(Checkbox::new("Hello", true));
+            let new_checkbox = Checkbox::new("Hello", true);
             harness.update_root_element(new_checkbox);
 
             let checkbox_state_2 = harness.get_root_debug_state();

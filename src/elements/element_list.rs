@@ -42,14 +42,14 @@ use tracing::{debug_span, info, instrument};
 ///```
 ///
 /// Panoramix will figure out that the element at `foo-2` has been removed, and will remove it from the underlying widget tree, as well as perform any necessary cleanup.
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
+#[derive(Derivative, Clone, Debug, PartialEq, Eq, Hash)]
+#[derivative(Default(bound = ""))]
 pub struct ElementList<Child: Element> {
     pub children: Vec<(String, Child)>,
 }
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Debug(bound = ""), Default(bound = ""), Clone(bound = "Child: Clone"))]
+#[derive(Derivative, Clone, Debug, PartialEq, Eq, Hash)]
+#[derivative(Default(bound = ""))]
 pub struct ElementListData<Child: VirtualDom> {
     pub children: Vec<(String, Child)>,
 }

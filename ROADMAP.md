@@ -14,15 +14,15 @@
 - [ ] Write tests.
   - [X] Basic constructors.
   - [X] compute_diff algorithm.
-  - [ ] Event handling
+  - [X] Event handling
     - [ ] Test event chaining
-  - [ ] Widget mutation.
+  - [X] Widget mutation.
   - [ ] Add integration test using all components, and snapshot-test the return values of every method.
 - [X] Add TextBox element.
-- [ ] Add testing backend to druid for unit tests.
+- [X] Add testing backend to druid for unit tests.
 - [ ] Add integration tests based on visual snapshots.
 - [ ] Write some benchmarks.
-- [ ] Add dynamically-typed BoxDynElement (probably using `std::Any`).
+- [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
 - [ ] Add immutable ConstElement.
 - [ ] Refactor ElementList to allow duplicate keys
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
@@ -39,12 +39,16 @@
   - [ ] Add "speedrun" doc
   - [ ] Explain event system
   - [ ] Explain the notion that some elements represent 0, 1 or n flex items
-  - [ ] Add note that flex widget is both a flew item and a container
+  - [ ] Add note that flex widget is both a flex item and a container
   - [ ] Use `#[doc = include_str!]` once feature gets stable
   - [ ] Document event chaining
   - [ ] Add screenshots to doc
+- [ ] Add styling elements
+  - [ ] Background and borders
+  - [ ] Text font, style
+  - [ ] Margins
 - [ ] Remove some cloning
-- [ ] Remove component_caller
+- [X] Remove component_caller
 - [ ] Add WithKey type and `WidgetExt.with_key` method
 - [ ] Implement two-way bindings
 - [ ] Add Spacer element (from druid)

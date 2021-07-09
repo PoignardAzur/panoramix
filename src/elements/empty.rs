@@ -3,8 +3,6 @@ use crate::element_tree::{Element, VirtualDom};
 use crate::metadata::{NoEvent, NoState};
 use crate::widgets::EmptySequence;
 
-use derivative::Derivative;
-
 /// A placeholder element.
 ///
 /// This does **not** represent a blank area or a zero-sized widget. Rather, this represents the *absence* of a widget. So, for instance:
@@ -29,13 +27,10 @@ use derivative::Derivative;
 /// ## Events
 ///
 /// Doesn't emit events.
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Clone(bound = ""), Debug(bound = ""), Default(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct EmptyElement;
 
-// TODO - Remove Derivative
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(Clone(bound = ""), Debug(bound = ""), Default(bound = ""))]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 pub struct EmptyElementData;
 
 impl EmptyElement {

@@ -6,15 +6,6 @@ use crate::metadata::{Metadata, NoState};
 use derivative::Derivative;
 use tracing::{instrument, trace};
 
-/*
-TODO - Revisit names
-- EventParam
-- WithEventTarget
-_comp_param
-_comp_return
-
-*/
-
 // UTILITY TRAITS ---
 
 pub trait OptionOrUnit<T> {
@@ -69,7 +60,7 @@ pub struct WithCallbackEvent<
     ComponentState: 'static,
     EventParam,
     Child: Element,
-    Cb: Fn(&mut ComponentState, EventParam) + Clone,
+    Cb: Clone + Fn(&mut ComponentState, EventParam),
 > where
     Child::Event: ParentEvent<EventParam>,
 {
@@ -90,7 +81,7 @@ pub struct WithMapEvent<
     EventParam,
     EventReturn,
     Child: Element,
-    Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + Clone,
+    Cb: Clone + Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
 > where
     Child::Event: ParentEvent<EventParam>,
     ComponentEvent: ParentEvent<EventReturn>,
@@ -119,7 +110,7 @@ where
 }
 
 #[derive(Derivative)]
-#[derivative(Debug(bound = ""))]
+#[derivative(Clone(bound = "Child: Clone"), Debug(bound = ""))]
 pub struct WithEventTarget<
     ComponentEvent: 'static,
     ComponentState: 'static,
@@ -127,7 +118,7 @@ pub struct WithEventTarget<
     EventReturn,
     CbReturn: OptionOrUnit<EventReturn>,
     Child: VirtualDom,
-    Cb: Fn(&mut ComponentState, EventParam) -> CbReturn + Clone,
+    Cb: Clone + Fn(&mut ComponentState, EventParam) -> CbReturn,
 > where
     Child::Event: ParentEvent<EventParam>,
     ComponentEvent: ParentEvent<EventReturn>,
@@ -148,7 +139,7 @@ impl<
         ComponentState: 'static,
         EventParam,
         Child: Element,
-        Cb: Fn(&mut ComponentState, EventParam) + Clone,
+        Cb: Clone + Fn(&mut ComponentState, EventParam),
     > Element for WithCallbackEvent<ComponentEvent, ComponentState, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
@@ -190,7 +181,7 @@ impl<
         EventParam,
         EventReturn,
         Child: Element,
-        Cb: Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + Clone,
+        Cb: Clone + Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
     > Element for WithMapEvent<ComponentEvent, ComponentState, EventParam, EventReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
@@ -272,7 +263,7 @@ impl<
         EventReturn,
         CbReturn: OptionOrUnit<EventReturn>,
         Child: VirtualDom,
-        Cb: Fn(&mut ComponentState, EventParam) -> CbReturn + Clone,
+        Cb: Clone + Fn(&mut ComponentState, EventParam) -> CbReturn,
     > VirtualDom
     for WithEventTarget<
         ComponentEvent,

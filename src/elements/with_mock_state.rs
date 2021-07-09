@@ -3,24 +3,12 @@ use crate::element_tree::{Element, VirtualDom};
 use crate::glue::GlobalEventCx;
 use crate::metadata::{NoEvent, NoState};
 
-use derivative::Derivative;
-
 // Used for testing
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(
-    Debug(bound = ""),
-    Default(bound = "Child: Default"),
-    Clone(bound = "Child: Clone")
-)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct WithMockState<Child: Element>(pub Child);
 
-#[derive(Derivative, PartialEq, Eq, Hash)]
-#[derivative(
-    Debug(bound = ""),
-    Default(bound = "Child: Default"),
-    Clone(bound = "Child: Clone")
-)]
+#[derive(Default, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct WithMockStateData<Child: VirtualDom>(pub Child);
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]

@@ -1,4 +1,4 @@
-use crate::backend::{ProcessEventCtx, ReconcileCtx, VirtualDom};
+use crate::internals::{ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::elements::{Component, ElementBox};
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
