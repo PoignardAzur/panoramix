@@ -1,0 +1,12 @@
+---
+source: src/elements/optional_element.rs
+expression: root_state_5
+
+---
+RootWidget(
+    Column(
+        Label(
+            "Goodbye",
+        ),
+    ),
+)

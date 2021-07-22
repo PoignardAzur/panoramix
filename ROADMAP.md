@@ -54,6 +54,7 @@
 - [ ] Add Spacer element (from druid)
 - [ ] Check out SizedBox (?)
 - [ ] Refactor with_flex_params; use `From<f64>`??
+- [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again)
 
 Also, not a specific item but something that needs to be done continuously:
 

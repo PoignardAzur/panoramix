@@ -1,0 +1,12 @@
+---
+source: src/elements/optional_element.rs
+expression: root_state_2
+
+---
+RootWidget(
+    Column(
+        Label(
+            "World",
+        ),
+    ),
+)

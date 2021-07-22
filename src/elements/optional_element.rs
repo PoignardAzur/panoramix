@@ -48,15 +48,21 @@ impl<Child: VirtualDom> VirtualDom for Option<Child> {
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        if let Some(child) = self.as_ref() {
-            if let Some(other_child) = other {
+        match (self, other) {
+            (Some(child), Some(other_child)) => {
                 child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log(), ctx);
-            } else {
+            }
+            (Some(child), None) => {
                 debug_span!("init_tree").in_scope(|| {
                     info!("creating child");
                     *widget_seq = Some(child.init_tree());
                 });
             }
+            (None, Some(_other_child)) => {
+                info!("removing child");
+                *widget_seq = None;
+            }
+            (None, None) => {}
         }
     }
 
@@ -129,32 +135,29 @@ impl<ChildLeft: VirtualDom, ChildRight: VirtualDom> VirtualDom for Either<ChildL
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        match self {
-            Left(child) => {
-                if let Right(_) = &other {
-                    debug_span!("init_tree").in_scope(|| {
-                        info!("creating child");
-                        *widget_seq = Left(child.init_tree());
-                    });
-                }
-                child.reconcile(
-                    other.as_ref().left().unwrap_or_log(),
-                    &mut widget_seq.as_mut().left().unwrap_or_log(),
-                    ctx,
-                );
+        match (self, &other) {
+            (Left(child), Left(other)) => {
+                // TODO - Add more detailed log
+                let widget_seq = &mut widget_seq.as_mut().left().expect_or_log("The previous value of this element was Left. Expected Left widget.");
+                child.reconcile(other, widget_seq, ctx);
             }
-            Right(child) => {
-                if let Left(_) = &other {
-                    debug_span!("init_tree").in_scope(|| {
-                        info!("creating child");
-                        *widget_seq = Right(child.init_tree());
-                    });
-                }
-                child.reconcile(
-                    other.as_ref().right().unwrap_or_log(),
-                    &mut widget_seq.as_mut().right().unwrap_or_log(),
-                    ctx,
-                );
+            (Right(child), Right(other)) => {
+                // TODO - Add more detailed log
+                let widget_seq = &mut widget_seq.as_mut().right().expect_or_log("The previous value of this element was Right. Expected Right widget.");
+                child.reconcile(other, widget_seq, ctx);
+            }
+
+            (Left(child), Right(_other)) => {
+                debug_span!("init_tree").in_scope(|| {
+                    info!("creating child");
+                    *widget_seq = Left(child.init_tree());
+                });
+            }
+            (Right(child), Left(_other)) => {
+                debug_span!("init_tree").in_scope(|| {
+                    info!("creating child");
+                    *widget_seq = Right(child.init_tree());
+                });
             }
         }
     }
@@ -200,6 +203,7 @@ mod tests {
     use crate::elements::button::{Button, ButtonData};
     use crate::elements::label::{Label, LabelData};
     use crate::flex::FlexParams;
+    use crate::test_harness::Harness;
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 
@@ -246,5 +250,65 @@ mod tests {
         assert_eq!(either_elem_data, Right(button_data));
     }
 
-    // TODO - Widget tests
+    #[test]
+    fn test_option_widget() {
+        let some_label = Some(Label::new("Hello"));
+
+        Harness::run_test_window(some_label, |harness| {
+            let root_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state);
+
+            let new_label = Some(Label::new("World"));
+            harness.update_root_element(new_label);
+
+            let root_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_2);
+
+            harness.update_root_element(None);
+
+            let root_state_3 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_3);
+
+            let other_label = Some(Label::new("Goodbye"));
+            harness.update_root_element(other_label);
+
+            let root_state_4 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_4);
+        });
+    }
+
+    #[test]
+    fn test_either_widget() {
+        type LabelButton = Either<Label, Button>;
+        let label: LabelButton = Left(Label::new("Hello"));
+
+        Harness::run_test_window(label, |harness| {
+            let root_state = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state);
+
+            let new_label: LabelButton = Left(Label::new("World"));
+            harness.update_root_element(new_label);
+
+            let root_state_2 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_2);
+
+            let button: LabelButton = Right(Button::new("ThisIsAButton"));
+            harness.update_root_element(button);
+
+            let root_state_3 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_3);
+
+            // TODO - Test reconcile button
+            // let new_button: LabelButton = Right(Button::new("AnotherButton"));
+            // harness.update_root_element(new_button);
+            // let root_state_4 = harness.get_root_debug_state();
+            // assert_debug_snapshot!(root_state_4);
+
+            let final_label: LabelButton = Left(Label::new("Goodbye"));
+            harness.update_root_element(final_label);
+
+            let root_state_5 = harness.get_root_debug_state();
+            assert_debug_snapshot!(root_state_5);
+        });
+    }
 }
