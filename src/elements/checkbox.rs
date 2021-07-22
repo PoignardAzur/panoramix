@@ -83,7 +83,7 @@ impl Checkbox {
     pub fn on_toggled<ComponentEvent: 'static, ComponentState: 'static>(
         self,
         md: Metadata<ComponentEvent, ComponentState>,
-        callback: impl Fn(&mut ComponentState, Toggled) + Clone,
+        callback: impl Fn(&mut ComponentState, Toggled) + Clone + 'static,
     ) -> impl Element {
         self.on(md, callback)
     }

@@ -42,13 +42,13 @@ use std::fmt::Debug;
 ///
 /// The flip side of this is that constructing an element and not returning it (eg doing `let x = Button::new("...");` and then not using `x`) will lead to a compile error, because the compiler can't infer what `CpEvent` and `CpState` should be.
 ///
-pub trait Element: Debug + Clone {
+pub trait Element: Debug + Clone + 'static {
     /// The type of events this element can raise.
     ///
     /// This is the type that [`ElementExt::on`], [`ElementExt::map_event`] and [`ElementExt::bubble_up`] can take. It's different from the `CpEvent` generic parameter, which is the event the parent component emits.
     ///
     /// In the `StoreItem` example, the `Event` type of buttons is `ButtonClick`, and their `CpEvent` parameter is `BuyItem`.
-    type Event;
+    type Event: Debug;
 
     type ComponentState: Clone + Default + Debug + PartialEq + 'static;
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
@@ -69,7 +69,7 @@ pub trait Element: Debug + Clone {
 
 // TODO - Include documentation about what a Virtual DOM is and where the name comes from.
 pub trait VirtualDom: Debug {
-    type Event;
+    type Event: Debug;
 
     type AggregateChildrenState: Clone + Default + Debug + PartialEq;
     type TargetWidgetSeq: WidgetSequence;

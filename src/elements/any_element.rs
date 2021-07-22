@@ -150,11 +150,11 @@ impl<Child: Element + 'static> AnyElement for ErasedElement<Child> {
 
 // -
 
-pub struct ElementBox<Event> {
+pub struct ElementBox<Event: Debug> {
     child: Box<dyn AnyElement<Event = Event>>,
 }
 
-impl<Event> ElementBox<Event> {
+impl<Event: Debug> ElementBox<Event> {
     pub fn new(child: impl Element<Event = Event> + 'static) -> Self {
         ElementBox {
             child: Box::new(ErasedElement { child: Some(child) }),
@@ -162,13 +162,13 @@ impl<Event> ElementBox<Event> {
     }
 }
 
-impl<Event> Debug for ElementBox<Event> {
+impl<Event: Debug> Debug for ElementBox<Event> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         self.child.fmt(f)
     }
 }
 
-impl<Event> Clone for ElementBox<Event> {
+impl<Event: Debug> Clone for ElementBox<Event> {
     fn clone(&self) -> Self {
         ElementBox {
             child: self.child.dyn_clone(),
@@ -176,7 +176,7 @@ impl<Event> Clone for ElementBox<Event> {
     }
 }
 
-impl<Event> Element for ElementBox<Event> {
+impl<Event: Debug + 'static> Element for ElementBox<Event> {
     type Event = Event;
     type ComponentState = NoState;
     type AggregateChildrenState = Option<AnyStateBox>;
@@ -313,11 +313,11 @@ impl<Child: VirtualDom + 'static> AnyVirtualDom for ErasedVirtualDom<Child> {
 
 // -
 
-pub struct VirtualDomBox<Event> {
+pub struct VirtualDomBox<Event: Debug> {
     child: Box<dyn AnyVirtualDom<Event = Event>>,
 }
 
-impl<Event> VirtualDomBox<Event> {
+impl<Event: Debug> VirtualDomBox<Event> {
     pub fn new(child: impl VirtualDom<Event = Event> + 'static) -> Self {
         VirtualDomBox {
             child: Box::new(ErasedVirtualDom { child: child }),
@@ -325,13 +325,13 @@ impl<Event> VirtualDomBox<Event> {
     }
 }
 
-impl<Event> Debug for VirtualDomBox<Event> {
+impl<Event: Debug> Debug for VirtualDomBox<Event> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         self.child.fmt(f)
     }
 }
 
-impl<Event> VirtualDom for VirtualDomBox<Event> {
+impl<Event: Debug> VirtualDom for VirtualDomBox<Event> {
     // TODO - Accept any Event parent of Self::Event
     type Event = Event;
     type AggregateChildrenState = Option<AnyStateBox>;

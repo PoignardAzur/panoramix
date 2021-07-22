@@ -19,7 +19,7 @@ pub use druid::PlatformError;
 /// Implements [`druid::Widget`] from a component
 ///
 /// You should probably use [`RootHandler`] directly instead.
-pub struct RootWidget<RootElem: Element + 'static> {
+pub struct RootWidget<RootElem: Element> {
     pub root_element: RootElem,
     pub root_state: RootElem::AggregateChildrenState,
     pub vdom: Option<RootElem::BuildOutput>,
@@ -46,7 +46,7 @@ impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootWidget<ElementBox<Loca
     }
 }
 
-impl<RootElem: Element + 'static> RootWidget<RootElem> {
+impl<RootElem: Element> RootWidget<RootElem> {
     pub fn from_element(elem: RootElem) -> Self {
         RootWidget {
             root_element: elem,
@@ -58,7 +58,7 @@ impl<RootElem: Element + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element + 'static> RootWidget<RootElem> {
+impl<RootElem: Element> RootWidget<RootElem> {
     #[instrument(level = "debug", skip(self, ctx))]
     pub fn init(&mut self, ctx: &mut EventCtx) {
         let (new_vdom, state) =
@@ -161,7 +161,7 @@ impl<RootElem: Element + 'static> RootWidget<RootElem> {
     }
 }
 
-impl<RootElem: Element + 'static> Widget<DruidAppData> for RootWidget<RootElem> {
+impl<RootElem: Element> Widget<DruidAppData> for RootWidget<RootElem> {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut DruidAppData, env: &Env) {
         let mut force_update = false;
 
@@ -257,7 +257,7 @@ impl<RootElem: Element + 'static> Widget<DruidAppData> for RootWidget<RootElem> 
 }
 
 /// Creates a GUI application from a component
-pub struct RootHandler<RootElem: Element + 'static> {
+pub struct RootHandler<RootElem: Element> {
     pub root_widget: RootWidget<RootElem>,
     pub init_tracing: bool,
 }
@@ -276,7 +276,7 @@ impl<LocalEvent: Clone + Debug + PartialEq + 'static> RootHandler<ElementBox<Loc
     }
 }
 
-impl<RootElem: Element + 'static> RootHandler<RootElem> {
+impl<RootElem: Element> RootHandler<RootElem> {
     pub fn with_tracing(self, init_tracing: bool) -> Self {
         RootHandler {
             init_tracing,

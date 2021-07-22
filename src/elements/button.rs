@@ -74,7 +74,7 @@ impl Button {
     pub fn on_click<ComponentEvent: 'static, ComponentState: 'static>(
         self,
         md: Metadata<ComponentEvent, ComponentState>,
-        callback: impl Fn(&mut ComponentState, ButtonClick) + Clone,
+        callback: impl Fn(&mut ComponentState, ButtonClick) + Clone + 'static,
     ) -> impl Element {
         self.on(md, callback)
     }

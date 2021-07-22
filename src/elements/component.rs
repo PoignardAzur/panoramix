@@ -112,9 +112,9 @@ impl<
 // ---
 
 impl<
-        Comp: Component,
+        Comp: Component + 'static,
         ReturnedTree: Element<Event = Comp::LocalEvent>,
-        CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree,
+        CompFn: Clone + Fn(&CompCtx, Comp::Props) -> ReturnedTree + 'static,
     > Element for ComponentHolder<Comp, ReturnedTree, CompFn>
 {
     type Event = Comp::LocalEvent;

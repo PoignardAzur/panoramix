@@ -82,7 +82,7 @@ impl TextBox {
     pub fn on_text_changed<ComponentEvent: 'static, ComponentState: 'static>(
         self,
         md: Metadata<ComponentEvent, ComponentState>,
-        callback: impl Fn(&mut ComponentState, TextChanged) + Clone,
+        callback: impl Fn(&mut ComponentState, TextChanged) + Clone + 'static,
     ) -> impl Element {
         self.on(md, callback)
     }

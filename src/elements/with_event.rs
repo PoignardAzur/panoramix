@@ -137,9 +137,9 @@ pub struct WithEventTarget<
 impl<
         ComponentEvent: 'static,
         ComponentState: 'static,
-        EventParam,
+        EventParam: 'static,
         Child: Element,
-        Cb: Clone + Fn(&mut ComponentState, EventParam),
+        Cb: Clone + Fn(&mut ComponentState, EventParam) + 'static,
     > Element for WithCallbackEvent<ComponentEvent, ComponentState, EventParam, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
@@ -178,10 +178,10 @@ where
 impl<
         ComponentEvent: 'static,
         ComponentState: 'static,
-        EventParam,
-        EventReturn,
+        EventParam: 'static,
+        EventReturn: 'static,
         Child: Element,
-        Cb: Clone + Fn(&mut ComponentState, EventParam) -> Option<EventReturn>,
+        Cb: Clone + Fn(&mut ComponentState, EventParam) -> Option<EventReturn> + 'static,
     > Element for WithMapEvent<ComponentEvent, ComponentState, EventParam, EventReturn, Child, Cb>
 where
     Child::Event: ParentEvent<EventParam>,
@@ -218,7 +218,7 @@ where
     }
 }
 
-impl<ComponentEvent: 'static, ComponentState: 'static, Event, Child: Element> Element
+impl<ComponentEvent: 'static, ComponentState: 'static, Event: 'static, Child: Element> Element
     for WithBubbleEvent<ComponentEvent, ComponentState, Event, Child>
 where
     Child::Event: ParentEvent<Event>,
