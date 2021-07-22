@@ -99,7 +99,4 @@ pub mod internals {
     pub use crate::element_tree::VirtualDom;
     pub use crate::glue::{Action, DruidAppData, GlobalEventCx, WidgetId};
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
-
-    // TODO
-    pub use crate::widgets;
 }

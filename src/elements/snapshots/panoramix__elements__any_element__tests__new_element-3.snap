@@ -1,0 +1,8 @@
+---
+source: src/elements/any_element.rs
+expression: label_state
+
+---
+Some(
+    (),
+)

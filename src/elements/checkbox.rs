@@ -67,6 +67,11 @@ impl Checkbox {
         }
     }
 
+    /// For unit tests only.
+    ///
+    /// The checkbox created by this element always has the same id. If two widgets are created
+    /// with the same id (for instance, because the same checkbox is returned twice because of
+    /// a copy-paste error), impredictable behavior may ensue.
     pub fn with_reserved_id(self, widget_id: WidgetId) -> Self {
         Checkbox {
             reserved_widget_id: Some(widget_id),

@@ -1,7 +1,7 @@
-use crate::internals::{ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::elements::{Component, ElementBox};
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
+use crate::internals::{ProcessEventCtx, ReconcileCtx, VirtualDom};
 use crate::widgets::flex_widget;
 use crate::{Element, NoEvent};
 
@@ -111,8 +111,9 @@ impl<RootElem: Element + 'static> RootWidget<RootElem> {
             // We ignore the root event for now.
             // This might change in cases where we want the user to control
             // when RootWidget::run() is called.
+            // Types are default types, because ProcessEventCtx will
+            // normally be unused in root element.
             let mut ctx = ProcessEventCtx {
-                // TODO - types
                 event_queue: &mut Vec::<NoEvent>::new(),
                 state: &mut (),
             };

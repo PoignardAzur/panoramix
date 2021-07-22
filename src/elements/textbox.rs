@@ -66,6 +66,11 @@ impl TextBox {
         }
     }
 
+    /// For unit tests only.
+    ///
+    /// The textbox created by this element always has the same id. If two widgets are created
+    /// with the same id (for instance, because the same textbox is returned twice because of
+    /// a copy-paste error), impredictable behavior may ensue.
     pub fn with_reserved_id(self, widget_id: WidgetId) -> Self {
         TextBox {
             reserved_widget_id: Some(widget_id),

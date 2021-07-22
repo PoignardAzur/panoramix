@@ -3,6 +3,4 @@ source: src/elements/component.rs
 expression: component_result
 
 ---
-MyComponent(
-    EmptyElementData,
-)
+EmptyElementData

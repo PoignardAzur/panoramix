@@ -40,7 +40,6 @@ impl Default for AppState {
 }
 
 type RowEvent = Toggled;
-// TODO - private type leak?
 #[derive(Debug, Default, Clone, PartialEq)]
 struct RowProps {
     list_item: ListItem,

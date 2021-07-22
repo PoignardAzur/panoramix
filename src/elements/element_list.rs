@@ -259,8 +259,8 @@ impl<Child: VirtualDom> VirtualDom for ElementListData<Child> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::elements::internals::{MockState, WithMockState};
     use crate::elements::label::{Label, LabelData};
-    use crate::elements::{MockState, WithMockState};
     use insta::assert_debug_snapshot;
     use test_env_log::test;
 

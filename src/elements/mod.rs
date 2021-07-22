@@ -10,16 +10,11 @@ mod flex_element;
 mod label;
 mod optional_element;
 mod textbox;
-
-// TODO
 mod with_mock_state;
-#[doc(hidden)]
-pub use with_mock_state::*;
 
 pub mod element_tuple;
-pub mod event_logger;
-#[doc(hidden)]
-pub mod with_event;
+mod event_logger;
+mod with_event;
 
 mod compute_diff;
 
@@ -46,6 +41,15 @@ pub mod internals {
     pub use super::label::LabelData;
     pub use super::textbox::TextBoxData;
     pub use super::with_event::WithEventTarget;
+
+    #[doc(hidden)]
+    pub use super::with_mock_state::{MockState, WithMockState, WithMockStateData};
+
+    #[doc(hidden)]
+    pub use super::event_logger::{EventLogger, EventLoggerData};
+
+    #[doc(hidden)]
+    pub use super::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
     pub use super::compute_diff::{compute_diff, ListMutation, ListMutationItem};
 }

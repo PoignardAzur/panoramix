@@ -1,8 +1,8 @@
 #![allow(unused_imports)]
 
-use crate::internals::{ReconcileCtx, VirtualDom};
 use crate::flex::FlexParams;
 use crate::glue::{DebugState, DruidAppData};
+use crate::internals::{ReconcileCtx, VirtualDom};
 use crate::widgets::SingleWidget;
 use crate::RootWidget;
 use crate::{Element, NoEvent};

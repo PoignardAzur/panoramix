@@ -21,7 +21,6 @@ impl<ChildLeft: WidgetSequence, ChildRight: WidgetSequence> WidgetSequence
     for Either<ChildLeft, ChildRight>
 {
     fn widgets(&self) -> Vec<&dyn FlexWidget> {
-        // TODO - use iterator chain instead?
         match self {
             Left(child_left) => child_left.widgets(),
             Right(child_right) => child_right.widgets(),
@@ -29,7 +28,6 @@ impl<ChildLeft: WidgetSequence, ChildRight: WidgetSequence> WidgetSequence
     }
 
     fn widgets_mut(&mut self) -> Vec<&mut dyn FlexWidget> {
-        // TODO - use iterator chain instead?
         match self {
             Left(child_left) => child_left.widgets_mut(),
             Right(child_right) => child_right.widgets_mut(),

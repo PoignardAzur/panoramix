@@ -20,11 +20,11 @@
   - [ ] Add integration test using all components, and snapshot-test the return values of every method.
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
-- [ ] Add integration tests based on visual snapshots.
 - [ ] Write some benchmarks.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
 - [ ] Add immutable ConstElement.
 - [ ] Refactor ElementList to allow duplicate keys
+- [ ] Fix component macro error messages
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
 - [ ] Add even more tracing/logging.
 - [ ] Write `#[derive(Event)]` macro.
@@ -66,6 +66,7 @@ Some cool features I'd like:
 - [ ] Add "free-form" mode, that can be integrated into an external main loop (eg for game engines).
 - [ ] Implement screenshot generator for examples.
 - [ ] Implement accessibility features.
+- [ ] Add integration tests based on visual snapshots.
 
 ## Long term - Feature parity with React
 

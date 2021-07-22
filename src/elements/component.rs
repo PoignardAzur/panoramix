@@ -285,7 +285,6 @@ mod tests {
         let my_component = MyComponent::new(());
 
         let (component_result, _state) = my_component.build(Default::default());
-        // TODO - update snapshot
         assert_debug_snapshot!(component_result);
 
         //let prev_state = (999, Default::default());

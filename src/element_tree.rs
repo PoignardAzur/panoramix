@@ -116,7 +116,7 @@ pub trait VirtualDom: Debug {
     }
 }
 
-use crate::elements::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
+use crate::elements::internals::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
 /// Helper methods that can be called on all elements.
 pub trait ElementExt: Element + Sized {

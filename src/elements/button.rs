@@ -58,8 +58,11 @@ impl Button {
         }
     }
 
-    // TODO - doc
-    // For unit tests only
+    /// For unit tests only.
+    ///
+    /// The button created by this element always has the same id. If two widgets are created
+    /// with the same id (for instance, because the same button is returned twice because of
+    /// a copy-paste error), impredictable behavior may ensue.
     pub fn with_reserved_id(self, widget_id: WidgetId) -> Self {
         Button {
             reserved_widget_id: Some(widget_id),
@@ -167,7 +170,7 @@ mod tests {
             let button_state = harness.get_root_debug_state();
             assert_debug_snapshot!(button_state);
 
-            // TODO - Test reconcile() method (currently doesn't work)
+            // FIXME - Test reconcile() method (currently doesn't work)
         });
     }
 

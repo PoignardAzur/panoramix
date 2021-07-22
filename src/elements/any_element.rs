@@ -395,10 +395,10 @@ mod tests {
         let label = ElementBox::new(Label::new("Hello"));
         assert_debug_snapshot!(label);
 
-        let (label_data, _state) = label.build(None);
+        let (label_data, label_state) = label.build(None);
         assert_debug_snapshot!(label_data);
 
-        // TODO - check state
+        assert_debug_snapshot!(label_state);
     }
 
     #[test]
@@ -417,7 +417,6 @@ mod tests {
         });
     }
 
-    // FIXME - Test doesn't use box
     #[test]
     fn boxed_button_press() {
         use crate::elements::event_logger::EventLogger;
@@ -428,7 +427,7 @@ mod tests {
         let button_id = WidgetId::reserved(1);
         let button = EventLogger::new(
             event_sender,
-            Button::new("Hello").with_reserved_id(button_id),
+            ElementBox::new(Button::new("Hello").with_reserved_id(button_id)),
         );
 
         Harness::run_test_window(button, |harness| {
