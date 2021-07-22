@@ -82,12 +82,51 @@ impl<'e, 's> ProcessEventCtx<'e, 's> {
     ) -> &mut ComponentState {
         #![allow(unused_variables)]
         let type_id = (*self.event_queue).type_id();
-        // TODO - Add one failing test for this
         self.state.downcast_mut::<ComponentState>().expect(&format!(
             "internal type error: event handler expected {:?} ({}), parent component gave {:?}",
             TypeId::of::<ComponentState>(),
             type_name::<ComponentState>(),
             type_id,
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::metadata::NoEvent;
+    use test_env_log::test;
+
+    #[derive(Debug, PartialEq, Eq)]
+    struct MyEvent(i32);
+
+    #[test]
+    fn event_queue() {
+        let md: Metadata<MyEvent, NoState> = Default::default();
+
+        let mut event_queue = Vec::<MyEvent>::new();
+        let mut ctx = ProcessEventCtx {
+            event_queue: &mut event_queue,
+            state: &mut NoState,
+        };
+        ctx.event_queue(md).push(MyEvent(42));
+
+        assert_eq!(event_queue, vec![MyEvent(42)],);
+    }
+
+    #[test]
+    fn state() {
+        let md: Metadata<NoEvent, i64> = Default::default();
+
+        let mut state = 12345_i64;
+        let mut ctx = ProcessEventCtx {
+            event_queue: &mut Vec::<NoEvent>::new(),
+            state: &mut state,
+        };
+
+        assert_eq!(*ctx.state(md), 12345_i64,);
+
+        *ctx.state(md) = 123_i64;
+        assert_eq!(state, 123_i64,);
     }
 }
