@@ -11,13 +11,13 @@
   - [X] Top-level doc page.
   - [X] Writing a component.
   - [X] All symbols (types, traits, functions, etc).
-- [ ] Write tests.
+- [X] Write tests.
   - [X] Basic constructors.
   - [X] compute_diff algorithm.
   - [X] Event handling.
   - [X] Widget mutation.
   - [X] Add integration test using all components, and snapshot-test the return values of every method.
-  - [ ] Add integration test for use_metadata and get_local_state.
+  - [X] Add integration test for use_metadata and get_local_state.
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).

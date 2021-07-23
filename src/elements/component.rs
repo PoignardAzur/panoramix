@@ -8,7 +8,7 @@ use derivative::Derivative;
 use std::fmt::Debug;
 
 pub trait Component: Debug + Clone {
-    type Props: Clone + Default + Debug + PartialEq + 'static;
+    type Props: Clone + Debug + PartialEq + 'static;
     type LocalEvent: Clone + Debug + PartialEq + 'static;
 
     fn new(props: Self::Props) -> ElementBox<Self::LocalEvent>;
