@@ -332,7 +332,6 @@ impl<Event: Debug> Debug for VirtualDomBox<Event> {
 }
 
 impl<Event: Debug> VirtualDom for VirtualDomBox<Event> {
-    // TODO - Accept any Event parent of Self::Event
     type Event = Event;
     type AggregateChildrenState = Option<AnyStateBox>;
     type TargetWidgetSeq = WidgetSeqBox;

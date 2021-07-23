@@ -138,12 +138,16 @@ impl<ChildLeft: VirtualDom, ChildRight: VirtualDom> VirtualDom for Either<ChildL
         match (self, &other) {
             (Left(child), Left(other)) => {
                 // TODO - Add more detailed log
-                let widget_seq = &mut widget_seq.as_mut().left().expect_or_log("The previous value of this element was Left. Expected Left widget.");
+                let widget_seq = &mut widget_seq.as_mut().left().expect_or_log(
+                    "The previous value of this element was Left. Expected Left widget.",
+                );
                 child.reconcile(other, widget_seq, ctx);
             }
             (Right(child), Right(other)) => {
                 // TODO - Add more detailed log
-                let widget_seq = &mut widget_seq.as_mut().right().expect_or_log("The previous value of this element was Right. Expected Right widget.");
+                let widget_seq = &mut widget_seq.as_mut().right().expect_or_log(
+                    "The previous value of this element was Right. Expected Right widget.",
+                );
                 child.reconcile(other, widget_seq, ctx);
             }
 
