@@ -1,0 +1,69 @@
+---
+source: tests/all_elements.rs
+expression: root_state_4
+
+---
+RootWidget(
+    Column(
+        Column(
+            Row(
+                IdentityWrapper(
+                    TextBox,
+                ),
+                IdentityWrapper(
+                    ControllerHost(
+                        Button(
+                            "New task",
+                        ),
+                    ),
+                ),
+            ),
+            Row(
+                IdentityWrapper(
+                    Checkbox(
+                        "[_] ",
+                    ),
+                ),
+                Label(
+                    "Task #0",
+                ),
+                Label(
+                    "(complete)",
+                ),
+            ),
+            Row(
+                IdentityWrapper(
+                    Checkbox(
+                        "[_] ",
+                    ),
+                ),
+                Label(
+                    "Task #1",
+                ),
+                Label(
+                    "(complete)",
+                ),
+            ),
+            Row(
+                IdentityWrapper(
+                    Checkbox(
+                        "[_] ",
+                    ),
+                ),
+                Label(
+                    "Next task",
+                ),
+                Label(
+                    "(complete)",
+                ),
+            ),
+            IdentityWrapper(
+                ControllerHost(
+                    Button(
+                        "Delete completed tasks",
+                    ),
+                ),
+            ),
+        ),
+    ),
+)

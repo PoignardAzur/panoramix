@@ -17,7 +17,8 @@
   - [X] Event handling
     - [ ] Test event chaining
   - [X] Widget mutation.
-  - [ ] Add integration test using all components, and snapshot-test the return values of every method.
+  - [X] Add integration test using all components, and snapshot-test the return values of every method.
+  - [ ] Add integration test for use_metadata and get_local_state
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
 - [ ] Write some benchmarks.
