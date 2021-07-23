@@ -14,48 +14,49 @@
 - [ ] Write tests.
   - [X] Basic constructors.
   - [X] compute_diff algorithm.
-  - [X] Event handling
-    - [ ] Test event chaining
+  - [X] Event handling.
   - [X] Widget mutation.
   - [X] Add integration test using all components, and snapshot-test the return values of every method.
-  - [ ] Add integration test for use_metadata and get_local_state
+  - [ ] Add integration test for use_metadata and get_local_state.
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
 - [ ] Write some benchmarks.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
 - [ ] Add immutable ConstElement.
-- [ ] Refactor ElementList to allow duplicate keys
-- [ ] Fix component macro error messages
+- [ ] Refactor ElementList to allow duplicate keys.
+- [ ] Fix component macro error messages.
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
 - [ ] Add even more tracing/logging.
+- [ ] Rework event handling.
+  - [ ] Test event chaining.
 - [ ] Write `#[derive(Event)]` macro.
 - [ ] Write macro attribute for type-checking components.
 - [ ] Refactor event system internals (keep API as-is).
 - [ ] Add AnyEvent type.
-- [ ] Rework doc
-  - [ ] Improve discoverability
-  - [ ] Add doc example of element_tuple instantiated with 3 args
-  - [ ] Add test that checks that the README and the todo example are identical
-  - [ ] Notes on the limitations of static typing, hence why we use Option and Either
-  - [ ] Add "speedrun" doc
-  - [ ] Explain event system
-  - [ ] Explain the notion that some elements represent 0, 1 or n flex items
-  - [ ] Add note that flex widget is both a flex item and a container
-  - [ ] Use `#[doc = include_str!]` once feature gets stable
-  - [ ] Document event chaining
-  - [ ] Add screenshots to doc
-- [ ] Add styling elements
-  - [ ] Background and borders
-  - [ ] Text font, style
-  - [ ] Margins
-- [ ] Remove some cloning
-- [X] Remove component_caller
-- [ ] Add WithKey type and `WidgetExt.with_key` method
-- [ ] Implement two-way bindings
-- [ ] Add Spacer element (from druid)
-- [ ] Check out SizedBox (?)
+- [ ] Rework doc.
+  - [ ] Improve discoverability.
+  - [ ] Add doc example of element_tuple instantiated with 3 args.
+  - [ ] Add test that checks that the README and the todo example are identical.
+  - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
+  - [ ] Add "speedrun" doc.
+  - [ ] Explain event system.
+  - [ ] Explain the notion that some elements represent 0, 1 or n flex items.
+  - [ ] Add note that flex widget is both a flex item and a container.
+  - [ ] Use `#[doc = include_str!]` once feature gets stable.
+  - [ ] Document event chaining.
+  - [ ] Add screenshots to doc.
+- [ ] Add styling elements.
+  - [ ] Background and borders.
+  - [ ] Text font, style.
+  - [ ] Margins.
+- [ ] Remove some cloning.
+- [X] Remove component_caller.
+- [ ] Add WithKey type and `WidgetExt.with_key` method.
+- [ ] Implement two-way bindings.
+- [ ] Add Spacer element (from druid).
+- [ ] Check out SizedBox (?).
 - [ ] Refactor with_flex_params; use `From<f64>`??
-- [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again)
+- [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again).
 
 Also, not a specific item but something that needs to be done continuously:
 
