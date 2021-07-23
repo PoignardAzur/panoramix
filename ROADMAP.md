@@ -20,18 +20,20 @@
   - [ ] Add integration test for use_metadata and get_local_state.
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
-- [ ] Write some benchmarks.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
+- [ ] Rework MockState.
+- [ ] Add associated type to WidgetSequence.
 - [ ] Add immutable ConstElement.
-- [ ] Refactor ElementList to allow duplicate keys.
 - [ ] Fix component macro error messages.
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
 - [ ] Add even more tracing/logging.
-- [ ] Rework event handling.
+- [ ] Refactor ElementList
+  - [ ] Allow duplicate keys.
+  - [ ] Refactor compute_diff (look up diff algorithms?).
+- [ ] Refactor event handling.
+  - [ ] Rework internals to allow event chaining, improve performance.
   - [ ] Test event chaining.
-- [ ] Write `#[derive(Event)]` macro.
-- [ ] Write macro attribute for type-checking components.
-- [ ] Refactor event system internals (keep API as-is).
+  - [ ] Write `#[derive(Event)]` macro.
 - [ ] Add AnyEvent type.
 - [ ] Rework doc.
   - [ ] Improve discoverability.
@@ -57,6 +59,7 @@
 - [ ] Check out SizedBox (?).
 - [ ] Refactor with_flex_params; use `From<f64>`??
 - [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again).
+- [ ] Write some benchmarks.
 
 Also, not a specific item but something that needs to be done continuously:
 
