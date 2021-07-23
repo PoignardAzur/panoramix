@@ -52,7 +52,7 @@ impl Default for AppState {
 type ItemEvent = Toggled;
 
 #[component]
-fn TodoItem(ctx: &CompCtx, props: TaskItem) -> impl Element<Event = ItemEvent> {
+fn TaskRow(ctx: &CompCtx, props: TaskItem) -> impl Element<Event = ItemEvent> {
     let md = ctx.use_metadata::<ItemEvent, ()>();
     let text = if props.is_completed {
         format!("{} (complete)", props.text)
@@ -112,7 +112,7 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<Event = NoEven
     // TODO - Find a syntax that looks more hierachical
     let list_keys = state.tasks.iter().map(|task_item| task_item.id.to_string());
     let list_rows = state.tasks.iter().enumerate().map(|(i, task_item)| {
-        TodoItem::new(task_item.clone()).on::<ItemEvent, _, _, _>(
+        TaskRow::new(task_item.clone()).on::<ItemEvent, _, _, _>(
             md,
             move |state: &mut AppState, event| {
                 state.tasks[i].is_completed = event.new_value;

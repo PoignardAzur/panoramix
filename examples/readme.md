@@ -16,7 +16,7 @@ Minimal example, to demonstrate the project structure.
 
 ## `todo_list`
 
-Standard todo-list example. Demonstrates some composition, reconciliation, and event handling.
+Standard task list example. Demonstrates some composition, reconciliation, and event handling.
 
 ## `list`
 
