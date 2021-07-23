@@ -101,9 +101,14 @@ impl VirtualDom for LabelData {
         SingleWidget::new(label, self.flex)
     }
 
-    #[instrument(name = "Label", skip(self, other, widget, ctx))]
-    fn reconcile(&self, other: &Self, widget: &mut Self::TargetWidgetSeq, ctx: &mut ReconcileCtx) {
-        if self.text != other.text {
+    #[instrument(name = "Label", skip(self, prev_value, widget, ctx))]
+    fn reconcile(
+        &self,
+        prev_value: &Self,
+        widget: &mut Self::TargetWidgetSeq,
+        ctx: &mut ReconcileCtx,
+    ) {
+        if self.text != prev_value.text {
             widget.pod.widget_mut().set_text(self.text.clone());
             widget.request_druid_update(ctx.event_ctx);
         }

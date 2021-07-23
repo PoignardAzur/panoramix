@@ -216,7 +216,7 @@ pub trait AnyVirtualDom: Any + Debug {
 
     fn reconcile(
         &self,
-        other: &Box<dyn AnyVirtualDom<Event = Self::Event>>,
+        prev_value: &Box<dyn AnyVirtualDom<Event = Self::Event>>,
         widget_seq: &mut WidgetSeqBox,
         ctx: &mut ReconcileCtx,
     );
@@ -252,17 +252,17 @@ impl<Child: VirtualDom + 'static> AnyVirtualDom for ErasedVirtualDom<Child> {
 
     fn reconcile(
         &self,
-        other: &Box<dyn AnyVirtualDom<Event = Self::Event>>,
+        prev_value: &Box<dyn AnyVirtualDom<Event = Self::Event>>,
         widget_seq: &mut WidgetSeqBox,
         ctx: &mut ReconcileCtx,
     ) {
-        let other = other.as_any().downcast_ref::<Self>().unwrap();
+        let prev_value = prev_value.as_any().downcast_ref::<Self>().unwrap();
         let widget_seq = widget_seq
             .value
             .as_mut_any()
             .downcast_mut::<Child::TargetWidgetSeq>()
             .unwrap();
-        self.child.reconcile(&other.child, widget_seq, ctx);
+        self.child.reconcile(&prev_value.child, widget_seq, ctx);
     }
 
     fn process_event(
@@ -342,11 +342,11 @@ impl<Event: Debug> VirtualDom for VirtualDomBox<Event> {
 
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.child.reconcile(&other.child, widget_seq, ctx);
+        self.child.reconcile(&prev_value.child, widget_seq, ctx);
     }
 
     fn process_event(

@@ -120,8 +120,8 @@ impl VirtualDom for TextBoxData {
         TextBoxWidget::new(self.text.clone(), self.flex, id)
     }
 
-    #[instrument(name = "TextBox", skip(self, _other, widget, ctx))]
-    fn reconcile(&self, _other: &Self, widget: &mut TextBoxWidget, ctx: &mut ReconcileCtx) {
+    #[instrument(name = "TextBox", skip(self, _prev_value, widget, ctx))]
+    fn reconcile(&self, _prev_value: &Self, widget: &mut TextBoxWidget, ctx: &mut ReconcileCtx) {
         widget.text = self.text.clone();
         // TODO - check diff with previous value
         widget.request_druid_update(ctx.event_ctx);

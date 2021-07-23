@@ -111,8 +111,8 @@ impl VirtualDom for ButtonData {
         ButtonWidget::new(self.text.clone(), self.flex, id)
     }
 
-    #[instrument(name = "Button", skip(self, _other, _widget, _ctx))]
-    fn reconcile(&self, _other: &Self, _widget: &mut ButtonWidget, _ctx: &mut ReconcileCtx) {
+    #[instrument(name = "Button", skip(self, _prev_value, _widget, _ctx))]
+    fn reconcile(&self, _prev_value: &Self, _widget: &mut ButtonWidget, _ctx: &mut ReconcileCtx) {
         //widget.set_text(self.text.clone());
     }
 

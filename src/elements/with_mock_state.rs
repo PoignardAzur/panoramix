@@ -68,11 +68,11 @@ impl<Child: VirtualDom> VirtualDom for WithMockStateData<Child> {
 
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Child::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.0.reconcile(&other.0, widget_seq, ctx);
+        self.0.reconcile(&prev_value.0, widget_seq, ctx);
     }
 
     fn process_event(

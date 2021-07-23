@@ -68,14 +68,14 @@ impl<Child: VirtualDom> VirtualDom for EventLoggerData<Child> {
         self.child.init_tree()
     }
 
-    #[instrument(name = "EventLogger", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "EventLogger", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.child.reconcile(&other.child, widget_seq, ctx);
+        self.child.reconcile(&prev_value.child, widget_seq, ctx);
     }
 
     #[instrument(

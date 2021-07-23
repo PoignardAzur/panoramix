@@ -109,15 +109,15 @@ impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
         SingleWidget::new(flex, self.flex)
     }
 
-    #[instrument(name = "Flex", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "Flex", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
         self.child.reconcile(
-            &other.child,
+            &prev_value.child,
             &mut widget_seq.pod.widget_mut().children_seq,
             ctx,
         );

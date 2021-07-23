@@ -59,7 +59,13 @@ impl VirtualDom for EmptyElementData {
         EmptySequence
     }
 
-    fn reconcile(&self, _other: &Self, _widget_seq: &mut EmptySequence, _ctx: &mut ReconcileCtx) {}
+    fn reconcile(
+        &self,
+        _prev_value: &Self,
+        _widget_seq: &mut EmptySequence,
+        _ctx: &mut ReconcileCtx,
+    ) {
+    }
 }
 
 #[cfg(test)]

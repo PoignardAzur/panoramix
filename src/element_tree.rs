@@ -89,7 +89,7 @@ pub trait VirtualDom: Debug {
 
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     );

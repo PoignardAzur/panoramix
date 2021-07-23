@@ -41,16 +41,16 @@ impl<Child: VirtualDom> VirtualDom for Option<Child> {
         }
     }
 
-    #[instrument(name = "Option", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "Option", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        match (self, other) {
-            (Some(child), Some(other_child)) => {
-                child.reconcile(other_child, &mut widget_seq.as_mut().unwrap_or_log(), ctx);
+        match (self, prev_value) {
+            (Some(child), Some(prev_child)) => {
+                child.reconcile(prev_child, &mut widget_seq.as_mut().unwrap_or_log(), ctx);
             }
             (Some(child), None) => {
                 debug_span!("init_tree").in_scope(|| {
@@ -58,7 +58,7 @@ impl<Child: VirtualDom> VirtualDom for Option<Child> {
                     *widget_seq = Some(child.init_tree());
                 });
             }
-            (None, Some(_other_child)) => {
+            (None, Some(_prev_child)) => {
                 info!("removing child");
                 *widget_seq = None;
             }
@@ -128,36 +128,36 @@ impl<ChildLeft: VirtualDom, ChildRight: VirtualDom> VirtualDom for Either<ChildL
         }
     }
 
-    #[instrument(name = "Either", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "Either", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        match (self, &other) {
-            (Left(child), Left(other)) => {
+        match (self, &prev_value) {
+            (Left(child), Left(prev_child)) => {
                 // TODO - Add more detailed log
                 let widget_seq = &mut widget_seq.as_mut().left().expect_or_log(
                     "The previous value of this element was Left. Expected Left widget.",
                 );
-                child.reconcile(other, widget_seq, ctx);
+                child.reconcile(prev_child, widget_seq, ctx);
             }
-            (Right(child), Right(other)) => {
+            (Right(child), Right(prev_child)) => {
                 // TODO - Add more detailed log
                 let widget_seq = &mut widget_seq.as_mut().right().expect_or_log(
                     "The previous value of this element was Right. Expected Right widget.",
                 );
-                child.reconcile(other, widget_seq, ctx);
+                child.reconcile(prev_child, widget_seq, ctx);
             }
 
-            (Left(child), Right(_other)) => {
+            (Left(child), Right(_prev_child)) => {
                 debug_span!("init_tree").in_scope(|| {
                     info!("creating child");
                     *widget_seq = Left(child.init_tree());
                 });
             }
-            (Right(child), Left(_other)) => {
+            (Right(child), Left(_prev_child)) => {
                 debug_span!("init_tree").in_scope(|| {
                     info!("creating child");
                     *widget_seq = Right(child.init_tree());

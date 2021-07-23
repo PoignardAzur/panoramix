@@ -154,16 +154,16 @@ impl<Child: VirtualDom> VirtualDom for ElementListData<Child> {
         }
     }
 
-    #[instrument(name = "List", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "List", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        let mutation = compute_diff(&other.children, &self.children);
+        let mutation = compute_diff(&prev_value.children, &self.children);
 
-        let mut prev_data: Vec<_> = other
+        let mut prev_data: Vec<_> = prev_value
             .children
             .iter()
             .zip(widget_seq.children.iter_mut())

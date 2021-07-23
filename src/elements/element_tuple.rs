@@ -309,25 +309,25 @@ impl<
         )
     }
 
-    #[instrument(name = "Tuple", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "Tuple", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.0.reconcile(&other.0, &mut widget_seq.0, ctx);
-        self.1.reconcile(&other.1, &mut widget_seq.1, ctx);
-        self.2.reconcile(&other.2, &mut widget_seq.2, ctx);
-        self.3.reconcile(&other.3, &mut widget_seq.3, ctx);
-        self.4.reconcile(&other.4, &mut widget_seq.4, ctx);
-        self.5.reconcile(&other.5, &mut widget_seq.5, ctx);
-        self.6.reconcile(&other.6, &mut widget_seq.6, ctx);
-        self.7.reconcile(&other.7, &mut widget_seq.7, ctx);
-        self.8.reconcile(&other.8, &mut widget_seq.8, ctx);
-        self.9.reconcile(&other.9, &mut widget_seq.9, ctx);
-        self.10.reconcile(&other.10, &mut widget_seq.10, ctx);
-        self.11.reconcile(&other.11, &mut widget_seq.11, ctx);
+        self.0.reconcile(&prev_value.0, &mut widget_seq.0, ctx);
+        self.1.reconcile(&prev_value.1, &mut widget_seq.1, ctx);
+        self.2.reconcile(&prev_value.2, &mut widget_seq.2, ctx);
+        self.3.reconcile(&prev_value.3, &mut widget_seq.3, ctx);
+        self.4.reconcile(&prev_value.4, &mut widget_seq.4, ctx);
+        self.5.reconcile(&prev_value.5, &mut widget_seq.5, ctx);
+        self.6.reconcile(&prev_value.6, &mut widget_seq.6, ctx);
+        self.7.reconcile(&prev_value.7, &mut widget_seq.7, ctx);
+        self.8.reconcile(&prev_value.8, &mut widget_seq.8, ctx);
+        self.9.reconcile(&prev_value.9, &mut widget_seq.9, ctx);
+        self.10.reconcile(&prev_value.10, &mut widget_seq.10, ctx);
+        self.11.reconcile(&prev_value.11, &mut widget_seq.11, ctx);
     }
 
     #[rustfmt::skip]

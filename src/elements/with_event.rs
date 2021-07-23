@@ -287,14 +287,14 @@ where
         self.element.init_tree()
     }
 
-    #[instrument(name = "WithEvent", skip(self, other, widget_seq, ctx))]
+    #[instrument(name = "WithEvent", skip(self, prev_value, widget_seq, ctx))]
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.element.reconcile(&other.element, widget_seq, ctx)
+        self.element.reconcile(&prev_value.element, widget_seq, ctx)
     }
 
     #[instrument(

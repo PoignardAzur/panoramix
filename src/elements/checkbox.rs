@@ -125,10 +125,15 @@ impl VirtualDom for CheckboxData {
         )
     }
 
-    #[instrument(name = "Checkbox", skip(self, other, widget, ctx))]
-    fn reconcile(&self, other: &Self, widget: &mut SingleCheckboxWidget, ctx: &mut ReconcileCtx) {
+    #[instrument(name = "Checkbox", skip(self, prev_value, widget, ctx))]
+    fn reconcile(
+        &self,
+        prev_value: &Self,
+        widget: &mut SingleCheckboxWidget,
+        ctx: &mut ReconcileCtx,
+    ) {
         let checkbox_widget = widget.widget_mut();
-        if self.text != other.text {
+        if self.text != prev_value.text {
             // TODO
             //checkbox_widget.pod.widget_mut().set_text(self.text.clone());
         }

@@ -200,11 +200,11 @@ impl<
 
     fn reconcile(
         &self,
-        other: &Self,
+        prev_value: &Self,
         widget_seq: &mut Child::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
-        self.child.reconcile(&other.child, widget_seq, ctx);
+        self.child.reconcile(&prev_value.child, widget_seq, ctx);
     }
 
     fn process_local_event(
