@@ -22,8 +22,8 @@
 - [X] Add testing backend to druid for unit tests.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
 - [X] Rework MockState.
-- [ ] Fix component macro error messages.
-- [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
+- [X] Fix component macro error messages.
+- [X] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
 - [ ] Refactor ElementList
   - [ ] Allow duplicate keys.
   - [ ] Refactor compute_diff (look up diff algorithms?).

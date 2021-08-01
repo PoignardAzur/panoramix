@@ -36,5 +36,7 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     trace!("fn_item: {:?}", fn_item);
 
-    proc_macro::TokenStream::from(component::component(attr, fn_item))
+    proc_macro::TokenStream::from(
+        component::component(attr, fn_item).unwrap_or_else(|error| error.to_compile_error()),
+    )
 }

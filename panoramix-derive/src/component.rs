@@ -1,10 +1,18 @@
 use proc_macro2::TokenStream;
-use quote::quote;
-use tracing::trace;
+use quote::{quote, ToTokens};
+use std::fmt::Display;
+use syn::Error;
 
-pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
+pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> Result<TokenStream, Error> {
     #![allow(non_snake_case)]
-    assert!(attr.is_empty());
+
+    fn error(tokens: impl ToTokens, message: impl Display) -> Result<TokenStream, Error> {
+        Err(Error::new_spanned(tokens, message))
+    }
+
+    if !attr.is_empty() {
+        return error(attr, "#[component] attribute doesn't take parameters");
+    }
 
     // Types used:
     // - syn::ItemFn
@@ -31,35 +39,101 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
 
     let fn_block = fn_item.block;
 
-    assert!(fn_constness.is_none());
-    assert!(fn_asyncness.is_none());
-    assert!(fn_unsafety.is_none());
-    assert!(fn_abi.is_none());
+    if fn_constness.is_some() {
+        return error(
+            fn_constness,
+            "#[component] attribute doesn't support const functions",
+        );
+    }
+    if fn_asyncness.is_some() {
+        return error(
+            fn_asyncness,
+            "#[component] attribute doesn't support async functions",
+        );
+    }
+    if fn_unsafety.is_some() {
+        return error(
+            fn_unsafety,
+            "#[component] attribute doesn't support unsafe functions",
+        );
+    }
+    if fn_abi.is_some() {
+        return error(
+            fn_abi,
+            "#[component] attribute doesn't support non-standard ABIs",
+        );
+    }
 
-    assert!(fn_generics.params.is_empty());
-    assert!(fn_generics.where_clause.is_none());
-    assert!(fn_variadic.is_none());
+    if !fn_generics.params.is_empty() {
+        return error(
+            fn_generics.params,
+            "#[component] attribute doesn't support generic parameters",
+        );
+    }
+    if fn_generics.where_clause.is_some() {
+        return error(
+            fn_generics.where_clause,
+            "#[component] attribute doesn't support where clauses",
+        );
+    }
+    if fn_variadic.is_some() {
+        return error(
+            fn_variadic,
+            "#[component] attribute doesn't support variadic arguments",
+        );
+    }
 
-    assert!(fn_args.len() == 2);
+    if fn_args.len() != 2 {
+        let len = fn_args.len();
+        return error(
+            fn_args,
+            format!(
+                "error in #[component] function: expected 2 arguments, found {}",
+                len
+            ),
+        );
+    }
+
     let ctx_arg;
     let props_arg;
-    if let (syn::FnArg::Typed(pattern1), syn::FnArg::Typed(pattern2)) =
-        (fn_args.first().unwrap(), fn_args.last().unwrap())
-    {
-        ctx_arg = pattern1;
-        props_arg = pattern2;
-    } else {
-        panic!("Argument cannot be self")
-    };
+    match fn_args.first().unwrap() {
+        syn::FnArg::Typed(pattern) => ctx_arg = pattern,
+        syn::FnArg::Receiver(receiver) => {
+            return error(
+                receiver,
+                "error in #[component] function: argument cannot be self",
+            );
+        }
+    }
+    match fn_args.last().unwrap() {
+        syn::FnArg::Typed(pattern) => props_arg = pattern,
+        syn::FnArg::Receiver(receiver) => {
+            return error(
+                receiver,
+                "error in #[component] function: argument cannot be self",
+            );
+        }
+    }
     let props_ty = *props_arg.ty.clone();
 
-    let fn_output = if let syn::ReturnType::Type(_, ty) = fn_output {
-        *ty
-    } else {
-        panic!()
+    let fn_output = match fn_output {
+        syn::ReturnType::Type(_, ty) => *ty,
+        syn::ReturnType::Default => {
+            return error(
+                component_name,
+                "error in #[component] function: missing return type",
+            );
+        }
     };
 
-    let local_event_ty = parse_return_ty(fn_output.clone());
+    let local_event_ty = if let Some(local_event_ty) = parse_return_ty(fn_output.clone())? {
+        local_event_ty
+    } else {
+        return error(
+            fn_output,
+            "error in #[component] function: missing bound for associated type `Event`",
+        );
+    };
 
     // TODO
     // - Error message if user tries to do MyComponent(props) instead of MyComponent::new(props)
@@ -70,7 +144,7 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
     let PropsType = props_ty;
     let LocalEvent = local_event_ty;
 
-    quote! {
+    Ok(quote! {
         #[derive(Debug, Default, Clone, PartialEq, Hash)]
         #vis struct #ComponentName;
 
@@ -106,64 +180,64 @@ pub fn component(attr: TokenStream, fn_item: syn::ItemFn) -> TokenStream {
                 #ComponentName_literal
             }
         }
-    }
+    })
 }
 
-#[allow(dead_code)]
-fn get_arg_ident(pattern: syn::Pat) -> syn::Ident {
-    trace!("pattern: {:?}", pattern);
-
-    if let syn::Pat::Ident(ident) = pattern {
-        ident.ident
-    } else {
-        panic!("Argument must be an identifier pattern")
+fn parse_return_ty(return_ty: syn::Type) -> Result<Option<syn::Type>, Error> {
+    fn error(tokens: impl ToTokens, message: impl Display) -> Result<Option<syn::Type>, Error> {
+        Err(Error::new_spanned(tokens, message))
     }
-}
 
-fn parse_return_ty(return_ty: syn::Type) -> syn::Type {
-    // TODO - Handle return types `impl Element`, `impl Element<Event>`
-
-    // Uses syn::TypeImplTrait
     let impl_trait = if let syn::Type::ImplTrait(impl_trait) = return_ty {
         impl_trait
     } else {
-        panic!("Component must return impl Element")
+        // Possible error case: '-> i32'
+        return error(
+            return_ty,
+            "error in #[component] function: return type must be `impl Element</* ... */>`",
+        );
     };
-
-    let element_trait = if let syn::TypeParamBound::Trait(element_trait) =  impl_trait.bounds.first().unwrap() {
+    if impl_trait.bounds.len() != 1 {
+        // Possible error case: '-> impl Element + Default'
+        return error(impl_trait, "error in #[component] function: return type must be `impl Element</* ... */>` with no other bounds");
+    }
+    let element_trait = if let syn::TypeParamBound::Trait(element_trait) =
+        impl_trait.bounds.first().unwrap()
+    {
         element_trait
     } else {
-        panic!("Component must return impl Element")
+        // This error case should be impossible
+        return error(impl_trait, "error in #[component] function: return type must be `impl Element</* ... */>` with no other bounds");
     };
 
     let last_segment = element_trait.path.segments.last().unwrap();
     let elements_ty_args = last_segment.arguments.clone();
-    assert!(last_segment.ident.to_string() == "Element");
 
     // AngleBracketedGenericArguments
     let elements_ty_args: Vec<_> = match elements_ty_args {
         syn::PathArguments::None => {
-            Vec::new()
+            return Ok(None);
         }
         syn::PathArguments::AngleBracketed(elements_ty_args) => {
             elements_ty_args.args.into_iter().collect()
         }
-        _ => {
-            panic!("Component must return impl Element<LocalState, LocalEvent>")
+        syn::PathArguments::Parenthesized(_) => {
+            return Ok(None);
         }
     };
 
-    use syn::parse_quote;
-    let default_event_ty: syn::GenericArgument = parse_quote!( Event = NoEvent );
+    if elements_ty_args.len() == 0 {
+        return Ok(None);
+    }
 
-    assert!(elements_ty_args.len() <= 1);
-    let local_event_ty = elements_ty_args.get(0).cloned().unwrap_or(default_event_ty);
+    let local_event_ty = elements_ty_args.into_iter().find_map(|arg| match arg {
+        syn::GenericArgument::Binding(local_event_bind)
+            if local_event_bind.ident.to_string() == "Event" =>
+        {
+            Some(local_event_bind.ty)
+        }
+        _ => None,
+    });
 
-    let local_event_ty = if let syn::GenericArgument::Binding(local_event_bind) = local_event_ty {
-        local_event_bind.ty
-    } else {
-        panic!("Component must return impl Element<Event=LocalEvent>")
-    };
-
-    local_event_ty.clone()
+    Ok(local_event_ty)
 }
