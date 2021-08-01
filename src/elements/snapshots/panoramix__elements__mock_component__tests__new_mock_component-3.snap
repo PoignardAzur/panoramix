@@ -1,5 +1,5 @@
 ---
-source: src/elements/with_mock_state.rs
+source: src/elements/mock_component.rs
 expression: mock_state
 
 ---

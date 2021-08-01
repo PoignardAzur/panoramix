@@ -10,7 +10,7 @@ mod flex_element;
 mod label;
 mod optional_element;
 mod textbox;
-mod with_mock_state;
+mod mock_component;
 
 pub mod element_tuple;
 mod event_logger;
@@ -42,7 +42,7 @@ pub mod internals {
     pub use super::textbox::TextBoxData;
     pub use super::with_event::WithEventTarget;
 
-    pub use super::with_mock_state::{MockComponent, MockComponentData, MockState};
+    pub use super::mock_component::{MockComponent, MockComponentData, MockState};
 
     #[doc(hidden)]
     pub use super::event_logger::{EventLogger, EventLoggerData};
