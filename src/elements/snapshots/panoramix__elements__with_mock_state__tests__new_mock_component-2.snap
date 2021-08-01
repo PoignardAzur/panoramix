@@ -1,0 +1,9 @@
+---
+source: src/elements/with_mock_state.rs
+expression: component_data
+
+---
+MockComponentData {
+    reserved_widget_id: None,
+    clicks: 0,
+}

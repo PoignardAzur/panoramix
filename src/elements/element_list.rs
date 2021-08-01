@@ -259,7 +259,7 @@ impl<Child: VirtualDom> VirtualDom for ElementListData<Child> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::elements::internals::{MockState, WithMockState};
+    use crate::elements::internals::{MockState, MockComponent};
     use crate::elements::label::{Label, LabelData};
     use insta::assert_debug_snapshot;
     use test_env_log::test;
@@ -272,10 +272,10 @@ mod tests {
         ElementList { children }
     }
 
-    fn new_label_list_with_state(names: &[&str]) -> ElementList<WithMockState<Label>> {
+    fn new_mock_list(names: &[&str]) -> ElementList<MockComponent> {
         let children: Vec<_> = names
             .iter()
-            .map(|name| (String::from(*name), Label::new(*name).with_mock_state()))
+            .map(|name| (String::from(*name), MockComponent::new()))
             .collect();
         ElementList { children }
     }
@@ -310,20 +310,28 @@ mod tests {
     }
 
     #[test]
+    fn new_list_with_no_prev_state() {
+        let list = new_mock_list(&["aaa", "bbb", "ccc", "ddd"]);
+        let (_, new_list_state) = list.clone().build(Default::default());
+
+        assert_debug_snapshot!(new_list_state);
+    }
+
+    #[test]
     fn new_list_with_existing_state() {
-        let list = new_label_list_with_state(&["aaa", "bbb", "ccc"]);
-        let list_state = vec![
-            (String::from("bbb"), (MockState::new("Foobar"), ())),
-            (String::from("notfound"), (MockState::new("IAmError"), ())),
+        let list_prev_state = vec![
+            (String::from("bbb"), MockState::new("Foobar")),
+            (String::from("notfound"), MockState::new("IAmError")),
         ];
-        let (_, new_list_state) = list.clone().build(list_state);
+        let list = new_mock_list(&["aaa", "bbb", "ccc"]);
+        let (_, new_list_state) = list.clone().build(list_prev_state);
 
         assert_eq!(
             new_list_state,
             vec![
-                (String::from("aaa"), (MockState::new("HelloWorld"), ())),
-                (String::from("bbb"), (MockState::new("Foobar"), ())),
-                (String::from("ccc"), (MockState::new("HelloWorld"), ())),
+                (String::from("aaa"), MockState::new("default-value")),
+                (String::from("bbb"), MockState::new("Foobar")),
+                (String::from("ccc"), MockState::new("default-value")),
             ],
         );
     }

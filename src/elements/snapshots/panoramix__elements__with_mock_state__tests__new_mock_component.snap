@@ -1,0 +1,8 @@
+---
+source: src/elements/with_mock_state.rs
+expression: component
+
+---
+MockComponent {
+    reserved_widget_id: None,
+}

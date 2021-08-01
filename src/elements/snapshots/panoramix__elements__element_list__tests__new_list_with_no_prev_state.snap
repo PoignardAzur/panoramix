@@ -1,0 +1,35 @@
+---
+source: src/elements/element_list.rs
+expression: new_list_state
+
+---
+[
+    (
+        "aaa",
+        MockState {
+            value: "default-value",
+            clicks: 0,
+        },
+    ),
+    (
+        "bbb",
+        MockState {
+            value: "default-value",
+            clicks: 0,
+        },
+    ),
+    (
+        "ccc",
+        MockState {
+            value: "default-value",
+            clicks: 0,
+        },
+    ),
+    (
+        "ddd",
+        MockState {
+            value: "default-value",
+            clicks: 0,
+        },
+    ),
+]

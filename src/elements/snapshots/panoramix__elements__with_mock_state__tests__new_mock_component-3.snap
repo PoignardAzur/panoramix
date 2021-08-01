@@ -1,0 +1,9 @@
+---
+source: src/elements/with_mock_state.rs
+expression: mock_state
+
+---
+MockState {
+    value: "FOOBAR",
+    clicks: 0,
+}

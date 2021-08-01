@@ -48,12 +48,6 @@ impl Label {
             ..self
         }
     }
-
-    // TODO
-    /// Used for unit tests.
-    pub fn with_mock_state(self) -> super::internals::WithMockState<Self> {
-        super::internals::WithMockState::new(self)
-    }
 }
 
 impl LabelData {
@@ -65,10 +59,6 @@ impl LabelData {
                 alignment: None,
             },
         }
-    }
-
-    pub fn with_mock_state(self) -> super::internals::WithMockStateData<Self> {
-        super::internals::WithMockStateData::new(self)
     }
 }
 

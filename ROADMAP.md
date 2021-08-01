@@ -21,9 +21,7 @@
 - [X] Add TextBox element.
 - [X] Add testing backend to druid for unit tests.
 - [X] Add dynamically-typed BoxDynElement (probably using `std::Any`).
-- [ ] Rework MockState.
-- [ ] Add associated type to WidgetSequence.
-- [ ] Add immutable ConstElement.
+- [X] Rework MockState.
 - [ ] Fix component macro error messages.
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
 - [ ] Add even more tracing/logging.

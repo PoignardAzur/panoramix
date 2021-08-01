@@ -1,0 +1,16 @@
+---
+source: src/elements/with_mock_state.rs
+expression: root_state
+
+---
+RootWidget(
+    Column(
+        IdentityWrapper(
+            ControllerHost(
+                Button(
+                    "clickme",
+                ),
+            ),
+        ),
+    ),
+)

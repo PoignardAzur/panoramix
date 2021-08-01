@@ -42,8 +42,7 @@ pub mod internals {
     pub use super::textbox::TextBoxData;
     pub use super::with_event::WithEventTarget;
 
-    #[doc(hidden)]
-    pub use super::with_mock_state::{MockState, WithMockState, WithMockStateData};
+    pub use super::with_mock_state::{MockComponent, MockComponentData, MockState};
 
     #[doc(hidden)]
     pub use super::event_logger::{EventLogger, EventLoggerData};
