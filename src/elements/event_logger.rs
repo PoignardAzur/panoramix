@@ -1,5 +1,3 @@
-// FIXME - Element used in unit tests to record events emitted by a child event
-
 use crate::ctx::{ProcessEventCtx, ReconcileCtx};
 use crate::element_tree::{Element, VirtualDom};
 use crate::metadata::{NoEvent, NoState};
@@ -10,10 +8,12 @@ use derivative::Derivative;
 use std::sync::mpsc::Sender;
 use tracing::instrument;
 
+/// Log events of child element. For unit tests only.
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct EventLogger<Child: Element> {
     pub child: Child,
+    /// Queue to which events of `self.child` are sent.
     pub event_queue: Sender<Child::Event>,
 }
 

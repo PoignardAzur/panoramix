@@ -10,10 +10,10 @@ mod flex_element;
 mod label;
 mod optional_element;
 mod textbox;
-mod mock_component;
 
 pub mod element_tuple;
 mod event_logger;
+mod mock_component;
 mod with_event;
 
 mod compute_diff;
@@ -44,10 +44,8 @@ pub mod internals {
 
     pub use super::mock_component::{MockComponent, MockComponentData, MockState};
 
-    #[doc(hidden)]
     pub use super::event_logger::{EventLogger, EventLoggerData};
 
-    #[doc(hidden)]
     pub use super::with_event::{ParentEvent, WithBubbleEvent, WithCallbackEvent, WithMapEvent};
 
     pub use super::compute_diff::{compute_diff, ListMutation, ListMutationItem};

@@ -53,6 +53,9 @@ fn bubble_event_up<State, Event>(_state: &mut State, event: Event) -> Option<Eve
 
 // ---
 
+/// Applies callback to events of child element
+///
+/// For internal use only. Library users should use [ElementExt](crate::ElementExt) instead.
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithCallbackEvent<
@@ -73,6 +76,9 @@ pub struct WithCallbackEvent<
     pub _marker: std::marker::PhantomData<EventParam>,
 }
 
+/// Maps events of child element into events of parent component, using provided map function.
+///
+/// For internal use only. Library users should use [ElementExt](crate::ElementExt) instead.
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithMapEvent<
@@ -95,6 +101,9 @@ pub struct WithMapEvent<
     pub _marker: std::marker::PhantomData<EventParam>,
 }
 
+/// Transfers events of child element to parent component.
+///
+/// For internal use only. Library users should use [ElementExt](crate::ElementExt) instead.
 #[derive(Derivative)]
 #[derivative(Clone(bound = ""), Debug(bound = ""))]
 pub struct WithBubbleEvent<ComponentEvent, ComponentState, Event, Child: Element>

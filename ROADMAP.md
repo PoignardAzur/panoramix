@@ -24,7 +24,6 @@
 - [X] Rework MockState.
 - [ ] Fix component macro error messages.
 - [ ] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
-- [ ] Add even more tracing/logging.
 - [ ] Refactor ElementList
   - [ ] Allow duplicate keys.
   - [ ] Refactor compute_diff (look up diff algorithms?).
@@ -71,6 +70,7 @@ Some cool features I'd like:
 - [ ] Implement screenshot generator for examples.
 - [ ] Implement accessibility features.
 - [ ] Add integration tests based on visual snapshots.
+- [ ] Add even more tracing/logging.
 
 ## Long term - Feature parity with React
 
