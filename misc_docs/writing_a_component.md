@@ -8,37 +8,30 @@ This is part 1 of a 3-parts tutorial:
 
 Components in Panoramix are plain old functions, that follow a specific format.
 
-While Panoramix performs some non-intuitive logic in the background, component themselves are very much non-magical. The function you write is the function than Panoramix execute, with no hidden codegen or side-effects.
+While Panoramix performs some non-intuitive logic in the background, component themselves are very much non-magical. The function you write is the function than Panoramix executes, with no hidden codegen or side-effects.
 
 Where there *is* some background logic is in the arguments passed to your components, and how Panoramix processes the return value.
 
 ## Our first component
 
-Let's say we want to start with something simple: a component that takes a name, and displays a label that says `Hello, $YOUR_NAME`.
+Let's say we want to start with something simple: a component that takes no parameter, and displays a label that says `Hello world:`.
 
 The basic declaration will look like this:
 
 ```rust
-use panoramix::{component, CompCtx, Element};
+use panoramix::{component, CompCtx, Element, NoEvent};
 
 #[component]
-fn HelloText(_ctx: &CompCtx, props: __PROPS_TYPE__) -> impl Element {
+fn HelloText(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     todo!()
 }
 ```
 
-(More complicated examples will add generic parameters to `Element`, but for now we're using their default values.)
+(For now, ignore the `ctx`, `props` and `Event = NoEvent` parts; for an example this simple, they can be considered boilerplate.)
 
-The `#[component]` attribute mostly just reads the function prototype, and generates a `struct HelloText` type from it with a few inherent methods. We'll come back to that later.
+The `#[component]` attribute mostly just reads the function prototype, and generates a `struct HelloText` type from it with a few inherent methods and trait implementations. We'll come back to that later.
 
-A component's props are the arguments its uses to generate its GUI. In this case, we want to take a name, so we can replace `__PROPS_TYPE__` with `String`:
-
-```rust
-#[component]
-fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
-    todo!()
-}
-```
+Our component prototype is parameterized with a props type and an event type. A component's props are the arguments its uses to generate its GUI; the event type describes the events it can emit from user interaction. In our case, we take no parameter and emit no events, so these types are respectively `()` and `NoEvent`.
 
 Finally, we want to return a label that says hello:
 
@@ -46,54 +39,65 @@ Finally, we want to return a label that says hello:
 use panoramix::elements::Label;
 
 #[component]
-fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
-    Label::new(format!("Hello, {}", props))
+fn HelloText(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
+    Label::new("Hello world!")
 }
 ```
 
 If we want to test our component in a program, we have to pass it to `panoramix::RootHandler` from our main function.
 
-The `#[component]` attribute generates a `HelloText::new` constructor for our component, that takes its props as parameters and returns an element (see the attribute's documentatation for details).
-
-We can use it to generate an instance of our component that our application will display:
+The `#[component]` attribute generates a `HelloText` unit type, that implements the trait `Component`. `RootHandler` has a constructor that expects a `Component`, so we can pass it our `HelloText`:
 
 ```rust
 use panoramix::RootHandler;
 
 fn main() -> Result<(), panoramix::PlatformError> {
-    RootHandler::new(HelloBox::new("World".to_string()))
+    RootHandler::new(HelloText)
         .launch()
 }
 ```
 
-TODO - screenshot
+*TODO - screenshot*
 
 
 ## Composing components
 
 *Components* are called that way, because they're the unit of *composition* in a declarative GUI.
 
-For instance, let's say we want our GUI to say hello to multiple people at the same time. Maybe we want to say hello to Alice, Bob, Carol and Damian. We could copy-paste the above code multiple times:
+For instance, let's say we want our GUI to say hello to specific people. Maybe we want to say hello to Alice, Bob, Carol and Damian. We could copy-paste the above code multiple times:
 
 ```rust
 use panoramix::Column;
 
 #[component]
-fn HelloText(_ctx: &CompCtx, _props: ()) -> impl Element {
+fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     Column!(
-        Label::new(format!("Hello, Alice")),
-        Label::new(format!("Hello, Bob")),
-        Label::new(format!("Hello, Carol")),
-        Label::new(format!("Hello, Damian")),
+        Label::new("Hello Alice!"),
+        Label::new("Hello Bob!"),
+        Label::new("Hello Carol!"),
+        Label::new("Hello Damian!"),
     )
 }
 ```
 
 (`Column!()` is a macro similar to `vec![]`, that takes a tuple of elements of arbitrary types and returns an element that contains them all; the value returned by `Column` always implements `Element`)
 
-This is obviously the kind of pattern we want to abstract into function calls: we have a function parameter that changes (the name), and a function body that stays the same (the label). So what we do is build our component with different props each time, using the `HellowText::new` syntax we used earlier:
-
 But this is obviously a pattern where we want to compose code, not copy-paste it. This is where props become useful: because we have defined a component parameterized on a name, we can just build that component multiple times with different values.
+
+First, we change the component to take a String prop:
+
+```rust
+#[component]
+fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
+    Label::new(format!("Hello {}!", props))
+}
+```
+
+The `#[component]` attribute generates a `HelloText` type, with a `new()` method that takes a string:
+
+```rust
+HelloText::new(String::from("Foobar"))
+```
 
 Our complete code looks like:
 
@@ -104,27 +108,27 @@ use panoramix::RootHandler;
 use panoramix::Column;
 
 #[component]
-fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
-    Label::new(format!("Hello, {}", props))
+fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
+    Label::new(format!("Hello {}!", props))
 }
 
 #[component]
-fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
+fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     Column!(
-        HelloBox::new("Alice".to_string()),
-        HelloBox::new("Bob".to_string()),
-        HelloBox::new("Carol".to_string()),
-        HelloBox::new("Damian".to_string()),
+        HelloText::new("Alice".to_string()),
+        HelloText::new("Bob".to_string()),
+        HelloText::new("Carol".to_string()),
+        HelloText::new("Damian".to_string()),
     )
 }
 
 fn main() -> Result<(), panoramix::PlatformError> {
-    RootHandler::new(HelloEveryone::new(()))
+    RootHandler::new(HelloEveryone)
         .launch()
 }
 ```
 
-We managed to combine these different types seamlessly because `Column!` takes arbitrary elements as parameters, and `HelloBox::new` returns an element.
+We're able to combine these different types seamlessly because `Column!` takes arbitrary elements as parameters, and `HelloText::new` returns an element.
 
 
 ## About magic
@@ -135,15 +139,15 @@ As part of this, all elements we have built (with `Label::new` and `Column!` and
 
 ```rust
 #[component]
-fn HelloText(_ctx: &CompCtx, _props: ()) -> impl Element {
+fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
     let first_label = Label::new(format!("Hello, Alice"));
     println!("first_label: {:#?}", first_label);
 
     let column = Column!(
         first_label,
-        HelloBox::new("Bob".to_string()),
-        HelloBox::new("Carol".to_string()),
-        HelloBox::new("Damian".to_string()),
+        HelloText::new("Bob".to_string()),
+        HelloText::new("Carol".to_string()),
+        HelloText::new("Damian".to_string()),
     );
 
     println!("===");
@@ -173,13 +177,13 @@ column: Flex {
                 alignment: None,
             },
         },
-        HelloBox {
+        HelloText {
             props: "Hello, Bob",
         },
-        HelloBox {
+        HelloText {
             props: "Hello, Carol",
         },
-        HelloBox {
+        HelloText {
             props: "Hello, Damian",
         },
     ),
@@ -187,7 +191,7 @@ column: Flex {
 }
 ```
 
-You might notice that, at the time we return them, instances of `HelloBox` just contain props. That's because the actual function is called a bit later on.
+You might notice that, at the time we return them, instances of `HelloText` just contain props. That's because the actual `HelloText` function is called after `HelloEveryone` has returned.
 
 ## ElementList
 
@@ -205,22 +209,22 @@ use panoramix::RootHandler;
 use panoramix::Column;
 
 #[component]
-fn HelloText(_ctx: &CompCtx, props: String) -> impl Element {
-    Label::new(format!("Hello, {}", props))
+fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
+    Label::new(format!("Hello {}!", props))
 }
 
 #[component]
-fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
+fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     Column!(
-        HelloBox::new("Alice".to_string()),
-        HelloBox::new("Bob".to_string()),
-        HelloBox::new("Carol".to_string()),
-        HelloBox::new("Damian".to_string()),
+        HelloText::new("Alice".to_string()),
+        HelloText::new("Bob".to_string()),
+        HelloText::new("Carol".to_string()),
+        HelloText::new("Damian".to_string()),
     )
 }
 
 fn main() -> Result<(), panoramix::PlatformError> {
-    RootHandler::new(HelloEveryone::new(()))
+    RootHandler::new(HelloEveryone)
         .launch()
 }
 ```

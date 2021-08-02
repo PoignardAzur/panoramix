@@ -37,7 +37,7 @@
   - [X] Improve discoverability.
   - [X] Add doc example of element_tuple instantiated with 3 args.
   - [X] Add test that checks that the README and the todo example are identical.
-  - [ ] Rewrite tutorials.
+  - [X] Rewrite tutorials.
   - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
   - [ ] Add "speedrun" doc.
   - [X] Rewrite Element doc.
