@@ -1,23 +1,22 @@
 //! Wrapper types around druid widgets.
 
-pub mod any_widget_seq;
-pub mod button_widget;
-pub mod checkbox_widget;
-pub mod empty_sequence;
-pub mod flex_widget;
-pub mod optional_widget;
-pub mod single_widget;
-pub mod textbox_widget;
-pub mod widget_list;
-pub mod widget_tuple;
+mod any_widget_seq;
+mod button_widget;
+mod checkbox_widget;
+mod empty_sequence;
+mod flex_widget;
+mod optional_widget;
+mod single_widget;
+mod textbox_widget;
+mod widget_list;
+mod widget_tuple;
 
-pub use any_widget_seq::*;
-pub use button_widget::*;
-pub use checkbox_widget::*;
-pub use empty_sequence::*;
-pub use flex_widget::*;
-pub use optional_widget::*;
-pub use single_widget::*;
-pub use textbox_widget::*;
-pub use widget_list::*;
-pub use widget_tuple::*;
+pub use any_widget_seq::WidgetSeqBox;
+pub use button_widget::ButtonWidget;
+pub use checkbox_widget::{CheckboxWidget, SingleCheckboxWidget};
+pub use empty_sequence::EmptySequence;
+pub use flex_widget::FlexWidget;
+pub use single_widget::SingleWidget;
+pub use textbox_widget::TextBoxWidget;
+pub use widget_list::WidgetList;
+pub use widget_tuple::WidgetTuple;

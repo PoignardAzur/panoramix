@@ -2,7 +2,7 @@ use crate::elements::{Component, ElementBox};
 use crate::flex;
 use crate::glue::{DruidAppData, GlobalEventCx};
 use crate::internals::{ProcessEventCtx, ReconcileCtx, VirtualDom};
-use crate::widgets::flex_widget;
+use crate::widgets::FlexWidget;
 use crate::{Element, NoEvent};
 
 use crate::glue::DebugState;
@@ -25,10 +25,7 @@ pub struct RootWidget<RootElem: Element> {
     pub vdom: Option<RootElem::BuildOutput>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
     pub widget: Option<
-        WidgetPod<
-            DruidAppData,
-            flex_widget::FlexWidget<<RootElem::BuildOutput as VirtualDom>::TargetWidgetSeq>,
-        >,
+        WidgetPod<DruidAppData, FlexWidget<<RootElem::BuildOutput as VirtualDom>::TargetWidgetSeq>>,
     >,
 }
 
@@ -70,7 +67,7 @@ impl<RootElem: Element> RootWidget<RootElem> {
         let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
         // FIXME - Fix alignment to be consistent
         // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
-        let flex_widget = WidgetPod::new(flex_widget::FlexWidget {
+        let flex_widget = WidgetPod::new(FlexWidget {
             direction: flex::Axis::Vertical,
             flex_params: flex::FlexContainerParams {
                 cross_alignment: flex::CrossAxisAlignment::Center,

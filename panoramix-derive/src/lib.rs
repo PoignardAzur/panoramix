@@ -10,21 +10,38 @@ use tracing::trace;
 
 /// Attribute used to declare a component
 ///
-/// The attribute applies to a function, but will transform that function into a type, with a `new()` method. By convention, the name of your component should be in UpperCamelCase, and the compiler will warn you if it isn't.
+/// The attribute applies to a function, but will transform that function into a type, which:
+/// - Implements the [`Component`](panoramix::elements::Component) trait.
+/// - Has an inherent `new` method of the form
+///   ```
+///   # use panoramix::{Element, NoEvent};
+///   # type MyEventType = NoEvent;
+///   # type MyPropsType = ();
+///   fn new(props: MyPropsType) -> impl panoramix::Element<Event = MyEventType>
+///   # { panoramix::elements::EmptyElement::new() }
+///   ```
 ///
-/// Example:
+/// By convention, the name of your component should be in UpperCamelCase, and the compiler will warn you if it isn't.
+///
+/// ## Example:
 ///
 /// ```rust
 /// # use panoramix::{component, CompCtx, Element, NoEvent};
-/// # type EventType = NoEvent;
-/// # type PropsType = ();
+/// # type MyEventType = NoEvent;
+/// # type MyPropsType = ();
 /// # type LocalState = ();
 /// #
 /// #[component]
-/// fn MyComponent(ctx: &CompCtx, props: PropsType) -> impl Element<EventType, LocalState> {
+/// fn MyComponent(ctx: &CompCtx, props: MyPropsType) -> impl Element<Event = MyEventType> {
 ///     // ...
 ///     # panoramix::elements::EmptyElement::new()
 /// }
+///
+/// // ...
+///
+/// # let my_props = ();
+/// MyComponent::new(my_props)
+/// # ;
 /// ```
 #[proc_macro_attribute]
 pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {

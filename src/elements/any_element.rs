@@ -150,11 +150,31 @@ impl<Child: Element + 'static> AnyElement for ErasedElement<Child> {
 
 // -
 
+// TODO - link to tutorial
+
+/// A type-erased wrapper for any type that implements [`Element`](crate::Element).
+///
+/// `Element` is inherently not an object-safe trait. `ElementBox` is the closest equivalent
+/// to `Box<dyn Element>` you can get. It can be used anywhere an Element is needed.
+///
+/// ## Note
+///
+/// Though I haven't benchmarked it, it's reasonable to assume `ElementBox` is always less
+/// performant than using the underlying element directly. However, it might be beneficial
+/// for compile times (again, haven't benchmarked it).
+///
+/// If you need to return a different type of event depending on an if-else clause, use
+/// `Option` or `Either` instead.
+///
+/// ## Events
+///
+/// Emits the same event as the wrapped type.
 pub struct ElementBox<Event: Debug> {
     child: Box<dyn AnyElement<Event = Event>>,
 }
 
 impl<Event: Debug> ElementBox<Event> {
+    /// Build a type-erased box of the given element.
     pub fn new(child: impl Element<Event = Event> + 'static) -> Self {
         ElementBox {
             child: Box::new(ErasedElement { child: Some(child) }),
@@ -438,4 +458,6 @@ mod tests {
             assert_debug_snapshot!(click_event);
         });
     }
+
+    // FIXME - Test equivalent of Either
 }

@@ -7,6 +7,7 @@ use crate::widgets::{FlexWidget, SingleWidget};
 
 use tracing::instrument;
 
+/// A flex container, either horizontal or vertical.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Flex<Child: Element> {
     pub axis: Axis,
@@ -151,6 +152,18 @@ impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
 /// ## Events
 ///
 /// Returned element doesn't emit events.
+///
+/// ## Example
+///
+/// ```rust
+/// # use panoramix::{Row};
+/// # use panoramix::elements::{Label, Button};
+/// let row = Row!(
+///     Label::new("Hello"),
+///     Label::new("World"),
+///     Button::new("Click me!")
+/// );
+/// ```
 #[macro_export]
 macro_rules! Row {
     ( $($arg:expr),* $(,)?) => {
@@ -168,6 +181,18 @@ macro_rules! Row {
 /// ## Events
 ///
 /// Returned element doesn't emit events.
+///
+/// ## Example
+///
+/// ```rust
+/// # use panoramix::{Column};
+/// # use panoramix::elements::{Label, Button};
+/// let column = Column!(
+///     Label::new("Hello"),
+///     Label::new("World"),
+///     Button::new("Click me!")
+/// );
+/// ```
 #[macro_export]
 macro_rules! Column {
     ( $($arg:expr),* $(,)?) => {

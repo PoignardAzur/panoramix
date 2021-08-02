@@ -24,6 +24,7 @@ impl<T> OptionOrUnit<T> for () {
     }
 }
 
+/// TODO - Document this
 pub trait ParentEvent<Child> {
     fn from_child_event(child: Child) -> Self;
     fn into_child_event(self) -> Option<Child>;

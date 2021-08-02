@@ -7,6 +7,9 @@ use crate::metadata::{Metadata, NoState};
 use derivative::Derivative;
 use std::fmt::Debug;
 
+/// Trait that all components implement.
+///
+/// To implement this trait, use the [`#[component]`](crate::component) macro.
 pub trait Component: Debug + Clone {
     type Props: Clone + Debug + PartialEq + 'static;
     type LocalEvent: Clone + Debug + PartialEq + 'static;
@@ -28,6 +31,14 @@ pub struct ComponentHolder<
     _marker: std::marker::PhantomData<Comp>,
 }
 
+/// The root of the element hierarchy returned by a component.
+///
+/// Any component which uses metadata (so components with local state, or components that emit
+/// events) must return ComponentOutput.
+///
+/// ## Events
+///
+/// Emits the event type passed in [`CompCtx::use_metadata`](crate::CompCtx::use_metadata).
 #[derive(Derivative, Hash)]
 #[derivative(
     Debug(bound = ""),
@@ -72,6 +83,7 @@ impl<
         Child: Element,
     > ComponentOutput<ComponentEvent, ComponentState, Child>
 {
+    /// Build a component output from the given metadata and element tree.
     pub fn new(md: Metadata<ComponentEvent, ComponentState>, child: Child) -> Self {
         Self {
             child,

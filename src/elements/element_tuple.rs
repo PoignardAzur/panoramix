@@ -1,3 +1,7 @@
+//! Tuples of 1 to 12 elements.
+//!
+//! End users should never have to use these types. Use [Tuple], [Row] and [Column] macros instead.
+
 #![allow(unused_attributes)]
 #![allow(non_camel_case_types)]
 
@@ -196,6 +200,19 @@ declare_stuff! {
 /// ## Events
 ///
 /// Returned element doesn't emit events.
+///
+/// ## Example
+///
+/// ```rust
+/// # use panoramix::{Tuple};
+/// # use panoramix::elements::{Label, Button};
+/// let tuple = Tuple!(
+///     Label::new("Hello"),
+///     Label::new("World"),
+///     Button::new("Click me!")
+/// );
+/// ```
+
 #[macro_export]
 macro_rules! Tuple {
     ( $(,)? ) => {

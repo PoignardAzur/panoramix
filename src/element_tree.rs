@@ -11,43 +11,18 @@ use std::fmt::Debug;
 ///
 /// For helper methods that can be called on all elements, see [`ElementExt`].
 ///
-/// ## Note about template resolution
+/// ## Note about associated types
 ///
-/// This trait is parameterized on two template types: `CpEvent` and `CpState`, which represent the event and local-state type of the parent component an element is built in. They are supposed to flow "inwards" with type inference, starting from the `-> impl Element<MyEvent, MyState>` return type of your function.
-///
-/// To give a concrete example:
-///
-/// ```rust
-/// # use panoramix::{component, CompCtx, Column, Element, ElementExt, Metadata};
-/// # use panoramix::elements::{ButtonClick, Button, Label};
-/// # type BuyItem = ButtonClick;
-/// #
-/// #[component]
-/// fn StoreItem(ctx: &CompCtx, item_name: String) -> impl Element<BuyItem, u32> {
-///     let md = Metadata::<BuyItem, u32>::new();
-///     let item_count = ctx.use_local_state::<u32>();
-///     Column!(
-///         Label::new(format!("Item: {} x{}", item_name, item_count)),
-///         Button::new("+")
-///             .on_click(md, |item_count, _| {
-///                 *item_count += 1;
-///             }),
-///         Button::new("Buy")
-///             .bubble_up::<BuyItem>(md)
-///     )
-/// }
-/// ```
-///
-/// In this example, because the return type is declared to be `-> impl Element<BuyItem, u32>`, all elements that are returned (Label, Button, Column) will be transitively inferred to implement `Element<BuyItem, u32>`.
-///
-/// The flip side of this is that constructing an element and not returning it (eg doing `let x = Button::new("...");` and then not using `x`) will lead to a compile error, because the compiler can't infer what `CpEvent` and `CpState` should be.
-///
+/// This trait has a lot of associated types; the only one that matters for
+/// end users is [`Event`](Self::Event).
 pub trait Element: Debug + Clone + 'static {
     /// The type of events this element can raise.
     ///
-    /// This is the type that [`ElementExt::on`], [`ElementExt::map_event`] and [`ElementExt::bubble_up`] can take. It's different from the `CpEvent` generic parameter, which is the event the parent component emits.
+    /// Events are objects emitted by elements when certain user interactions happen. For
+    /// instance, the event type of [`Button`](crate::elements::Button) is [`ButtonClick`](crate::elements::ButtonClick).
     ///
-    /// In the `StoreItem` example, the `Event` type of buttons is `ButtonClick`, and their `CpEvent` parameter is `BuyItem`.
+    /// The Event associated type is the type that eg the callback passed to [`ElementExt::on`]
+    /// takes as parameter.
     type Event: Debug;
 
     type ComponentState: Clone + Default + Debug + PartialEq + 'static;
@@ -120,6 +95,11 @@ use crate::elements::internals::{ParentEvent, WithBubbleEvent, WithCallbackEvent
 
 /// Helper methods that can be called on all elements.
 pub trait ElementExt: Element + Sized {
+    /// Bind callback to an event.
+    ///
+    /// When an event is emitted that matches the EventParam type (TODO - see [`ParentEvent`] for
+    /// details), call the given callback, with a mutable reference to the component's local state
+    /// (see [`CompCtx::get_local_state`](crate::CompCtx::get_local_state)) and the event value.
     fn on<
         EventParam,
         Cb: Fn(&mut ComponentState, EventParam) + Clone,
@@ -141,6 +121,13 @@ pub trait ElementExt: Element + Sized {
         }
     }
 
+    /// Map events from the element to events of the parent component.
+    ///
+    /// When an event is emitted that matches the EventParam type (TODO - see [`ParentEvent`] for
+    /// details), call the given function, with a mutable reference to the component's local state
+    /// (see [`CompCtx::get_local_state`](crate::CompCtx::get_local_state)) and the event value.
+    ///
+    /// If the function returns `Some(...)`, the parent component emits the event.
     fn map_event<
         EventParam,
         EventReturn,
@@ -164,6 +151,13 @@ pub trait ElementExt: Element + Sized {
         }
     }
 
+    /// Passes events from the element to the parent component.
+    ///
+    /// When an event is emitted that matches the Event type (TODO - see [`ParentEvent`] for
+    /// details), the parent component emits the event.
+    ///
+    /// This is equivalent to a [`map_event`](Self::map_event) where the given callback always
+    /// returns `Some(input_event)`.
     fn bubble_up<Event, ComponentEvent, ComponentState>(
         self,
         md: Metadata<ComponentEvent, ComponentState>,

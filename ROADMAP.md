@@ -31,19 +31,26 @@
   - [ ] Rework internals to allow event chaining, improve performance.
   - [ ] Test event chaining.
   - [ ] Write `#[derive(Event)]` macro.
-- [ ] Add AnyEvent type.
+  - [ ] Add Event trait.
+  - [ ] Add AnyEvent type.
 - [ ] Rework doc.
-  - [ ] Improve discoverability.
-  - [ ] Add doc example of element_tuple instantiated with 3 args.
-  - [ ] Add test that checks that the README and the todo example are identical.
+  - [X] Improve discoverability.
+  - [X] Add doc example of element_tuple instantiated with 3 args.
+  - [X] Add test that checks that the README and the todo example are identical.
+  - [ ] Rewrite tutorials.
   - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
   - [ ] Add "speedrun" doc.
-  - [ ] Explain event system.
+  - [X] Rewrite Element doc.
+    - [X] Explain event system.
+    - [X] Document ElementExt.
+  - [ ] Explain ParentEvent system.
   - [ ] Explain the notion that some elements represent 0, 1 or n flex items.
   - [ ] Add note that flex widget is both a flex item and a container.
   - [ ] Use `#[doc = include_str!]` once feature gets stable.
+  - [ ] Move tutorials to inline doc.
   - [ ] Document event chaining.
   - [ ] Add screenshots to doc.
+  - [ ] Rewrite ARCHITECTURE.md
 - [ ] Add styling elements.
   - [ ] Background and borders.
   - [ ] Text font, style.

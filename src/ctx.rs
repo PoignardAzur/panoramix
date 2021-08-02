@@ -11,10 +11,19 @@ pub struct CompCtx<'a> {
 }
 
 impl<'a> CompCtx<'a> {
+    /// Returns a metadata token of sorts, used by functions handling events, local state, etc.
+    ///
+    /// The returned value stores no state; it's only passed around to methods
+    /// as a concise way to bind type information.
+    ///
+    /// # Panic
+    ///
+    /// This method can only be called once per component. It panics if called twice in a row.
     pub fn use_metadata<ComponentEvent: 'static, ComponentState: 'static>(
         &self,
     ) -> Metadata<ComponentEvent, ComponentState> {
         if self.called_use_metadata.get() {
+            // The goal is to avoid letting the user accidentally use two different metadata types.
             panic!("error: 'use_metadata' can only be called once per component")
         }
         self.called_use_metadata.set(true);
@@ -23,7 +32,12 @@ impl<'a> CompCtx<'a> {
 
     /// Returns the local state of the current component instance.
     ///
-    /// Panics if the generic type doesn't match the component's local state type.
+    /// The local state of a component is initialized to a default value when a component
+    /// is first created, can be modified by event callbacks, and persists between calls.
+    ///
+    /// ## Panic
+    ///
+    /// Panics if the root element of the component isn't [`ComponentOutput`](crate::elements::ComponentOutput).
     pub fn get_local_state<ComponentEvent: 'static, ComponentState: 'static>(
         &self,
         md: Metadata<ComponentEvent, ComponentState>,
@@ -47,7 +61,7 @@ impl<'a> CompCtx<'a> {
     // get_vdom_context
 }
 
-/// Context required by [`VirtualDom::reconcile`]
+/// Context required by [`VirtualDom::reconcile`](crate::internals::VirtualDom::reconcile)
 pub struct ReconcileCtx<'a, 'b, 'c, 'd, 'e> {
     pub event_ctx: &'a mut EventCtx<'d, 'e>,
     pub data: &'b mut DruidAppData,
