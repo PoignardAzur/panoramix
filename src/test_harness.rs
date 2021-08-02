@@ -1,23 +1,16 @@
-#![allow(unused_imports)]
-
-use crate::flex::FlexParams;
 use crate::glue::{DebugState, DruidAppData};
-use crate::internals::{ReconcileCtx, VirtualDom};
-use crate::widgets::SingleWidget;
+use crate::Element;
 use crate::RootWidget;
-use crate::{Element, NoEvent};
 
-use derivative::Derivative;
-use druid::keyboard_types::{Code, Key, KeyState};
 use druid::tests::harness::Harness as DruidHarness;
 use druid::{
     Command, Event, KeyEvent, Modifiers, MouseButton, MouseButtons, MouseEvent, Point, RawMods,
     Vec2, WidgetId, WidgetState,
 };
 use std::any::Any;
-use tracing::instrument;
 
-use druid::widget as druid_w;
+// TODO
+// use tracing::instrument;
 
 pub struct Harness<'a, 'b, RootElem: Element + Any> {
     pub druid_harness: &'a mut DruidHarness<'b, DruidAppData>,
@@ -85,7 +78,7 @@ impl<RootElem: 'static + Element> Harness<'_, '_, RootElem> {
     }
 
     pub fn update_root_element(&mut self, new_root: RootElem) {
-        use druid::{Command, Selector, Target};
+        use druid::{Selector, Target};
 
         let selector = Selector::new("update_root_element");
         let command = Command::new(selector, new_root, Target::Global);
