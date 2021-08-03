@@ -112,4 +112,7 @@ pub mod tutorials {
     pub mod t_02_event_handling {}
     #[doc = include_str!("../tutorials/03_local_state.md")]
     pub mod t_03_local_state {}
+
+    #[doc = include_str!("../tutorials/speedrun_tutorial.md")]
+    pub mod t_speedrun_tutorial {}
 }

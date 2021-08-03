@@ -42,7 +42,7 @@
   - [X] Rewrite Element doc.
     - [X] Explain event system.
     - [X] Document ElementExt.
-  - [ ] Add "speedrun" doc.
+  - [X] Add "speedrun" doc.
   - [X] Use `#[doc = include_str!]` once feature gets stable.
   - [X] Move tutorials to inline doc.
   - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
