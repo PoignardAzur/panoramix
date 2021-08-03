@@ -43,6 +43,7 @@ use tracing::trace;
 /// MyComponent::new(my_props)
 /// # ;
 /// ```
+#[allow(rustdoc::broken_intra_doc_links)]
 #[proc_macro_attribute]
 pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
     trace!("attr: {:?}", attr);
