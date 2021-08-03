@@ -59,6 +59,7 @@
   - [ ] Add Spacer element (from druid).
   - [ ] Refactor with_flex_params; use `From<f64>`??
 - [ ] Remove some cloning.
+- [ ] Add macro check that ComponentOutput is present is use_metadata is.
 - [ ] Add WithKey type and `WidgetExt.with_key` method.
 - [ ] Implement two-way bindings.
 - [ ] Check out SizedBox (?).
