@@ -60,7 +60,7 @@ impl ComponentLifecycle {
 
 This is a central choice of the framework. I believe it makes writing component easier, and more intuitive.
 
-The abstraction that backs this choice is called a "Virtual DOM". See [this document](./reconciliation) for details.
+The abstraction that backs this choice is called a "Virtual DOM". See [this document](.misc_docs/reconciliation.md) for details.
 
 
 ### Panoramix is not clever
@@ -74,7 +74,8 @@ Not here. We do everything the hard way. If you can't get a mutable reference to
 The good news is, making a GUI that works in Rust without using these patterns is surprisingly doable. You should read the `VirtualDom` trait and its implementations for details, but the general pattern is:
 
 - The framework holds a tree of **states**, which are application-defined PODs.
-- The application-defined components each borrows a given **state** (as well as **props** passed from other components), and generate a GUI from them, as well as **event callbacks**.
+- The application-defined components each borrow a given **state** (as well as **props** passed from other components) as input, and generate a hierarchy of **elements** as output; that hiearchy includes **event callbacks**.
+- A GUI is built from the element tree.
 - The GUI is shown to the user.
 - Depending on user-interaction, some **event callbacks** are called with a mutable reference to their component **state**.
 - If the **callbacks** have changed the **state** value, we call the **components** again to regenerate the GUI, and so on.
@@ -120,20 +121,37 @@ Being statically-typed means that Panoramix gets to skip some redundant checks d
 The important traits are:
 
 - **Element**: What every user-facing function returns.
-- **VirtualDom**: Same thing, but one step removed. VirtualDom items are built from elements and their types define methods for building the widget tree, reconciliation and event handling. This is where most of the magic happens.
+- **VirtualDom**: Same thing, but one step removed. VirtualDom items are built from Elements and their types define methods for building the widget tree, reconciliation and event handling. This is where most of the magic happens.
 - **WidgetSequence**: wrapper for iterators of FlexWidgets. Most elements (eg Label, Button, TextBox, Flex containers) are sequences of a single FlexWidget. Non-Flex containers (Tuple, ElementList, Option, Either) are sequences of 0-to-many widgets. (for instance Option is 0-to-1)
 - **FlexWidget**: wrapper for a `druid::WidgetPod` plus some flex data. Object-safe.
 
 Essentially, every element the user can instantiate has to bind to all four of these traits. You can think of Element as the front-end and druid as the backend.
 
-## `elements/`
+## `src/elements/`
 
 Where `Element` and `VirtualDom` implementations are defined.
 
-## `widgets/`
+## `src/widgets/`
 
 Where `WidgetSequence` and `FlexWidget` implementations are defined.
 
-## `root_handler.rs`
+## `src/root_handler.rs`
 
 Defines the functions that users call in their `main()` function to start the app.
+
+## `src/test_harness.rs`
+
+Harness used for unit tests.
+
+This crate uses a lot of unit tests, including some that take the form of "create a mock druid window, initialize $ELEMENT in it, check that the right widgets are created", and sometimes even "have a fake user interact with the window (eg press a button), check that state is changed accordingly".
+
+Harness provides the framework for those tests.
+
+
+## Tutorials
+
+Besides regular inline doc comments, the crate also has a `tutorials/` folder, with markdown documents.
+
+The crate directly imports these documents using `#[doc = include_str!]`, so these tutorials are meant to be seen on `doc.rs`, not in a markdown reader.
+
+The main advantage of this is that code in these tutorials is guaranteed to run and pass doctests.

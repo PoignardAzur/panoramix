@@ -69,3 +69,5 @@ For instance, if your element list before update looks like:
 ElementTree will figure out that the element at `foo-2` has been removed, and will remove it from the underlying widget tree, as well as perform any necessary cleanup.
 
 Option and Either also handle widget identity and cleanup, but it's a lot less complicated since the only possible states are "widget is there" or "widget isn't there" with no possible confusion on order or anything.
+
+(TODO - Actually, this is a lie, Option and Either don't quite handle cleanup yet.)
