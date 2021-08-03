@@ -3,8 +3,8 @@
 This is part 1 of a 3-parts tutorial:
 
 - **Writing a component**
-- [Event handling](./event_handling.md)
-- [Local state](./local_state.md)
+- [Event handling](t_02_event_handling)
+- [Local state](t_03_local_state)
 
 Components in Panoramix are plain old functions, that follow a specific format.
 
@@ -24,6 +24,7 @@ use panoramix::{component, CompCtx, Element, NoEvent};
 #[component]
 fn HelloText(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     todo!()
+#   ; panoramix::elements::EmptyElement::new()
 }
 ```
 
@@ -36,6 +37,7 @@ Our component prototype is parameterized with a props type and an event type. A 
 Finally, we want to return a label that says hello:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
 use panoramix::elements::Label;
 
 #[component]
@@ -48,10 +50,11 @@ If we want to test our component in a program, we have to pass it to `panoramix:
 
 The `#[component]` attribute generates a `HelloText` unit type, that implements the trait `Component`. `RootHandler` has a constructor that expects a `Component`, so we can pass it our `HelloText`:
 
-```rust
+```ignore
 use panoramix::RootHandler;
 
 fn main() -> Result<(), panoramix::PlatformError> {
+    # return Ok(());
     RootHandler::new(HelloText)
         .launch()
 }
@@ -67,6 +70,8 @@ fn main() -> Result<(), panoramix::PlatformError> {
 For instance, let's say we want our GUI to say hello to specific people. Maybe we want to say hello to Alice, Bob, Carol and Damian. We could copy-paste the above code multiple times:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::Label;
 use panoramix::Column;
 
 #[component]
@@ -87,6 +92,8 @@ But this is obviously a pattern where we want to compose code, not copy-paste it
 First, we change the component to take a String prop:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::Label;
 #[component]
 fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
     Label::new(format!("Hello {}!", props))
@@ -96,13 +103,16 @@ fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
 The `#[component]` attribute generates a `HelloText` type, with a `new()` method that takes a string:
 
 ```rust
+# use panoramix::elements::Label;
+# type HelloText = Label;
 HelloText::new(String::from("Foobar"))
+# ;
 ```
 
 Our complete code looks like:
 
 ```rust
-use panoramix::{component, CompCtx, Element};
+use panoramix::{component, CompCtx, Element, NoEvent};
 use panoramix::elements::Label;
 use panoramix::RootHandler;
 use panoramix::Column;
@@ -123,6 +133,7 @@ fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
 }
 
 fn main() -> Result<(), panoramix::PlatformError> {
+    # return Ok(());
     RootHandler::new(HelloEveryone)
         .launch()
 }
@@ -138,8 +149,12 @@ A high-level goal of Panoramix is to avoid magical DSLs where the code you write
 As part of this, all elements we have built (with `Label::new` and `Column!` and `HelloText::new`) are simple PODs, with no hidden cells or `Arc<Mutex>`. More over, all elements (including components) are required to implement `Debug`, which means you can print the elements you're building at any point:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::Label;
+# use panoramix::Column;
+# type HelloText = Label;
 #[component]
-fn HelloEveryone(_ctx: &CompCtx, _props: ()) -> impl Element {
+fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let first_label = Label::new(format!("Hello, Alice"));
     println!("first_label: {:#?}", first_label);
 
@@ -203,7 +218,7 @@ TODO
 Our complete code looks like:
 
 ```rust
-use panoramix::{component, CompCtx, Element};
+use panoramix::{component, CompCtx, Element, NoEvent};
 use panoramix::elements::Label;
 use panoramix::RootHandler;
 use panoramix::Column;
@@ -224,9 +239,10 @@ fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
 }
 
 fn main() -> Result<(), panoramix::PlatformError> {
+    # return Ok(());
     RootHandler::new(HelloEveryone)
         .launch()
 }
 ```
 
-In [the next part](./event_handling.md), we will see how we can make our component react to user input.
+In [the next part](t_02_event_handling), we will see how we can make our component react to user input.

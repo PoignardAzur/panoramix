@@ -66,7 +66,7 @@
 //! }
 //! ```
 //!
-//! For information on how to write a component, see [this document on Github](https://github.com/PoignardAzur/panoramix/blob/main/misc_docs/writing_a_component.md).
+//! For information on how to write a component, see [these tutorials](tutorials).
 
 mod ctx;
 mod element_tree;
@@ -102,4 +102,14 @@ pub mod internals {
     pub use crate::element_tree::VirtualDom;
     pub use crate::glue::{Action, DruidAppData, GlobalEventCx, WidgetId};
     pub use crate::widget_sequence::{FlexWidget, WidgetSequence};
+}
+
+/// Dummy modules, with tutorials integrated to the doc.
+pub mod tutorials {
+    #[doc = include_str!("../tutorials/01_writing_a_component.md")]
+    pub mod t_01_writing_a_component {}
+    #[doc = include_str!("../tutorials/02_event_handling.md")]
+    pub mod t_02_event_handling {}
+    #[doc = include_str!("../tutorials/03_local_state.md")]
+    pub mod t_03_local_state {}
 }

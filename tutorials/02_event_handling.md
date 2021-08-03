@@ -2,9 +2,9 @@
 
 This is part 2 of a 3-parts tutorial:
 
-- [Writing a component](./writing_a_component.md)
+- [Writing a component](t_01_writing_a_component)
 - **Event handling**
-- [Local state](./local_state.md)
+- [Local state](t_03_local_state)
 
 The components we've written so far are static. They draw things on-screen, but they don't process any user interaction.
 
@@ -13,6 +13,9 @@ Let's say that we want each of our "Hello, XXX" labels to have a button to say "
 First, we need to add a button to our component:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::Label;
+# use panoramix::Row;
 use panoramix::elements::Button;
 
 #[component]
@@ -29,13 +32,16 @@ Clicking that button doesn't actually do anything, though.
 To hook it up with an event, we use the `Button::on_click` method:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::{Button, Label};
+# use panoramix::Row;
 #[component]
 fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, ()>();
     Row!(
         Label::new(format!("Hello, {}", props)),
         Button::new("Say hello")
-            .on_click(md, |_, _| println!("{} says hello", props)),
+            .on_click(md, move |_, _| println!("{} says hello", props)),
     )
 }
 ```
@@ -49,16 +55,18 @@ We might notice a few things about `on_click`:
 
 ## Bubbling up events
 
-Imagine that, for the sake of this exercise, we want to call `println!()` from `HelloEveryone` instead of `HelloText`. Maybe we only want Alice and Carol to be able to say hello. To do that, we need some way for HelloBox to "transmit" the events it gets from its button.
+Imagine that, for the sake of this exercise, we want to call `println!()` from `HelloEveryone` instead of `HelloText`. Maybe we only want Alice and Carol to be able to say hello. To do that, we need some way for HelloText to "transmit" the events it gets from its button.
 
 First, we modify HelloText's signature to emit an event:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
 use panoramix::elements::ButtonClick;
 
 #[component]
 fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = ButtonClick> {
     // ...
+    # panoramix::elements::Button::new("")
 }
 ```
 
@@ -69,30 +77,47 @@ Next, we need to tell our component that we want to "export" the events of a loc
 First, we change the first type parameter passed to `use_metadata`:
 
 ```rust
+# use panoramix::CompCtx;
+# use panoramix::elements::ButtonClick;
+# let ctx: &CompCtx = {return; None.unwrap()};
 let md = ctx.use_metadata::<ButtonClick, ()>();
 ```
 
 Then, we wrap our return value into a `ComponentOutput`. This wrapper type takes a metadata token and an arbitrary element, and returns an element with the event type "passed" to the token.
 
 ```rust
+# use panoramix::{CompCtx, Row};
+# use panoramix::elements::ComponentOutput;
+# let ctx: &CompCtx = {return; None.unwrap()};
+# let md = ctx.use_metadata::<u32, ()>();
 ComponentOutput::new(
     md,
     Row!(
         // ...
     ),
 )
+# ;
 ```
 
 Finally, we use the trait `ElementExt`, which defines several builder methods for all elements. The method we need is `ElementExt::bubble_up`:
 
 ```rust
+# use panoramix::{CompCtx, ElementExt, Row};
+# use panoramix::elements::Button;
+# use panoramix::elements::ButtonClick;
+# let ctx: &CompCtx = {return; None.unwrap()};
+# let md = ctx.use_metadata::<ButtonClick, ()>();
 Button::new("Say hello")
-    .bubble_up::<ButtonClick, _, _>(md),
+    .bubble_up::<ButtonClick, _, _>(md)
+# ;
 ```
 
 Our function now looks like:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, ElementExt, NoEvent};
+# use panoramix::elements::{Label, Button, ButtonClick, ComponentOutput};
+# use panoramix::Row;
 #[component]
 fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = ButtonClick> {
     let md = ctx.use_metadata::<ButtonClick, ()>();
@@ -112,17 +137,21 @@ Taken together, this essentially tells our component "I want you to raise all el
 We can now catch ButtonClick events from the parent component HelloEveryone, using `ElementExt::on`:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, ElementExt, NoEvent};
+# use panoramix::elements::{Label, Button, ButtonClick, ComponentOutput};
+# use panoramix::Column;
+# type HelloText = Button;
 #[component]
 fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, ()>();
     // Bob and Damian don't get to say hello
     Column!(
-        HelloBox::new("Alice".to_string())
+        HelloText::new("Alice".to_string())
             .on::<ButtonClick, _, _, _>(md, |_, _| println!("Alice says hello")),
-        HelloBox::new("Bob".to_string()),
-        HelloBox::new("Carol".to_string())
+        HelloText::new("Bob".to_string()),
+        HelloText::new("Carol".to_string())
             .on::<ButtonClick, _, _, _>(md, |_, _| println!("Carol says hello")),
-        HelloBox::new("Damian".to_string()),
+        HelloText::new("Damian".to_string()),
     )
 }
 ```
@@ -137,9 +166,9 @@ Note that our parent component still emits `NoEvent`. `NoEvent` is a bottom type
 Our complete code looks like:
 
 ```rust
-use panoramix::{component, CompCtx, Element, ElementExt, RootHandler};
-use panoramix::elements::{Label, Button, ButtonClick};
-use panoramix::Column;
+use panoramix::{component, CompCtx, Element, ElementExt, NoEvent, RootHandler};
+use panoramix::elements::{Label, Button, ButtonClick, ComponentOutput};
+use panoramix::{Row, Column};
 
 #[component]
 fn HelloText(ctx: &CompCtx, props: String) -> impl Element<Event = ButtonClick> {
@@ -159,19 +188,20 @@ fn HelloEveryone(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, ()>();
     // Bob and Damian don't get to say hello
     Column!(
-        HelloBox::new("Alice".to_string())
+        HelloText::new("Alice".to_string())
             .on::<ButtonClick, _, _, _>(md, |_, _| println!("Alice says hello")),
-        HelloBox::new("Bob".to_string()),
-        HelloBox::new("Carol".to_string())
+        HelloText::new("Bob".to_string()),
+        HelloText::new("Carol".to_string())
             .on::<ButtonClick, _, _, _>(md, |_, _| println!("Carol says hello")),
-        HelloBox::new("Damian".to_string()),
+        HelloText::new("Damian".to_string()),
     )
 }
 
 fn main() -> Result<(), panoramix::PlatformError> {
+    # return Ok(());
     RootHandler::new(HelloEveryone)
         .launch()
 }
 ```
 
-So far we can react to user inputs in a limited way, but we can't actually use it to change application state. In [the next part](./local_state.md), we'll see how to represent application state so that events can modify it.
+So far we can react to user inputs in a limited way, but we can't actually use it to change application state. In [the next part](t_03_local_state), we'll see how to represent application state so that events can modify it.

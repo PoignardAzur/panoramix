@@ -24,6 +24,7 @@
 - [X] Rework MockState.
 - [X] Fix component macro error messages.
 - [X] Make the API more idiot-proof (eg look at error messages when a component is written incorrectly).
+- [X] Remove component_caller.
 - [ ] Refactor ElementList
   - [ ] Allow duplicate keys.
   - [ ] Refactor compute_diff (look up diff algorithms?).
@@ -38,16 +39,16 @@
   - [X] Add doc example of element_tuple instantiated with 3 args.
   - [X] Add test that checks that the README and the todo example are identical.
   - [X] Rewrite tutorials.
-  - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
-  - [ ] Add "speedrun" doc.
   - [X] Rewrite Element doc.
     - [X] Explain event system.
     - [X] Document ElementExt.
+  - [ ] Add "speedrun" doc.
+  - [X] Use `#[doc = include_str!]` once feature gets stable.
+  - [X] Move tutorials to inline doc.
+  - [ ] Notes on the limitations of static typing, hence why we use Option and Either.
   - [ ] Explain ParentEvent system.
   - [ ] Explain the notion that some elements represent 0, 1 or n flex items.
   - [ ] Add note that flex widget is both a flex item and a container.
-  - [ ] Use `#[doc = include_str!]` once feature gets stable.
-  - [ ] Move tutorials to inline doc.
   - [ ] Document event chaining.
   - [ ] Add screenshots to doc.
   - [ ] Rewrite ARCHITECTURE.md
@@ -55,13 +56,13 @@
   - [ ] Background and borders.
   - [ ] Text font, style.
   - [ ] Margins.
+  - [ ] Add Spacer element (from druid).
+  - [ ] Refactor with_flex_params; use `From<f64>`??
 - [ ] Remove some cloning.
-- [X] Remove component_caller.
 - [ ] Add WithKey type and `WidgetExt.with_key` method.
 - [ ] Implement two-way bindings.
-- [ ] Add Spacer element (from druid).
 - [ ] Check out SizedBox (?).
-- [ ] Refactor with_flex_params; use `From<f64>`??
+- [ ] Have MockComponent actually implement Component.
 - [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again).
 - [ ] Write some benchmarks.
 

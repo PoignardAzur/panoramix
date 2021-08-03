@@ -2,8 +2,8 @@
 
 This is part 3 of a 3-parts tutorial:
 
-- [Writing a component](./writing_a_component.md)
-- [Event handling](./event_handling.md)
+- [Writing a component](t_01_writing_a_component)
+- [Event handling](t_02_event_handling)
 - **Local state**
 
 The third concept we need to write basic applications in Panoramix is local state.
@@ -11,6 +11,9 @@ The third concept we need to write basic applications in Panoramix is local stat
 Imagine we want to make a Counter. This component will have a `+` and a `-` button, as well as a label displaying the counter value. It might look like:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::{Button, Label};
+# use panoramix::Row;
 #[component]
 fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, ()>();
@@ -19,9 +22,9 @@ fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     Row!(
         Label::new(format!("Count: {}", current_count)),
         Button::new("+")
-            .on_click(md, |_, _| /* ... */),
+            .on_click(md, |_, _| todo!()),
         Button::new("-")
-            .on_click(md, |_, _| /* ... */),
+            .on_click(md, |_, _| todo!()),
     )
 }
 ```
@@ -35,12 +38,16 @@ This is where local state comes in.
 To add local state to our component, modify the second type parameter passed to `use_metadata`:
 
 ```rust
+# use panoramix::{component, CompCtx, Element};
+# use panoramix::elements::{Button, Label};
+# use panoramix::Row;
 use panoramix::NoEvent;
 
 #[component]
 fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, i32>();
     // ...
+    # panoramix::elements::EmptyElement::new()
 }
 ```
 
@@ -51,6 +58,9 @@ Calling `ctx.use_metadata::<NoEvent, i32>()` means "We return a component with a
 To read from our state, we call `CompCtx::get_local_state`:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::{Button, ComponentOutput, Label};
+# use panoramix::Row;
 #[component]
 fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, i32>();
@@ -61,9 +71,9 @@ fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
         Row!(
             Label::new(format!("Count: {}", current_count)),
             Button::new("+")
-                .on_click(md, |_, _| /* ... */),
+                .on_click(md, |_, _| todo!()),
             Button::new("-")
-                .on_click(md, |_, _| /* ... */),
+                .on_click(md, |_, _| todo!()),
         ),
     )
 }
@@ -72,6 +82,9 @@ fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
 To *write* to our local state, we use the `on_click` callback. All event callbacks in Panoramix take a mutable reference to local state as their first parameter:
 
 ```rust
+# use panoramix::{component, CompCtx, Element, NoEvent};
+# use panoramix::elements::{Button, ComponentOutput, Label};
+# use panoramix::Row;
 #[component]
 fn Counter(ctx: &CompCtx, props: ()) -> impl Element<Event = NoEvent> {
     let md = ctx.use_metadata::<NoEvent, i32>();
