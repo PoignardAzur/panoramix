@@ -5,10 +5,10 @@ mod button;
 mod checkbox;
 mod component;
 mod element_list;
+mod element_option;
 mod empty;
 mod flex_element;
 mod label;
-mod optional_element;
 mod textbox;
 
 pub mod element_tuple;
@@ -23,10 +23,10 @@ pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
 pub use component::{Component, ComponentOutput};
 pub use element_list::ElementList;
+pub use element_option::*;
 pub use empty::EmptyElement;
 pub use flex_element::Flex;
 pub use label::Label;
-pub use optional_element::*;
 pub use textbox::{TextBox, TextChanged};
 
 // TODO - doc

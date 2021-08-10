@@ -1,10 +1,10 @@
 ---
-source: src/elements/optional_element.rs
-expression: either_elem
+source: src/elements/element_option.rs
+expression: option_label_data
 
 ---
-Left(
-    Label {
+Some(
+    LabelData {
         text: "Hello",
         flex: FlexParams {
             flex: 1.0,

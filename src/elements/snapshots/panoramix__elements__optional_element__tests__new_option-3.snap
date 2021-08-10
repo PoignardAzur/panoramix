@@ -1,6 +1,0 @@
----
-source: src/elements/optional_element.rs
-expression: option_label
-
----
-None
