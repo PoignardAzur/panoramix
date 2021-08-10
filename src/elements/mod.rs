@@ -3,6 +3,7 @@
 mod any_element;
 mod button;
 mod checkbox;
+mod clickable;
 mod component;
 mod element_list;
 mod element_option;
@@ -21,6 +22,8 @@ mod compute_diff;
 pub use any_element::ElementBox;
 pub use button::{Button, ButtonClick};
 pub use checkbox::{Checkbox, Toggled};
+#[doc(hidden)]
+pub use clickable::{ClickEvent, Clickable};
 pub use component::{Component, ComponentOutput};
 pub use element_list::ElementList;
 pub use element_option::*;
@@ -34,6 +37,7 @@ pub mod internals {
     pub use super::any_element::VirtualDomBox;
     pub use super::button::ButtonData;
     pub use super::checkbox::CheckboxData;
+    pub use super::clickable::ClickableData;
     pub use super::component::{ComponentHolder, ComponentOutputData};
     pub use super::element_list::ElementListData;
     pub use super::element_tuple::ElementTupleData;

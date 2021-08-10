@@ -3,6 +3,7 @@
 mod any_widget_seq;
 mod button_widget;
 mod checkbox_widget;
+mod clickable_widget;
 mod empty_sequence;
 mod flex_widget;
 mod optional_widget;
@@ -14,6 +15,7 @@ mod widget_tuple;
 pub use any_widget_seq::WidgetSeqBox;
 pub use button_widget::ButtonWidget;
 pub use checkbox_widget::{CheckboxWidget, SingleCheckboxWidget};
+pub use clickable_widget::ClickableWidget;
 pub use empty_sequence::EmptySequence;
 pub use flex_widget::FlexWidget;
 pub use single_widget::SingleWidget;

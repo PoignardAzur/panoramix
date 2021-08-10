@@ -1,0 +1,8 @@
+---
+source: src/elements/clickable.rs
+expression: click_event
+
+---
+Ok(
+    ClickEvent,
+)
