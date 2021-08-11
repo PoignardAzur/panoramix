@@ -21,3 +21,17 @@ A better error message would be
 ```
 help: consider swapping template arguments
 ```
+
+
+
+// ----
+
+ 1  error[E0277]: the trait bound `&dyn widget_sequence::FlexWidget: widget_sequence::FlexWidget` is not satisfied
+   --> src/widgets/clickable_widget.rs:33:9
+    |
+ 33 |         children.first().unwrap()
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `widget_sequence::FlexWidget` is not implemented for `&dyn widget_sequence::FlexWidget`
+    |
+    = note: required for the cast to the object type `dyn widget_sequence::FlexWidget`
+
+Trying to use &&dyn FlexWidget instead of &dyn FlexWidget
