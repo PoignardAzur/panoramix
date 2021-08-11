@@ -5,6 +5,21 @@
 use druid::kurbo::Size;
 use druid::BoxConstraints;
 
+use druid::{Color, KeyOrValue};
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct BorderStyle {
+    pub width: KeyOrValue<f64>,
+    pub color: KeyOrValue<Color>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ContainerStyle {
+    pub background: Option<KeyOrValue<Color>>,
+    pub border: Option<BorderStyle>,
+    pub corner_radius: KeyOrValue<f64>,
+}
+
 /// Optional parameters for a [Flex](crate::elements::Flex) container (row or column).
 ///
 /// See [Flex::with_flex_container_params](crate::elements::Flex::with_flex_container_params).

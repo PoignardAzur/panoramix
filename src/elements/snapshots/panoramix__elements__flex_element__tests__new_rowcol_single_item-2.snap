@@ -23,4 +23,11 @@ Flex {
         main_alignment: Start,
         fill_major_axis: false,
     },
+    container_style: ContainerStyle {
+        background: None,
+        border: None,
+        corner_radius: Concrete(
+            0.0,
+        ),
+    },
 }

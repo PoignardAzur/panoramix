@@ -1,9 +1,13 @@
 use crate::ctx::{ProcessEventCtx, ReconcileCtx};
 use crate::element_tree::{Element, VirtualDom};
-use crate::flex::{Axis, CrossAxisAlignment, FlexContainerParams, FlexParams, MainAxisAlignment};
+use crate::flex::{
+    Axis, ContainerStyle, CrossAxisAlignment, FlexContainerParams, FlexParams, MainAxisAlignment,
+};
 use crate::glue::GlobalEventCx;
 use crate::metadata::{NoEvent, NoState};
-use crate::widgets::{FlexWidget, SingleWidget};
+use crate::widgets::{Container, FlexWidget, SingleWidget};
+
+use druid::KeyOrValue;
 
 use tracing::instrument;
 
@@ -14,6 +18,7 @@ pub struct Flex<Child: Element> {
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
+    pub container_style: ContainerStyle,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -22,6 +27,7 @@ pub struct FlexData<Child: VirtualDom> {
     pub child: Child,
     pub flex: FlexParams,
     pub flex_container: FlexContainerParams,
+    pub container_style: ContainerStyle,
 }
 
 // ----
@@ -40,6 +46,11 @@ impl<Child: Element> Flex<Child> {
                 main_alignment: MainAxisAlignment::Start,
                 fill_major_axis: false,
             },
+            container_style: ContainerStyle {
+                background: None,
+                border: None,
+                corner_radius: KeyOrValue::Concrete(0.0),
+            },
         }
     }
 
@@ -56,6 +67,13 @@ impl<Child: Element> Flex<Child> {
             ..self
         }
     }
+
+    pub fn with_container_style(self, container_style: ContainerStyle) -> Self {
+        Flex {
+            container_style,
+            ..self
+        }
+    }
 }
 
 impl<Child: VirtualDom> FlexData<Child> {
@@ -64,12 +82,14 @@ impl<Child: VirtualDom> FlexData<Child> {
         child: Child,
         flex: FlexParams,
         flex_container: FlexContainerParams,
+        container_style: ContainerStyle,
     ) -> Self {
         FlexData {
             axis,
             child,
             flex,
             flex_container,
+            container_style,
         }
     }
 }
@@ -89,7 +109,13 @@ impl<Child: Element> Element for Flex<Child> {
     ) -> (Self::BuildOutput, Self::AggregateChildrenState) {
         let (element, children_state) = self.child.build(prev_state);
         (
-            FlexData::new(self.axis, element, self.flex, self.flex_container),
+            FlexData::new(
+                self.axis,
+                element,
+                self.flex,
+                self.flex_container,
+                self.container_style,
+            ),
             children_state,
         )
     }
@@ -98,7 +124,8 @@ impl<Child: Element> Element for Flex<Child> {
 impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
     type Event = NoEvent;
     type AggregateChildrenState = Child::AggregateChildrenState;
-    type TargetWidgetSeq = SingleWidget<FlexWidget<Child::TargetWidgetSeq>>;
+    type TargetWidgetSeq =
+        SingleWidget<Container<crate::glue::DruidAppData, FlexWidget<Child::TargetWidgetSeq>>>;
 
     #[instrument(name = "Flex", skip(self))]
     fn init_tree(&self) -> Self::TargetWidgetSeq {
@@ -107,7 +134,18 @@ impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
             flex_params: self.flex_container,
             children_seq: self.child.init_tree(),
         };
-        SingleWidget::new(flex, self.flex)
+        let mut container = Container::new(flex);
+        if let Some(KeyOrValue::Key(background)) = &self.container_style.background {
+            container.set_background(background.clone());
+        }
+        if let Some(KeyOrValue::Concrete(background)) = &self.container_style.background {
+            container.set_background(background.clone());
+        }
+        if let Some(border) = self.container_style.border.clone() {
+            container.set_border(border.color, border.width);
+        }
+        container.set_rounded(self.container_style.corner_radius.clone());
+        SingleWidget::new(container, self.flex)
     }
 
     #[instrument(name = "Flex", skip(self, prev_value, widget_seq, ctx))]
@@ -117,9 +155,10 @@ impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
         widget_seq: &mut Self::TargetWidgetSeq,
         ctx: &mut ReconcileCtx,
     ) {
+        // TODO - Reconcile style params
         self.child.reconcile(
             &prev_value.child,
-            &mut widget_seq.pod.widget_mut().children_seq,
+            &mut widget_seq.pod.widget_mut().child_mut().children_seq,
             ctx,
         );
     }
@@ -135,7 +174,7 @@ impl<Child: VirtualDom> VirtualDom for FlexData<Child> {
         self.child.process_event(
             comp_ctx,
             children_state,
-            &mut widget_seq.pod.widget_mut().children_seq,
+            &mut widget_seq.pod.widget_mut().child_mut().children_seq,
             cx,
         )
     }

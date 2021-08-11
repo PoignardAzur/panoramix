@@ -5,71 +5,83 @@ expression: root_state
 ---
 RootWidget(
     Column(
-        Column(
-            Row(
-                IdentityWrapper(
-                    TextBox(
-                        "Next task",
+        Container(
+            Column(
+                Container(
+                    Row(
+                        IdentityWrapper(
+                            TextBox(
+                                "Next task",
+                            ),
+                        ),
+                        IdentityWrapper(
+                            ControllerHost(
+                                Button(
+                                    "New task",
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                Container(
+                    Row(
+                        IdentityWrapper(
+                            Checkbox(
+                                "[_] ",
+                            ),
+                        ),
+                        Label(
+                            "Task #0",
+                        ),
+                        Label(
+                            "(complete)",
+                        ),
+                    ),
+                ),
+                Container(
+                    Row(
+                        IdentityWrapper(
+                            Checkbox(
+                                "[_] ",
+                            ),
+                        ),
+                        Label(
+                            "Task #1",
+                        ),
+                        Label(
+                            "(complete)",
+                        ),
+                    ),
+                ),
+                Container(
+                    Row(
+                        IdentityWrapper(
+                            Checkbox(
+                                "[X] ",
+                            ),
+                        ),
+                        Label(
+                            "Task #2",
+                        ),
+                    ),
+                ),
+                Container(
+                    Row(
+                        IdentityWrapper(
+                            Checkbox(
+                                "[X] ",
+                            ),
+                        ),
+                        Label(
+                            "Task #3",
+                        ),
                     ),
                 ),
                 IdentityWrapper(
                     ControllerHost(
                         Button(
-                            "New task",
+                            "Delete completed tasks",
                         ),
-                    ),
-                ),
-            ),
-            Row(
-                IdentityWrapper(
-                    Checkbox(
-                        "[_] ",
-                    ),
-                ),
-                Label(
-                    "Task #0",
-                ),
-                Label(
-                    "(complete)",
-                ),
-            ),
-            Row(
-                IdentityWrapper(
-                    Checkbox(
-                        "[_] ",
-                    ),
-                ),
-                Label(
-                    "Task #1",
-                ),
-                Label(
-                    "(complete)",
-                ),
-            ),
-            Row(
-                IdentityWrapper(
-                    Checkbox(
-                        "[X] ",
-                    ),
-                ),
-                Label(
-                    "Task #2",
-                ),
-            ),
-            Row(
-                IdentityWrapper(
-                    Checkbox(
-                        "[X] ",
-                    ),
-                ),
-                Label(
-                    "Task #3",
-                ),
-            ),
-            IdentityWrapper(
-                ControllerHost(
-                    Button(
-                        "Delete completed tasks",
                     ),
                 ),
             ),

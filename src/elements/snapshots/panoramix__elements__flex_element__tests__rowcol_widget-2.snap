@@ -5,28 +5,34 @@ expression: column_state_2
 ---
 RootWidget(
     Column(
-        Column(
-            Row(
-                Label(
-                    "World1",
+        Container(
+            Column(
+                Container(
+                    Row(
+                        Label(
+                            "World1",
+                        ),
+                        Label(
+                            "World2",
+                        ),
+                    ),
+                ),
+                Container(
+                    Row(
+                        Label(
+                            "World3",
+                        ),
+                        Label(
+                            "World4",
+                        ),
+                    ),
                 ),
                 Label(
-                    "World2",
-                ),
-            ),
-            Row(
-                Label(
-                    "World3",
+                    "World5",
                 ),
                 Label(
-                    "World4",
+                    "World6",
                 ),
-            ),
-            Label(
-                "World5",
-            ),
-            Label(
-                "World6",
             ),
         ),
     ),
