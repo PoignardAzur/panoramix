@@ -75,10 +75,12 @@ Eg on Ubuntu-based distributions, you should run `sudo apt install libgtk-3-dev`
 
 The short term roadmap is:
 
-- Write more tests, and try to make everything we use more testable (notably Druid).
+- Streamline styling options, especially for common low-effort use cases.
+- Implement two-way bindings.
+- Refactor event handling.
+- Finish doc.
+- Improve performance.
 - Write benchmarks.
-- Improve the error story, and write helper macros.
-- Try to streamline the common, simple tasks (eg writing a task list, writing a menu, etc) as much as possible.
 
 On the longer timescale, there are two broad goals:
 

@@ -53,7 +53,7 @@
   - [ ] Add screenshots to doc.
   - [ ] Rewrite ARCHITECTURE.md
 - [ ] Add styling elements.
-  - [ ] Background and borders.
+  - [X] Background and borders.
   - [ ] Text font, style.
   - [ ] Margins.
   - [ ] Add Spacer element (from druid).
@@ -63,6 +63,7 @@
 - [ ] Add macro check that ComponentOutput is present if use_metadata is.
 - [ ] Add WithKey type and `WidgetExt.with_key` method.
 - [ ] Implement two-way bindings.
+  - [ ] Figure out API.
 - [ ] Check out SizedBox (?).
 - [ ] Have MockComponent actually implement Component.
 - [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again).
