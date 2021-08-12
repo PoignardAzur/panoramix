@@ -4,10 +4,14 @@ expression: textbox_state
 
 ---
 RootWidget(
-    Column(
-        IdentityWrapper(
-            TextBox(
-                "Hello",
+    Scroll(
+        ClipBox(
+            Column(
+                IdentityWrapper(
+                    TextBox(
+                        "Hello",
+                    ),
+                ),
             ),
         ),
     ),

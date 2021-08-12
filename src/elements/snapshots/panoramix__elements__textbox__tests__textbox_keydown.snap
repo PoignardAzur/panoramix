@@ -4,10 +4,14 @@ expression: harness.get_root_debug_state()
 
 ---
 RootWidget(
-    Column(
-        IdentityWrapper(
-            TextBox(
-                "Hello",
+    Scroll(
+        ClipBox(
+            Column(
+                IdentityWrapper(
+                    TextBox(
+                        "Hello",
+                    ),
+                ),
             ),
         ),
     ),

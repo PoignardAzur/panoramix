@@ -4,11 +4,15 @@ expression: root_state_3
 
 ---
 RootWidget(
-    Column(
-        IdentityWrapper(
-            ControllerHost(
-                Button(
-                    "ThisIsAButton",
+    Scroll(
+        ClipBox(
+            Column(
+                IdentityWrapper(
+                    ControllerHost(
+                        Button(
+                            "ThisIsAButton",
+                        ),
+                    ),
                 ),
             ),
         ),

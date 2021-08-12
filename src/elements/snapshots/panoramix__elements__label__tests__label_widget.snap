@@ -4,9 +4,13 @@ expression: label_state
 
 ---
 RootWidget(
-    Column(
-        Label(
-            "Hello",
+    Scroll(
+        ClipBox(
+            Column(
+                Label(
+                    "Hello",
+                ),
+            ),
         ),
     ),
 )

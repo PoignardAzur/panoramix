@@ -4,34 +4,38 @@ expression: column_state
 
 ---
 RootWidget(
-    Column(
-        Container(
+    Scroll(
+        ClipBox(
             Column(
                 Container(
-                    Row(
-                        Label(
-                            "Hello1",
+                    Column(
+                        Container(
+                            Row(
+                                Label(
+                                    "Hello1",
+                                ),
+                                Label(
+                                    "Hello2",
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                Label(
+                                    "Hello3",
+                                ),
+                                Label(
+                                    "Hello4",
+                                ),
+                            ),
                         ),
                         Label(
-                            "Hello2",
+                            "Hello5",
+                        ),
+                        Label(
+                            "Hello6",
                         ),
                     ),
-                ),
-                Container(
-                    Row(
-                        Label(
-                            "Hello3",
-                        ),
-                        Label(
-                            "Hello4",
-                        ),
-                    ),
-                ),
-                Label(
-                    "Hello5",
-                ),
-                Label(
-                    "Hello6",
                 ),
             ),
         ),

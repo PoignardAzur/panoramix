@@ -4,18 +4,22 @@ expression: list_state_2
 
 ---
 RootWidget(
-    Column(
-        Label(
-            "AAA",
-        ),
-        Label(
-            "DDD",
-        ),
-        Label(
-            "bbb",
-        ),
-        Label(
-            "ccc",
+    Scroll(
+        ClipBox(
+            Column(
+                Label(
+                    "AAA",
+                ),
+                Label(
+                    "DDD",
+                ),
+                Label(
+                    "bbb",
+                ),
+                Label(
+                    "ccc",
+                ),
+            ),
         ),
     ),
 )

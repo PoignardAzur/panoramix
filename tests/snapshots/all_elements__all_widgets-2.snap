@@ -4,96 +4,100 @@ expression: root_state_2
 
 ---
 RootWidget(
-    Column(
-        Container(
+    Scroll(
+        ClipBox(
             Column(
                 Container(
-                    Row(
-                        IdentityWrapper(
-                            TextBox,
+                    Column(
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    TextBox,
+                                ),
+                                IdentityWrapper(
+                                    ControllerHost(
+                                        Button(
+                                            "New task",
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    Checkbox(
+                                        "[_] ",
+                                    ),
+                                ),
+                                Label(
+                                    "Task #0",
+                                ),
+                                Label(
+                                    "(complete)",
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    Checkbox(
+                                        "[_] ",
+                                    ),
+                                ),
+                                Label(
+                                    "Task #1",
+                                ),
+                                Label(
+                                    "(complete)",
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    Checkbox(
+                                        "[X] ",
+                                    ),
+                                ),
+                                Label(
+                                    "Task #2",
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    Checkbox(
+                                        "[X] ",
+                                    ),
+                                ),
+                                Label(
+                                    "Task #3",
+                                ),
+                            ),
+                        ),
+                        Container(
+                            Row(
+                                IdentityWrapper(
+                                    Checkbox(
+                                        "[_] ",
+                                    ),
+                                ),
+                                Label(
+                                    "Next task",
+                                ),
+                                Label(
+                                    "(complete)",
+                                ),
+                            ),
                         ),
                         IdentityWrapper(
                             ControllerHost(
                                 Button(
-                                    "New task",
+                                    "Delete completed tasks",
                                 ),
                             ),
-                        ),
-                    ),
-                ),
-                Container(
-                    Row(
-                        IdentityWrapper(
-                            Checkbox(
-                                "[_] ",
-                            ),
-                        ),
-                        Label(
-                            "Task #0",
-                        ),
-                        Label(
-                            "(complete)",
-                        ),
-                    ),
-                ),
-                Container(
-                    Row(
-                        IdentityWrapper(
-                            Checkbox(
-                                "[_] ",
-                            ),
-                        ),
-                        Label(
-                            "Task #1",
-                        ),
-                        Label(
-                            "(complete)",
-                        ),
-                    ),
-                ),
-                Container(
-                    Row(
-                        IdentityWrapper(
-                            Checkbox(
-                                "[X] ",
-                            ),
-                        ),
-                        Label(
-                            "Task #2",
-                        ),
-                    ),
-                ),
-                Container(
-                    Row(
-                        IdentityWrapper(
-                            Checkbox(
-                                "[X] ",
-                            ),
-                        ),
-                        Label(
-                            "Task #3",
-                        ),
-                    ),
-                ),
-                Container(
-                    Row(
-                        IdentityWrapper(
-                            Checkbox(
-                                "[_] ",
-                            ),
-                        ),
-                        Label(
-                            "Next task",
-                        ),
-                        Label(
-                            "(complete)",
-                        ),
-                    ),
-                ),
-                IdentityWrapper(
-                    ControllerHost(
-                        Button(
-                            "Delete completed tasks",
                         ),
                     ),
                 ),

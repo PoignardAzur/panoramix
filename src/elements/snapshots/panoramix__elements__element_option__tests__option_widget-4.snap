@@ -4,9 +4,13 @@ expression: root_state_4
 
 ---
 RootWidget(
-    Column(
-        Label(
-            "Goodbye",
+    Scroll(
+        ClipBox(
+            Column(
+                Label(
+                    "Goodbye",
+                ),
+            ),
         ),
     ),
 )

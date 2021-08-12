@@ -4,15 +4,19 @@ expression: tuple_state
 
 ---
 RootWidget(
-    Column(
-        Label(
-            "Hello",
-        ),
-        Label(
-            "Hello2",
-        ),
-        Label(
-            "Hello3",
+    Scroll(
+        ClipBox(
+            Column(
+                Label(
+                    "Hello",
+                ),
+                Label(
+                    "Hello2",
+                ),
+                Label(
+                    "Hello3",
+                ),
+            ),
         ),
     ),
 )

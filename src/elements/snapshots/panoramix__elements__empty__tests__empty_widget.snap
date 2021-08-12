@@ -4,5 +4,9 @@ expression: widget_state
 
 ---
 RootWidget(
-    Column,
+    Scroll(
+        ClipBox(
+            Column,
+        ),
+    ),
 )

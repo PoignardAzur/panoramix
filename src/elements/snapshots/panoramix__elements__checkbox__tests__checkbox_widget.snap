@@ -4,10 +4,14 @@ expression: checkbox_state
 
 ---
 RootWidget(
-    Column(
-        IdentityWrapper(
-            Checkbox(
-                "[_] Hello",
+    Scroll(
+        ClipBox(
+            Column(
+                IdentityWrapper(
+                    Checkbox(
+                        "[_] Hello",
+                    ),
+                ),
             ),
         ),
     ),

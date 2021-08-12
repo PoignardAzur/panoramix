@@ -4,5 +4,9 @@ expression: root_state_3
 
 ---
 RootWidget(
-    Column,
+    Scroll(
+        ClipBox(
+            Column,
+        ),
+    ),
 )

@@ -4,5 +4,9 @@ expression: empty_list_state
 
 ---
 RootWidget(
-    Column,
+    Scroll(
+        ClipBox(
+            Column,
+        ),
+    ),
 )

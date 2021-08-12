@@ -25,7 +25,13 @@ pub struct RootWidget<RootElem: Element> {
     pub vdom: Option<RootElem::BuildOutput>,
     pub default_widget: WidgetPod<DruidAppData, widget::Flex<DruidAppData>>,
     pub widget: Option<
-        WidgetPod<DruidAppData, FlexWidget<<RootElem::BuildOutput as VirtualDom>::TargetWidgetSeq>>,
+        WidgetPod<
+            DruidAppData,
+            widget::Scroll<
+                DruidAppData,
+                FlexWidget<<RootElem::BuildOutput as VirtualDom>::TargetWidgetSeq>,
+            >,
+        >,
     >,
 }
 
@@ -67,15 +73,18 @@ impl<RootElem: Element> RootWidget<RootElem> {
         let widget_seq = debug_span!("init_tree").in_scope(|| new_vdom.init_tree());
         // FIXME - Fix alignment to be consistent
         // (eg "Root(Button)" and "Root(Row(Button))" should be the same)
-        let flex_widget = WidgetPod::new(FlexWidget {
-            direction: flex::Axis::Vertical,
-            flex_params: flex::FlexContainerParams {
-                cross_alignment: flex::CrossAxisAlignment::Center,
-                main_alignment: flex::MainAxisAlignment::Start,
-                fill_major_axis: false,
-            },
-            children_seq: widget_seq,
-        });
+        let flex_widget = WidgetPod::new(
+            widget::Scroll::new(FlexWidget {
+                direction: flex::Axis::Vertical,
+                flex_params: flex::FlexContainerParams {
+                    cross_alignment: flex::CrossAxisAlignment::Center,
+                    main_alignment: flex::MainAxisAlignment::Start,
+                    fill_major_axis: false,
+                },
+                children_seq: widget_seq,
+            })
+            .vertical(),
+        );
         ctx.children_changed();
         self.widget = Some(flex_widget);
         self.vdom = Some(new_vdom);
@@ -117,7 +126,7 @@ impl<RootElem: Element> RootWidget<RootElem> {
             prev_vdom.process_event(
                 &mut ctx,
                 &mut self.root_state,
-                &mut flex_widget.children_seq,
+                &mut flex_widget.child_mut().children_seq,
                 &mut cx,
             );
         });
@@ -147,7 +156,7 @@ impl<RootElem: Element> RootWidget<RootElem> {
         debug_span!("reconcile").in_scope(|| {
             new_vdom.reconcile(
                 &prev_vdom,
-                &mut flex_widget.children_seq,
+                &mut flex_widget.child_mut().children_seq,
                 &mut reconcile_ctx,
             );
         });
