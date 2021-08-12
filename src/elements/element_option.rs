@@ -240,7 +240,7 @@ mod tests {
         let button_data = ButtonData {
             text: String::from("World"),
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
             ..Default::default()

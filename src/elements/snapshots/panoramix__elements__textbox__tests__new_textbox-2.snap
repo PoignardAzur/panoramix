@@ -6,7 +6,7 @@ expression: textbox_data
 TextBoxData {
     text: "Hello",
     flex: FlexParams {
-        flex: 1.0,
+        flex: None,
         alignment: None,
     },
     reserved_widget_id: None,

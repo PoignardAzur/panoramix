@@ -10,21 +10,21 @@ expression: row_data
             LabelData {
                 text: "Hello",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
             LabelData {
                 text: "Hello2",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
             LabelData {
                 text: "Hello3",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
@@ -39,7 +39,7 @@ expression: row_data
             EmptyElementData,
         ),
         flex: FlexParams {
-            flex: 1.0,
+            flex: None,
             alignment: None,
         },
         flex_container: FlexContainerParams {

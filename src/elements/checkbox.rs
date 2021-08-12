@@ -52,7 +52,7 @@ impl Checkbox {
             text: text.into(),
             value,
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
             reserved_widget_id: None,
@@ -185,7 +185,7 @@ mod tests {
                 text: String::from("Hello"),
                 value: false,
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
                 ..Default::default()

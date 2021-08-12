@@ -4,7 +4,7 @@ use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
 use crate::glue::DebugState;
-use druid::kurbo::{Rect, Size};
+use druid::kurbo::{Point, Rect, Size};
 use druid::widget::{IdentityWrapper, TextBox};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
@@ -93,18 +93,16 @@ impl FlexWidget for TextBoxWidget {
         self.pod.paint_rect()
     }
 
-    fn set_layout_rect(
-        &mut self,
-        ctx: &mut LayoutCtx,
-        _data: &DruidAppData,
-        env: &Env,
-        rect: Rect,
-    ) {
-        self.pod.set_layout_rect(ctx, &mut self.text, env, rect)
+    fn set_origin(&mut self, ctx: &mut LayoutCtx, _data: &DruidAppData, env: &Env, origin: Point) {
+        self.pod.set_origin(ctx, &mut self.text, env, origin)
     }
 
     fn layout_rect(&self) -> Rect {
         self.pod.layout_rect()
+    }
+
+    fn baseline_offset(&self) -> f64 {
+        self.pod.baseline_offset()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, _data: &DruidAppData, env: &Env) {

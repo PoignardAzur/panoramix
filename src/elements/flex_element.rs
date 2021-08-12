@@ -38,7 +38,7 @@ impl<Child: Element> Flex<Child> {
             axis,
             child,
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
             flex_container: FlexContainerParams {

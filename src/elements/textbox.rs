@@ -51,7 +51,7 @@ impl TextBox {
         TextBox {
             text: text.into(),
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
             reserved_widget_id: None,
@@ -167,7 +167,7 @@ mod tests {
             TextBoxData {
                 text: String::from("Hello"),
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
                 ..Default::default()

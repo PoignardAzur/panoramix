@@ -2,6 +2,7 @@ use panoramix::elements::{
     Button, Checkbox, ComponentOutput, ElementBox, ElementList, Label, TextBox, TextChanged,
     Toggled,
 };
+use panoramix::flex::FlexParams;
 use panoramix::internals::WidgetId;
 use panoramix::{component, Column, CompCtx, Element, ElementExt, NoEvent, Row};
 
@@ -77,8 +78,15 @@ fn AwesomeEditableList(ctx: &CompCtx, _props: ()) -> impl Element<Event = NoEven
         },
     );
 
+    // FIXME - For some reason the test fails without the `.with_flex_params` line,
+    // because the test harness fails to click the button, probably for hitbox reason.
+    // We need to investigate why.
     let button_new_task = Button::new("New task")
         .with_reserved_id(WidgetId::reserved(1))
+        .with_flex_params(FlexParams {
+            flex: Some(1.0),
+            alignment: None,
+        })
         .on_click(md, |state: &mut AppState, _| {
             if state.task_name == "" {
                 return;

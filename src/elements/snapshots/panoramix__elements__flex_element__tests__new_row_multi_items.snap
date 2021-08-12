@@ -9,27 +9,27 @@ Flex {
         Label {
             text: "Hello",
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         },
         Label {
             text: "Hello2",
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         },
         Label {
             text: "Hello3",
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         },
     ),
     flex: FlexParams {
-        flex: 1.0,
+        flex: None,
         alignment: None,
     },
     flex_container: FlexContainerParams {

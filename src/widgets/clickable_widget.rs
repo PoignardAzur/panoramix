@@ -71,12 +71,7 @@ impl<Children: WidgetSequence> Widget<DruidAppData> for UnwrapSingleWidget<Child
         env: &Env,
     ) -> Size {
         let size = self.child_mut().layout(ctx, bc, data, env);
-        self.child_mut().set_layout_rect(
-            ctx,
-            data,
-            env,
-            Rect::from_origin_size(Point::ORIGIN, size),
-        );
+        self.child_mut().set_origin(ctx, data, env, Point::ZERO);
         size
     }
 
@@ -178,12 +173,16 @@ impl<Children: WidgetSequence> FlexWidget for ClickableWidget<Children> {
         self.pod.paint_rect()
     }
 
-    fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect) {
-        self.pod.set_layout_rect(ctx, data, env, rect)
+    fn set_origin(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, origin: Point) {
+        self.pod.set_origin(ctx, data, env, origin)
     }
 
     fn layout_rect(&self) -> Rect {
         self.pod.layout_rect()
+    }
+
+    fn baseline_offset(&self) -> f64 {
+        self.pod.baseline_offset()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {

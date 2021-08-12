@@ -7,7 +7,7 @@ Flex {
     axis: Horizontal,
     child: EmptyElement,
     flex: FlexParams {
-        flex: 1.0,
+        flex: None,
         alignment: None,
     },
     flex_container: FlexContainerParams {

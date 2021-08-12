@@ -1,4 +1,4 @@
-use druid::kurbo::{Rect, Size};
+use druid::kurbo::{Point, Rect, Size};
 
 use crate::flex::FlexParams;
 use crate::glue::DebugState;
@@ -43,8 +43,9 @@ pub trait FlexWidget {
         env: &Env,
     ) -> Size;
     fn paint_rect(&self) -> Rect;
-    fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect);
+    fn set_origin(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, origin: Point);
     fn layout_rect(&self) -> Rect;
+    fn baseline_offset(&self) -> f64;
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env);
     fn debug_state(&self, data: &DruidAppData) -> DebugState;
 }

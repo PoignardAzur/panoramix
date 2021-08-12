@@ -10,7 +10,7 @@ ElementListData {
             LabelData {
                 text: "aaa",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
@@ -20,7 +20,7 @@ ElementListData {
             LabelData {
                 text: "bbb",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
@@ -30,7 +30,7 @@ ElementListData {
             LabelData {
                 text: "ccc",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },

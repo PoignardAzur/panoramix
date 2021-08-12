@@ -6,7 +6,7 @@ expression: textbox
 TextBox {
     text: "Hello",
     flex: FlexParams {
-        flex: 1.0,
+        flex: None,
         alignment: None,
     },
     reserved_widget_id: None,

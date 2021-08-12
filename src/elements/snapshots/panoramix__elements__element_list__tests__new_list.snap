@@ -10,7 +10,7 @@ ElementList {
             Label {
                 text: "aaa",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
@@ -20,7 +20,7 @@ ElementList {
             Label {
                 text: "bbb",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },
@@ -30,7 +30,7 @@ ElementList {
             Label {
                 text: "ccc",
                 flex: FlexParams {
-                    flex: 1.0,
+                    flex: None,
                     alignment: None,
                 },
             },

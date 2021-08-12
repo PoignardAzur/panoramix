@@ -35,7 +35,7 @@ impl Label {
         Label {
             text: text.into(),
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         }
@@ -55,7 +55,7 @@ impl LabelData {
         LabelData {
             text: text.into(),
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         }

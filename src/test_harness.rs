@@ -153,7 +153,7 @@ impl<RootElem: 'static + Element> Harness<'_, '_, RootElem> {
     /// Combines [`mouse_move`](Self::mouse_move), [`mouse_button_press`](Self::mouse_button_press), and [`mouse_button_release`](Self::mouse_button_release).
     pub fn mouse_click_on(&mut self, id: WidgetId) {
         let widget_rect = self.druid_harness.get_state(id).layout_rect();
-        let widget_center = widget_rect.origin();
+        let widget_center = widget_rect.center();
 
         self.mouse_move(widget_center);
         self.mouse_button_press(MouseButton::Left);
@@ -163,7 +163,7 @@ impl<RootElem: 'static + Element> Harness<'_, '_, RootElem> {
     /// Use [`mouse_move`](Self::mouse_move) to set the internal mouse pos to the center of the given widget.
     pub fn mouse_move_to(&mut self, id: WidgetId) {
         let widget_rect = self.druid_harness.get_state(id).layout_rect();
-        let widget_center = widget_rect.origin();
+        let widget_center = widget_rect.center();
 
         self.mouse_move(widget_center);
     }

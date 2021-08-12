@@ -35,7 +35,7 @@ pub struct FlexContainerParams {
 /// Elements that represent a single flex item generally have a `with_flex_params` method that you can pass this struct to.
 #[derive(Copy, Clone, Default, Debug, PartialEq)]
 pub struct FlexParams {
-    pub flex: f64,
+    pub flex: Option<f64>,
     pub alignment: Option<CrossAxisAlignment>,
 }
 
@@ -63,6 +63,18 @@ pub enum CrossAxisAlignment {
     /// In a vertical container, widgets are bottom aligned. In a horiziontal
     /// container, their trailing edges are aligned.
     End,
+    /// Align on the baseline.
+    ///
+    /// In a horizontal container, widgets are aligned along the calculated
+    /// baseline. In a vertical container, this is equivalent to `End`.
+    ///
+    /// The calculated baseline is the maximum baseline offset of the children.
+    Baseline,
+    /// Fill the available space.
+    ///
+    /// The size on this axis is the size of the largest widget;
+    /// other widgets must fill that space.
+    Fill,
 }
 
 /// Arrangement of children on the main axis.
@@ -101,7 +113,7 @@ impl FlexParams {
     /// can pass an `f64` to any of the functions that take `FlexParams`.
     ///
     /// By default, the widget uses the alignment of its parent [Flex](crate::elements::Flex) container.
-    pub fn new(flex: f64, alignment: impl Into<Option<CrossAxisAlignment>>) -> Self {
+    pub fn new(flex: Option<f64>, alignment: impl Into<Option<CrossAxisAlignment>>) -> Self {
         FlexParams {
             flex,
             alignment: alignment.into(),
@@ -154,7 +166,7 @@ impl Axis {
 impl From<f64> for FlexParams {
     fn from(flex: f64) -> FlexParams {
         FlexParams {
-            flex,
+            flex: Some(flex),
             alignment: None,
         }
     }

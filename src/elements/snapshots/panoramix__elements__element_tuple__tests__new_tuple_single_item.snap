@@ -7,7 +7,7 @@ ElementTuple_1(
     Label {
         text: "Hello",
         flex: FlexParams {
-            flex: 1.0,
+            flex: None,
             alignment: None,
         },
     },

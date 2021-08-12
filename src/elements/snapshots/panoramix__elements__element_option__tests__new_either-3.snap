@@ -7,7 +7,7 @@ Right(
     Button {
         text: "World",
         flex: FlexParams {
-            flex: 1.0,
+            flex: None,
             alignment: None,
         },
         reserved_widget_id: None,

@@ -9,13 +9,13 @@ Flex {
         Label {
             text: "Greetings",
             flex: FlexParams {
-                flex: 1.0,
+                flex: None,
                 alignment: None,
             },
         },
     ),
     flex: FlexParams {
-        flex: 1.0,
+        flex: None,
         alignment: None,
     },
     flex_container: FlexContainerParams {

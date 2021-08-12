@@ -4,7 +4,7 @@ use crate::widget_sequence::FlexWidget;
 use crate::widget_sequence::WidgetSequence;
 
 use crate::glue::DebugState;
-use druid::kurbo::{Rect, Size};
+use druid::kurbo::{Point, Rect, Size};
 use druid::widget::{Button, Click, ControllerHost, IdentityWrapper};
 use druid::{
     BoxConstraints, Env, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, UpdateCtx,
@@ -81,12 +81,16 @@ impl FlexWidget for ButtonWidget {
         self.pod.paint_rect()
     }
 
-    fn set_layout_rect(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, rect: Rect) {
-        self.pod.set_layout_rect(ctx, data, env, rect)
+    fn set_origin(&mut self, ctx: &mut LayoutCtx, data: &DruidAppData, env: &Env, origin: Point) {
+        self.pod.set_origin(ctx, data, env, origin)
     }
 
     fn layout_rect(&self) -> Rect {
         self.pod.layout_rect()
+    }
+
+    fn baseline_offset(&self) -> f64 {
+        self.pod.baseline_offset()
     }
 
     fn paint(&mut self, ctx: &mut PaintCtx, data: &DruidAppData, env: &Env) {
