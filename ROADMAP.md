@@ -65,6 +65,7 @@
 - [ ] Implement two-way bindings.
   - [ ] Figure out API.
 - [ ] Check out SizedBox (?).
+- [ ] Add get_local_state_with_default.
 - [ ] Have MockComponent actually implement Component.
 - [ ] Add tests for identical update (eg `Label("Hello")` then `Label("Hello")` again).
 - [ ] Write some benchmarks.
