@@ -5,6 +5,8 @@
 [![license](https://img.shields.io/github/license/PoignardAzur/panoramix)](https://github.com/linebender/druid/blob/master/LICENSE)
 [![chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://xi.zulipchat.com)
 
+**Note:** The development of Panoramix is currently (as of December 2022) on hold as I work on [masonry](https://github.com/PoignardAzur/masonry-rs). I do intend to resume eventually.
+
 **Panoramix is an experimental GUI framework for the Rust programming language.**
 
 The framework is **data-driven and declarative**, drawing some inspiration from [React](https://github.com/facebook/react), and implemented on top of the [Druid](https://github.com/linebender/druid) toolkit (hence the name).
